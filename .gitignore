@@ -1,0 +1,75 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+pip-wheel-metadata/
+
+# Local runtime artifacts
+output/
+tmp/
+logs/
+diagnostics/
+history/
+rule_profiles/
+review_projects/
+uploaded_assets/
+.deleted_assets/
+dist-desktop/
+*.log
+.env
+.env.*
+!.env.example
+settings.json
+review_state.json
+VERSION.json
+
+# Large local models and binaries
+models/
+desktop/node_modules/
+desktop/dist/
+desktop/release/
+desktop/.vite/
+desktop/.cache/
+*.pt
+*.onnx
+*.bin
+*.exe
+*.msi
+*.dmg
+*.AppImage
+*.zip
+*.7z
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.ico
+!desktop/assets/icon.png
+!desktop/assets/icon.ico
+
+# Video and audio source/output files
+*.mp4
+*.mov
+*.mkv
+*.avi
+*.wav
+*.mp3
+*.aac
+*.srt
+*.vtt
+*.ass
+*.ssa
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Netlify local state
+.netlify/

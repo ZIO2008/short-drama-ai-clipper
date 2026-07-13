@@ -1,0 +1,6 @@
+scenedetect[opencv]>=0.7
+openai-whisper>=20250625
+moviepy>=2.0
+Pillow>=10.0
+pydub>=0.25
+imageio-ffmpeg>=0.5

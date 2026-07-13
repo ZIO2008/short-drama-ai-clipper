@@ -1,0 +1,49 @@
+{
+  "name": "short-drama-ai-desktop",
+  "version": "8.38.1",
+  "description": "短剧 AI 切片工具桌面版",
+  "private": true,
+  "main": "main.js",
+  "author": "ShortDramaAI",
+  "scripts": {
+    "start": "electron . --disable-gpu --enable-logging",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --dir"
+  },
+  "build": {
+    "appId": "local.shortdrama.ai.clipping",
+    "productName": "短剧AI切片工具",
+    "directories": {
+      "output": "../dist-desktop"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "assets/**",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../web/v8",
+        "to": "web/v8"
+      },
+      {
+        "from": "../review_server.py",
+        "to": "review_server.py"
+      },
+      {
+        "from": "../app_control.py",
+        "to": "app_control.py"
+      }
+    ],
+    "win": {
+      "icon": "assets/icon.ico",
+      "signAndEditExecutable": false
+    }
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^31.7.7",
+    "electron-builder": "^24.13.3"
+  }
+}

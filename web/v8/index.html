@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>短剧 AI 切片工具</title>
+  <link rel="stylesheet" href="./styles.css?v=8.35.14" />
+</head>
+<body data-page="home" data-orientation="landscape">
+  <main class="prototype-shell">
+    <section class="home-view" aria-label="启动页">
+      <header class="home-hero">
+        <div>
+          <span class="eyebrow">短剧投流素材工作台</span>
+          <h1>短剧切片工作台</h1>
+          <p></p>
+        </div>
+        <button class="primary-button" type="button" data-open-workbench><span aria-hidden="true">▶</span>进入当前项目</button>
+      </header>
+      <div class="home-grid">
+        <article class="home-card primary project-summary-card">
+          <span class="eyebrow">当前选中项目</span>
+          <h2 id="homeProjectTitle">未选择项目</h2>
+          <p id="homeProjectDesc"></p>
+          <div class="project-stats">
+            <span><strong id="homeStatMedia">0</strong>素材</span>
+            <span><strong id="homeStatClips">0</strong>候选</span>
+            <span><strong id="homeStatReview">0</strong>已确认</span>
+          </div>
+          <button class="primary-button" type="button" data-open-workbench><span aria-hidden="true">▶</span>进入工作台</button>
+        </article>
+        <article class="home-card">
+          <h3>新建项目</h3>
+          <p></p>
+          <label class="inline-field">项目名称<input id="newProjectNameInput" autocomplete="off" /></label>
+          <button class="ghost-button" type="button" data-project-new><span aria-hidden="true">＋</span>新建</button>
+        </article>
+        <article class="home-card">
+          <h3>最近项目</h3>
+          <div class="mini-list" id="projectList">
+            <div class="empty-state">正在读取项目列表。</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="workbench-view" aria-label="工作台">
+      <header class="workbench-topbar">
+        <div class="project-chip">
+          <strong>未选择项目</strong>
+          <button class="project-rename-button" type="button" data-project-rename aria-label="重命名项目" title="重命名项目">✎</button>
+          <span></span>
+        </div>
+        <nav class="step-tabs" aria-label="工作步骤">
+          <button class="step-tab active" type="button" data-page-target="media"><span>1</span>素材</button>
+          <button class="step-tab" type="button" data-page-target="clip"><span>2</span>AI 切片</button>
+          <button class="step-tab" type="button" data-page-target="review"><span>3</span>人工审片</button>
+          <button class="step-tab" type="button" data-page-target="export"><span>4</span>导出</button>
+        </nav>
+        <div class="top-actions">
+          <button class="ghost-button compact" type="button" data-back-home><span aria-hidden="true">⌂</span>项目</button>
+          <button class="icon-button" type="button" data-open-settings aria-label="设置">⚙</button>
+        </div>
+      </header>
+
+      <section class="workspace-grid">
+        <aside class="source-bin" aria-label="素材区">
+          <div class="panel-title compact-title">
+            <span class="eyebrow" id="sourceEyebrow">素材区</span>
+            <h2 id="sourceTitle">剧集与切片</h2>
+          </div>
+          <p class="source-hint" id="sourceHint"></p>
+          <div class="source-split">
+            <section class="source-section episode-section" aria-label="剧集列表">
+              <div class="source-section-head"><strong>剧集</strong><span id="episodeCountLabel">暂无剧集</span></div>
+              <div class="scroll-list source-list episode-list" id="episodeList">
+                <div class="empty-state">导入素材后显示剧集。</div>
+              </div>
+            </section>
+            <section class="source-section clip-section" aria-label="当前剧集切片">
+              <div class="source-section-head"><strong>当前剧集切片</strong><span id="clipCountLabel">暂无切片</span></div>
+              <div class="scroll-list source-list clip-list" id="clipList">
+                <div class="empty-state">暂无切片</div>
+              </div>
+            </section>
+          </div>
+        </aside>
+
+        <article class="monitor-card" aria-label="监视区">
+          <div class="monitor-head">
+            <div>
+              <span class="eyebrow" id="monitorMode">原片监视器</span>
+              <h2 id="monitorTitle">选择剧集或切片</h2>
+            </div>
+            <span class="format-pill" id="formatPill">16:9 横屏</span>
+          </div>
+          <div class="monitor-stage" aria-label="视频监视区">
+            <div class="video-frame">
+              <div class="video-content">
+                <video id="previewVideo" preload="metadata" playsinline></video>
+                <div class="video-placeholder" id="videoPlaceholder">选择剧集或切片开始预览</div>
+              </div>
+            </div>
+          </div>
+          <div class="transport-bar">
+            <button class="play-button" type="button" aria-label="播放或暂停"><span></span></button>
+            <strong id="previewCurrentTime">00:00</strong>
+            <input id="previewProgress" type="range" min="0" max="1000" value="0" aria-label="播放进度" />
+            <strong id="previewEndTime">00:00</strong>
+          </div>
+        </article>
+
+        <aside class="operation-console" aria-label="操作台">
+          <section class="task-page active" data-task-page="media">
+            <div class="panel-title"><span class="eyebrow">素材管理</span><h2>导入剧集</h2></div>
+            <div class="drop-zone"><strong>导入剧集视频</strong><span>MP4 / MOV</span></div>
+            <input id="assetUploadInput" type="file" accept="video/*" multiple hidden />
+            <input id="srtUploadInput" type="file" accept=".srt,.vtt,.ass,.ssa" hidden />
+            <button class="primary-button full" type="button" data-import-assets><span aria-hidden="true">＋</span>导入视频素材</button>
+            <div class="status-card" id="mediaImportStatus"><strong id="mediaImportSummary">等待导入</strong><span id="mediaImportDetail"></span></div>
+            <button class="primary-button full" type="button" data-page-target="clip"><span aria-hidden="true">▶</span>进入 AI 切片</button>
+          </section>
+
+          <section class="task-page clip-page" data-task-page="clip">
+            <div class="panel-title"><span class="eyebrow">AI 工作</span><h2>生成候选切片</h2></div>
+            <div class="episode-pick-card" aria-label="选择要切片的剧集">
+              <div class="section-title"><strong>选择剧集</strong><span id="clipEpisodePickMeta">点击数字选择</span></div>
+              <div class="episode-grid" id="clipEpisodeGrid"></div>
+              <button class="ghost-button full select-all-button" type="button" data-select-all-episodes>全选</button>
+            </div>
+            <div class="clip-config hidden">
+              <label>每集请求<input id="clipTargetInput" type="number" min="1" max="20" step="1" value="3" /></label>
+              <label class="hidden">起始集<input id="clipStartEpisodeInput" type="number" min="1" step="1" value="1" /></label>
+              <label class="hidden">结束集<input id="clipEndEpisodeInput" type="number" min="1" step="1" value="10" /></label>
+              <label class="hidden">单集<input id="singleEpisodeInput" type="number" min="1" step="1" value="1" /></label>
+              <label class="hidden">本集请求<input id="singleTargetInput" type="number" min="1" max="20" step="1" value="3" /></label>
+              <label class="hidden">最低时长<input id="minimumDurationInput" value="40 秒" readonly /></label>
+            </div>
+            <div class="subtitle-panel">
+              <div class="section-title"><strong>字幕辅助</strong><span id="subtitleAsrStatus" class="subtitle-status-badge missing">读取中</span></div>
+              <p class="subtitle-required-warning" id="subtitleRequiredWarning" hidden><button type="button" data-open-asr-settings>去设置</button></p>
+              <div class="mode-switch compact-switch">
+                <button class="mode-button active" type="button" data-subtitle-mode="api">API 识别</button>
+                <button class="mode-button" type="button" data-subtitle-mode="srt">导入 SRT</button>
+              </div>
+              <div class="subtitle-mode-panel" data-subtitle-panel="api">
+              <div class="provider-row"><span id="subtitleApiProviderLabel">云端 ASR</span><span id="subtitleApiReadyLabel" class="subtitle-inline-status missing">未接入</span></div>
+                <p id="subtitleApiHint" hidden></p>
+              </div>
+              <div class="subtitle-mode-panel hidden" data-subtitle-panel="srt">
+              <div class="provider-row"><span>每集匹配 .srt 文件</span><button class="ghost-button tiny" type="button" data-srt-import><span aria-hidden="true">＋</span>导入本集</button></div>
+                <p id="subtitleSrtStatus">尚未导入本集字幕。</p>
+              </div>
+            </div>
+            <div class="status-card"><strong id="clipSummary">等待切片</strong><span id="clipStatusDetail"></span></div>
+            <button class="primary-button full" type="button" id="startClipButton" data-start-clipping><span aria-hidden="true">▶</span>智能切片</button>
+            <div class="mode-switch compact-switch" data-single-clip-action>
+              <button class="mode-button" type="button" data-clip-action="replace">重切本集</button>
+              <button class="mode-button" type="button" data-clip-action="append">新增切片</button>
+            </div>
+            <div class="clip-task-actions">
+              <button class="ghost-button" type="button" data-clipping-cancel disabled><span aria-hidden="true">×</span>取消任务</button>
+            </div>
+            <div class="progress-block"><div class="progress-meta"><span id="clipProgressLabel">当前进度</span><strong id="clipProgressText">0%</strong></div><div class="progress-card"><span id="clipProgressBar" style="width:0%"></span></div></div>
+          </section>
+
+          <section class="task-page review-console" data-task-page="review">
+            <div class="panel-title"><span class="eyebrow">人工工作</span><h2>审片编辑台</h2></div>
+            <div class="candidate-focus"><strong id="reviewCandidateTitle">暂无切片</strong><span id="reviewCandidateMeta"></span></div>
+            <div class="trim-console">
+              <div class="boundary-control">
+                <strong>开始点</strong>
+                <div class="time-nudge-row"><button type="button" data-trim-nudge="start:-1" aria-label="开始点向前 1 秒">← 1s</button><button type="button" data-trim-nudge="start:-0.1" aria-label="开始点向前 0.1 秒">← 0.1s</button><span id="reviewStartTime">0.0s</span><button type="button" data-trim-nudge="start:0.1" aria-label="开始点向后 0.1 秒">0.1s →</button><button type="button" data-trim-nudge="start:1" aria-label="开始点向后 1 秒">1s →</button></div>
+              </div>
+              <div class="boundary-control">
+                <strong>结束点</strong>
+                <div class="time-nudge-row"><button type="button" data-trim-nudge="end:-1" aria-label="结束点向前 1 秒">← 1s</button><button type="button" data-trim-nudge="end:-0.1" aria-label="结束点向前 0.1 秒">← 0.1s</button><span id="reviewEndTime">0.0s</span><button type="button" data-trim-nudge="end:0.1" aria-label="结束点向后 0.1 秒">0.1s →</button><button type="button" data-trim-nudge="end:1" aria-label="结束点向后 1 秒">1s →</button></div>
+              </div>
+              <div class="edit-tool-grid">
+                <button class="tool-button" type="button" data-preview-jump="start"><strong>回到入点</strong><span>检查开头</span></button>
+                <button class="tool-button" type="button" data-preview-jump="end"><strong>回到出点</strong><span>检查结尾</span></button>
+                <button class="tool-button" type="button" data-trim-reset><strong>还原 AI</strong><span>撤回微调</span></button>
+              </div>
+              <div class="ai-reselect-group" data-ai-reselect-group>
+                <button class="ghost-button" type="button" data-ai-reselect><span aria-hidden="true">↻</span>AI 重选</button>
+                <div class="decision-row trim-decision-row" data-trim-decision-panel hidden><button class="primary-button" type="button" data-trim-save><span aria-hidden="true">✓</span>保存修改</button><button class="ghost-button" type="button" data-trim-discard><span aria-hidden="true">↺</span>放弃修改</button></div>
+              </div>
+            </div>
+            <div class="review-actions">
+              <div class="decision-row review-decision-row"><button class="primary-button" type="button" data-review-action="approved"><span aria-hidden="true">✓</span>确认可用</button><button class="danger-button" type="button" data-review-action="rejected"><span aria-hidden="true">×</span>不可用</button></div>
+            </div>
+          </section>
+
+          <section class="task-page" data-task-page="export">
+            <div class="panel-title"><span class="eyebrow">交付导出</span><h2>导出中心</h2></div>
+            <div class="export-stats"><span><strong id="exportConfirmedCount">0</strong>已确认</span><span><strong id="exportPendingCount">0</strong>未导出</span><span><strong id="exportFailedCount">0</strong>失败</span></div>
+            <div class="output-combo">
+              <span>导出至</span>
+              <div class="output-path-control">
+                <input id="exportOutputDirInput" value="" />
+                <button class="folder-button" type="button" data-output-dir-choose aria-label="选择导出文件夹"><span aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M3.75 6.5A2.25 2.25 0 0 1 6 4.25h4.2c.55 0 1.08.2 1.49.56l1.4 1.24c.23.2.52.31.82.31H18A2.25 2.25 0 0 1 20.25 8.6v8.9A2.25 2.25 0 0 1 18 19.75H6a2.25 2.25 0 0 1-2.25-2.25v-11Z"/></svg></span></button>
+              </div>
+            </div>
+            <p class="export-tool-status" id="exportToolStatus"></p>
+            <div class="export-actions export-scope-actions">
+              <button class="primary-button export-all-button" type="button" data-export-scope="all"><span aria-hidden="true">↓</span>导出全部</button>
+              <div class="export-branch-actions">
+                <button class="ghost-button" type="button" data-export-scope="episode"><span aria-hidden="true">↓</span>导出本集切片</button>
+                <button class="ghost-button" type="button" data-export-scope="clip"><span aria-hidden="true">↓</span>导出当前切片</button>
+              </div>
+            </div>
+            <div class="export-progress">
+              <div class="progress-meta"><span id="exportProgressLabel">当前导出任务</span><strong id="exportProgressText">0%</strong></div>
+              <div class="progress-card active-task"><span id="exportProgressBar" style="width:0%"></span></div>
+              <p id="exportTaskText"></p>
+            </div>
+            <div class="delivery-note"><strong>按集交付清单</strong><span id="exportDeliveryNote"></span></div>
+            <div class="scroll-list export-list" id="exportEpisodeList">
+            </div>
+          </section>
+
+        </aside>
+
+        <section class="timeline-dock" aria-label="时间线区">
+          <div class="timeline-headline"><strong id="timelineTitle">剪辑时间线</strong><span id="timelineMeta"></span></div>
+          <div class="edit-timeline" id="editTimeline"><span class="scene-stripes"></span><span class="selected-range" id="selectedRange"></span><span class="playhead" id="timelinePlayhead"></span><button class="trim-handle start" id="trimHandleStart" type="button" aria-label="拖动开始点"></button><button class="trim-handle end" id="trimHandleEnd" type="button" aria-label="拖动结束点"></button></div>
+          <div class="timeline-scale"><span>00:00</span><span>00:30</span><span>01:00</span><span>01:30</span><span>02:00</span></div>
+        </section>
+      </section>
+    </section>
+
+    <section class="settings-view" aria-label="设置页面">
+      <div class="settings-shell">
+        <header class="settings-header">
+          <button class="ghost-button compact" type="button" data-settings-back><span aria-hidden="true">←</span>返回工作台</button>
+          <div class="settings-title">
+            <span class="eyebrow">系统设置</span>
+            <h2>API 配置</h2>
+          </div>
+          <div class="settings-status" id="settingsSaveStatus"><strong>等待保存</strong><span></span></div>
+        </header>
+        <div class="settings-layout">
+          <aside class="settings-nav" aria-label="设置分类">
+            <button class="settings-nav-item active" type="button" data-settings-tab="model">
+              <strong>AI 大模型</strong>
+              <span id="modelConfigStatus">读取中</span>
+            </button>
+            <button class="settings-nav-item" type="button" data-settings-tab="asr">
+              <strong>云端 ASR</strong>
+              <span id="asrConfigStatus">读取中</span>
+            </button>
+          </aside>
+          <section class="settings-detail">
+            <article class="settings-block active" data-settings-panel="model">
+              <div class="section-title"><strong>AI 大模型</strong><span id="modelReadyBadge" class="settings-ready-badge">读取中</span></div>
+              <div class="settings-fields">
+                <label>模型厂商
+                  <select id="modelProviderSelect">
+                    <option value="deepseek">DeepSeek</option>
+                    <option value="openai">OpenAI</option>
+                  </select>
+                </label>
+                <div class="settings-provider-fields active" data-model-provider="deepseek">
+                  <label>DeepSeek API Key<input id="deepseekApiKeyInput" type="password" autocomplete="off" placeholder="sk-..." /></label>
+                </div>
+                <div class="settings-provider-fields" data-model-provider="openai">
+                  <label>OpenAI API Key<input id="openaiApiKeyInput" type="password" autocomplete="off" placeholder="sk-..." /></label>
+                </div>
+                <label>代理地址<input id="modelProxyInput" autocomplete="off" placeholder="http://127.0.0.1:7892" /></label>
+              </div>
+            </article>
+            <article class="settings-block" data-settings-panel="asr">
+              <div class="section-title"><strong>云端 ASR</strong><span id="asrReadyBadge" class="settings-ready-badge">读取中</span></div>
+              <div class="settings-fields">
+                <label>服务商
+                  <select id="asrProviderSelect">
+                    <option value="tencent">腾讯云 ASR</option>
+                    <option value="xfyun">科大讯飞 ASR</option>
+                    <option value="openai">OpenAI Whisper</option>
+                    <option value="local">本地字幕模型</option>
+                  </select>
+                </label>
+                <div class="settings-provider-fields active" data-asr-provider="tencent">
+                  <label>腾讯 SecretId<input id="tencentSecretIdInput" type="password" autocomplete="off" placeholder="AKID..." /></label>
+                  <label>腾讯 SecretKey<input id="tencentSecretKeyInput" type="password" autocomplete="off" /></label>
+                </div>
+                <div class="settings-provider-fields" data-asr-provider="xfyun">
+                  <label>讯飞 APPID<input id="xfyunAppIdInput" autocomplete="off" /></label>
+                  <label>讯飞 APIKey<input id="xfyunApiKeyInput" type="password" autocomplete="off" /></label>
+                  <label>讯飞 APISecret<input id="xfyunApiSecretInput" type="password" autocomplete="off" /></label>
+                </div>
+                <div class="settings-provider-fields" data-asr-provider="openai">
+                  <label>OpenAI API Key<input id="openaiAsrApiKeyInput" type="password" autocomplete="off" placeholder="sk-..." /></label>
+                </div>
+                <div class="settings-provider-fields" data-asr-provider="local">
+                  <label>本地字幕模型<input id="localAsrModelInput" autocomplete="off" value="small" /></label>
+                </div>
+              </div>
+            </article>
+          </section>
+        </div>
+        <footer class="settings-footer">
+          <button class="ghost-button" type="button" data-settings-test-asr>测试字幕识别</button>
+          <button class="primary-button" type="button" data-settings-save><span aria-hidden="true">✓</span>保存配置</button>
+        </footer>
+      </div>
+    </section>
+  </main>
+  <div class="app-dialog-backdrop" id="appDialog" hidden>
+    <section class="app-dialog" role="dialog" aria-modal="true" aria-labelledby="appDialogTitle">
+      <h2 id="appDialogTitle">确认操作</h2>
+      <p id="appDialogMessage"></p>
+      <input id="appDialogInput" hidden autocomplete="off" />
+      <div class="app-dialog-actions">
+        <button class="ghost-button" type="button" data-dialog-cancel>取消</button>
+        <button class="primary-button" type="button" data-dialog-confirm>确定</button>
+      </div>
+    </section>
+  </div>
+  <script src="./prototype.js?v=8.37.8"></script>
+</body>
+</html>
