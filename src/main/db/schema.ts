@@ -80,6 +80,7 @@ export const INITIAL_SCHEMA = [
   )`,
   `CREATE TABLE IF NOT EXISTS notifications (
     id TEXT PRIMARY KEY,
+    event_key TEXT,
     drama_id TEXT REFERENCES dramas(id) ON DELETE SET NULL,
     task_id TEXT REFERENCES production_tasks(id) ON DELETE SET NULL,
     task_item_id TEXT REFERENCES task_items(id) ON DELETE SET NULL,
@@ -87,6 +88,7 @@ export const INITIAL_SCHEMA = [
     title TEXT NOT NULL,
     summary TEXT NOT NULL,
     action_target TEXT,
+    occurred_at TEXT NOT NULL,
     read_at TEXT,
     resolved_at TEXT,
     created_at TEXT NOT NULL,
@@ -132,5 +134,6 @@ export const INITIAL_SCHEMA = [
   'CREATE INDEX IF NOT EXISTS idx_task_items_task_status ON task_items (task_id, status)',
   'CREATE INDEX IF NOT EXISTS idx_materials_drama_created ON generated_materials (drama_id, created_at DESC)',
   'CREATE INDEX IF NOT EXISTS idx_notifications_read_created ON notifications (read_at, created_at DESC)',
+  'CREATE UNIQUE INDEX IF NOT EXISTS ux_notifications_event_key ON notifications (event_key)',
   'CREATE INDEX IF NOT EXISTS idx_logs_created ON app_logs (created_at DESC)'
 ] as const

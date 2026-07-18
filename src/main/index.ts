@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import { openDatabase } from './db/migrate.js'
 import { canStoreSecrets } from './security/secret-store.js'
 import { SecretService } from './security/secret-service.js'
+import { NotificationService } from './services/notification-service.js'
 import type { AppHealth } from '../shared/contracts.js'
 
 const APP_ID = 'local.shortdrama.materialstudio'
@@ -15,6 +16,7 @@ let mainWindow: BrowserWindow | null = null
 let databasePath = ''
 let startupErrorCode: AppHealth['initializationErrorCode'] = null
 let secretService: SecretService | null = null
+let notificationService: NotificationService | null = null
 
 const createWindow = (): void => {
   mainWindow = new BrowserWindow({
@@ -51,6 +53,18 @@ const registerIpc = (): void => {
   })
   ipcMain.handle('secrets:get-status', (_event, secretRef: unknown) => requireSecretService().getStatus(secretRef))
   ipcMain.handle('secrets:delete', (_event, secretRef: unknown) => requireSecretService().delete(secretRef))
+  ipcMain.handle('notifications:list', () => requireNotificationService().list())
+  ipcMain.handle('notifications:mark-read', (_event, notificationId: unknown) => requireNotificationService().markRead(notificationId))
+  ipcMain.handle('notifications:mark-all-read', () => requireNotificationService().markAllRead())
+  ipcMain.handle('notifications:clear-read', () => requireNotificationService().clearRead())
+  ipcMain.handle('notifications:resolve', (_event, notificationId: unknown) => requireNotificationService().resolve(notificationId))
+}
+
+const requireNotificationService = (): NotificationService => {
+  if (!notificationService) {
+    throw new Error('本地数据尚未初始化，无法读取通知。')
+  }
+  return notificationService
 }
 
 const requireSecretService = (): SecretService => {
@@ -66,6 +80,7 @@ app.whenReady().then(() => {
   try {
     const database = openDatabase(databasePath)
     secretService = new SecretService(database)
+    notificationService = new NotificationService(database)
   } catch (error) {
     startupErrorCode = 'DATABASE_UNAVAILABLE'
     console.error('Database initialization failed', error)
