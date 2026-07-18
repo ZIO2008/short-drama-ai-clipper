@@ -25,6 +25,13 @@ const desktopApi: DesktopApi = {
   renameTag: (tagId, name) => ipcRenderer.invoke('tags:rename', tagId, name),
   deleteTag: (tagId) => ipcRenderer.invoke('tags:delete', tagId),
   attachTag: (dramaId, tagId) => ipcRenderer.invoke('tags:attach', dramaId, tagId)
+  ,chooseScriptFile: () => ipcRenderer.invoke('scripts:choose-file')
+  ,importScript: (dramaId, path) => ipcRenderer.invoke('scripts:import', dramaId, path)
+  ,listScripts: (dramaId) => ipcRenderer.invoke('scripts:list', dramaId)
+  ,linkScriptEpisode: (scriptId, episodeId) => ipcRenderer.invoke('scripts:link-episode', scriptId, episodeId)
+  ,linkScriptSegment: (segmentId, episodeId) => ipcRenderer.invoke('scripts:link-segment', segmentId, episodeId)
+  ,inspectAssetHealth: (dramaId) => ipcRenderer.invoke('assets:health', dramaId)
+  ,relinkEpisodes: (dramaId, paths) => ipcRenderer.invoke('assets:relink', dramaId, paths)
 }
 
 contextBridge.exposeInMainWorld('desktopApi', desktopApi)

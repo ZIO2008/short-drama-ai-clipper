@@ -37,6 +37,9 @@ type AppShellProps = {
   onAttachTag?: (dramaId: string, tagId: string) => Promise<void>
   onUpdateEpisode?: (dramaId: string, episodeId: string, update: EpisodeUpdate) => Promise<DramaDetail>
   onRemoveEpisode?: (dramaId: string, episodeId: string) => Promise<DramaDetail>
+  onImportScript?: (dramaId: string) => Promise<Array<{ segmentId?: string; episodeNo: number; title: string; text: string }>>
+  onLinkSegment?: (segmentId: string, episodeId: string | null) => Promise<void>
+  onRelink?: (dramaId: string) => Promise<void>
   onCreateTag?: (name: string) => Promise<void>
   onRenameTag?: (id: string, name: string) => Promise<void>
   onDeleteTag?: (tag: TagSummary) => Promise<void>
@@ -72,6 +75,9 @@ export const AppShell = ({
   onAttachTag = async () => undefined,
   onUpdateEpisode = async () => { throw new Error('Not available') },
   onRemoveEpisode = async () => { throw new Error('Not available') },
+  onImportScript = async () => [],
+  onLinkSegment = async () => undefined,
+  onRelink = async () => undefined,
   onCreateTag = async () => undefined,
   onRenameTag = async () => undefined,
   onDeleteTag = async () => undefined
@@ -160,6 +166,9 @@ export const AppShell = ({
               onAttachTag={onAttachTag}
               onUpdateEpisode={onUpdateEpisode}
               onRemoveEpisode={onRemoveEpisode}
+              onImportScript={onImportScript}
+              onLinkSegment={onLinkSegment}
+              onRelink={onRelink}
               onCreateTag={onCreateTag}
               onRenameTag={onRenameTag}
               onDeleteTag={onDeleteTag}
@@ -208,6 +217,9 @@ type RouteContentProps = {
   onAttachTag: (dramaId: string, tagId: string) => Promise<void>
   onUpdateEpisode: (dramaId: string, episodeId: string, update: EpisodeUpdate) => Promise<DramaDetail>
   onRemoveEpisode: (dramaId: string, episodeId: string) => Promise<DramaDetail>
+  onImportScript: (dramaId: string) => Promise<Array<{ segmentId?: string; episodeNo: number; title: string; text: string }>>
+  onLinkSegment: (segmentId: string, episodeId: string | null) => Promise<void>
+  onRelink: (dramaId: string) => Promise<void>
   onCreateTag: (name: string) => Promise<void>
   onRenameTag: (id: string, name: string) => Promise<void>
   onDeleteTag: (tag: TagSummary) => Promise<void>
@@ -232,12 +244,15 @@ const RouteContent = ({
   onAttachTag,
   onUpdateEpisode,
   onRemoveEpisode,
+  onImportScript,
+  onLinkSegment,
+  onRelink,
   onCreateTag,
   onRenameTag,
   onDeleteTag
 }: RouteContentProps): ReactElement => (
   <section className="screen active" aria-labelledby={`${route}-title`}>
-    {route === 'library' && loadState === 'ready' ? <DramaLibraryPage dramas={dramas} loading={dramasLoading} error={dramasError} onRetry={onRetryDramas} onCreate={onCreateDrama} tags={tags} onRename={onRenameDrama} onLoad={onLoadDrama} onDelete={(id, deleteTempFiles = false) => onDeleteDrama(id, deleteTempFiles)} onImport={onImportEpisodes} onAttachTag={onAttachTag} onUpdateEpisode={onUpdateEpisode} onRemoveEpisode={onRemoveEpisode} /> : null}
+    {route === 'library' && loadState === 'ready' ? <DramaLibraryPage dramas={dramas} loading={dramasLoading} error={dramasError} onRetry={onRetryDramas} onCreate={onCreateDrama} tags={tags} onRename={onRenameDrama} onLoad={onLoadDrama} onDelete={(id, deleteTempFiles = false) => onDeleteDrama(id, deleteTempFiles)} onImport={onImportEpisodes} onAttachTag={onAttachTag} onUpdateEpisode={onUpdateEpisode} onRemoveEpisode={onRemoveEpisode} onImportScript={onImportScript} onLinkSegment={onLinkSegment} onRelink={onRelink} /> : null}
     {route === 'tags' && loadState === 'ready' ? <TagManagementPage tags={tags} onCreate={onCreateTag} onRename={onRenameTag} onDelete={onDeleteTag} /> : null}
     {route !== 'library' && route !== 'tags' && <>
     <div className="screen-head">

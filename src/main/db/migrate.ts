@@ -38,6 +38,10 @@ export const migrateDatabase = (database: Database.Database): void => {
       database.exec('UPDATE notifications SET occurred_at = COALESCE(occurred_at, updated_at, created_at)')
       recordMigration(database, 5)
     }
+    if (!hasMigration(database, 6)) {
+      database.exec('CREATE TABLE IF NOT EXISTS script_asset_segments (id TEXT PRIMARY KEY, script_asset_id TEXT NOT NULL REFERENCES script_assets(id) ON DELETE CASCADE, episode_no INTEGER NOT NULL, title TEXT NOT NULL, extracted_text TEXT NOT NULL, episode_id TEXT REFERENCES episodes(id) ON DELETE SET NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, UNIQUE (script_asset_id, episode_no))')
+      recordMigration(database, 6)
+    }
   })
 
   apply()

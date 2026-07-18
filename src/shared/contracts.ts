@@ -56,6 +56,8 @@ export type DramaSummary = {
 export type DramaDetail = DramaSummary & { episodes: EpisodeAsset[] }
 export type EpisodeUpdate = { episodeNo: number | null; sortOrder: number; sourcePath: string }
 export type TagSummary = { id: string; name: string; usageCount: number }
+export type ScriptAssetSummary = { id: string; sourcePath: string; format: string; linkStatus: string; episodeId: string | null; extractedText: string | null }
+export type AssetHealth = { missing: string[]; unreadable: string[]; unsupported: string[]; duplicateEpisodeNumbers: number[]; missingEpisodeNumbers: number[]; issueCount: number }
 
 export type DesktopApi = {
   getAppHealth: () => Promise<AppHealth>
@@ -81,6 +83,13 @@ export type DesktopApi = {
   renameTag: (tagId: string, name: string) => Promise<TagSummary>
   deleteTag: (tagId: string) => Promise<{ affectedDramas: number }>
   attachTag: (dramaId: string, tagId: string) => Promise<void>
+  chooseScriptFile: () => Promise<string | null>
+  importScript: (dramaId: string, path: string) => Promise<{ asset: ScriptAssetSummary; episodes: Array<{ segmentId?: string; episodeNo: number; title: string; text: string }> }>
+  listScripts: (dramaId: string) => Promise<ScriptAssetSummary[]>
+  linkScriptEpisode: (scriptId: string, episodeId: string | null) => Promise<void>
+  linkScriptSegment: (segmentId: string, episodeId: string | null) => Promise<void>
+  inspectAssetHealth: (dramaId: string) => Promise<AssetHealth>
+  relinkEpisodes: (dramaId: string, paths: string[]) => Promise<{ relinked: number; unresolved: string[] }>
 }
 
 declare global {

@@ -162,6 +162,9 @@ const AppRuntime = (): ReactElement => {
       onAttachTag={async (dramaId, tagId) => { await window.desktopApi.attachTag(dramaId, tagId); loadDramas(); loadTags() }}
       onUpdateEpisode={(dramaId, episodeId, update: EpisodeUpdate) => window.desktopApi.updateEpisode(dramaId, episodeId, update)}
       onRemoveEpisode={(dramaId, episodeId) => window.desktopApi.removeEpisode(dramaId, episodeId)}
+      onImportScript={async (dramaId) => { const path = await window.desktopApi.chooseScriptFile(); if (!path) return []; const result = await window.desktopApi.importScript(dramaId, path); return result.episodes }}
+      onLinkSegment={(segmentId, episodeId) => window.desktopApi.linkScriptSegment(segmentId, episodeId)}
+      onRelink={async (dramaId) => { const paths = await window.desktopApi.chooseVideoFiles(); if (paths.length > 0) await window.desktopApi.relinkEpisodes(dramaId, paths) }}
       onCreateTag={async (name) => { await window.desktopApi.createTag(name); loadTags() }}
       onRenameTag={async (id, name) => { await window.desktopApi.renameTag(id, name); loadTags(); loadDramas() }}
       onDeleteTag={async (tag) => { await window.desktopApi.deleteTag(tag.id); loadTags(); loadDramas() }}

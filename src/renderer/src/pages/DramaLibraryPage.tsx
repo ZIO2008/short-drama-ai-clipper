@@ -16,9 +16,12 @@ type DramaLibraryPageProps = {
   onAttachTag: (dramaId: string, tagId: string) => Promise<void>
   onUpdateEpisode?: (dramaId: string, episodeId: string, update: EpisodeUpdate) => Promise<DramaDetail>
   onRemoveEpisode?: (dramaId: string, episodeId: string) => Promise<DramaDetail>
+  onImportScript?: (dramaId: string) => Promise<Array<{ segmentId?: string; episodeNo: number; title: string; text: string }>>
+  onLinkSegment?: (segmentId: string, episodeId: string | null) => Promise<void>
+  onRelink?: (dramaId: string) => Promise<void>
 }
 
-export const DramaLibraryPage = ({ dramas, loading, error, onRetry, onCreate, tags, onRename, onLoad = async () => { throw new Error('Not available') }, onDelete, onImport, onAttachTag, onUpdateEpisode = async () => { throw new Error('Not available') }, onRemoveEpisode = async () => { throw new Error('Not available') } }: DramaLibraryPageProps): ReactElement => {
+export const DramaLibraryPage = ({ dramas, loading, error, onRetry, onCreate, tags, onRename, onLoad = async () => { throw new Error('Not available') }, onDelete, onImport, onAttachTag, onUpdateEpisode = async () => { throw new Error('Not available') }, onRemoveEpisode = async () => { throw new Error('Not available') }, onImportScript = async () => [], onLinkSegment = async () => undefined, onRelink = async () => undefined }: DramaLibraryPageProps): ReactElement => {
   const [name, setName] = useState('')
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
@@ -44,7 +47,7 @@ export const DramaLibraryPage = ({ dramas, loading, error, onRetry, onCreate, ta
       </form>
       <div className="toolbar"><label>标签筛选<select value={tagFilter} onChange={(event) => setTagFilter(event.target.value)}><option value="">全部</option>{tags.map((tag) => <option key={tag.id} value={tag.name}>{tag.name}</option>)}</select></label><label>排序<select value={sort} onChange={(event) => setSort(event.target.value as 'recent' | 'name')}><option value="recent">最近更新</option><option value="name">剧名</option></select></label></div>
       {(dramas ?? []).length === 0 ? <div className="empty" role="status"><strong>还没有剧目</strong><p>先创建一部剧，再导入原片。</p></div> : visible.length === 0 ? <div className="empty" role="status"><strong>没有匹配剧目</strong><p>清除标签筛选后查看全部剧目。</p></div> : <div className="drama-grid">{visible.map((drama) => <article className="panel" key={drama.id}><h2>{drama.name}</h2><p>{drama.episodeCount} 集 · {drama.issueCount} 个资产问题</p>{drama.tagNames.length > 0 && <p>{drama.tagNames.join('、')}</p>}<button className="btn" type="button" onClick={() => setSelected(drama)}>编辑与导入</button></article>)}</div>}
-      {selected && <DramaEditorPage drama={selected} tags={tags} onClose={() => setSelected(null)} onLoad={() => onLoad(selected.id)} onRename={async (value) => { await onRename(selected.id, value); setSelected(null) }} onImport={() => onImport(selected.id)} onAttachTag={(tagId) => onAttachTag(selected.id, tagId)} onUpdateEpisode={(episodeId, update) => onUpdateEpisode(selected.id, episodeId, update)} onRemoveEpisode={(episodeId) => onRemoveEpisode(selected.id, episodeId)} onDelete={async (deleteTempFiles) => { await onDelete(selected.id, deleteTempFiles); setSelected(null) }} />}
+      {selected && <DramaEditorPage drama={selected} tags={tags} onClose={() => setSelected(null)} onLoad={() => onLoad(selected.id)} onRename={async (value) => { await onRename(selected.id, value); setSelected(null) }} onImport={() => onImport(selected.id)} onImportScript={() => onImportScript(selected.id)} onLinkSegment={onLinkSegment} onRelink={() => onRelink(selected.id)} onAttachTag={(tagId) => onAttachTag(selected.id, tagId)} onUpdateEpisode={(episodeId, update) => onUpdateEpisode(selected.id, episodeId, update)} onRemoveEpisode={(episodeId) => onRemoveEpisode(selected.id, episodeId)} onDelete={async (deleteTempFiles) => { await onDelete(selected.id, deleteTempFiles); setSelected(null) }} />}
     </section>
   )
 }
