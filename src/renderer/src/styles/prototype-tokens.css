@@ -1,0 +1,53 @@
+:root {
+  --bg: oklch(17% 0.012 65);
+  --surface: oklch(21% 0.012 65);
+  --fg: oklch(93% 0.012 75);
+  --muted: oklch(68% 0.012 70);
+  --border: oklch(31% 0.012 65);
+  --accent: oklch(70% 0.105 55);
+  --success: oklch(72% 0.11 155);
+  --warning: oklch(78% 0.11 88);
+  --danger: oklch(68% 0.16 25);
+  --ai: oklch(72% 0.055 235);
+  --surface-2: color-mix(in oklch, var(--surface) 82%, var(--fg));
+  --surface-3: color-mix(in oklch, var(--surface) 88%, var(--fg));
+  --accent-soft: color-mix(in oklch, var(--accent) 16%, transparent);
+  --fg-soft: color-mix(in oklch, var(--fg) 6%, transparent);
+  --font-display: 'Segoe UI Variable Display', 'Microsoft YaHei UI', system-ui, sans-serif;
+  --font-body: 'Segoe UI Variable Text', 'Microsoft YaHei UI', system-ui, sans-serif;
+  --font-mono: 'Cascadia Mono', 'JetBrains Mono', ui-monospace, monospace;
+  --radius: 6px;
+  --radius-lg: 9px;
+  --gap-xs: 4px;
+  --gap-sm: 8px;
+  --gap-md: 16px;
+  --gap-lg: 24px;
+  --gap-xl: 32px;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { min-width: 100%; min-height: 100%; margin: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font: 14px/1.5 var(--font-body);
+  text-rendering: optimizeLegibility;
+}
+
+.bootstrap-screen {
+  display: grid;
+  min-height: 100vh;
+  place-content: center;
+  gap: var(--gap-sm);
+  padding: var(--gap-xl);
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+
+.bootstrap-screen h1, .bootstrap-screen p { margin: 0; }
+
+.bootstrap-screen h1 { font: 600 24px/1.25 var(--font-display); }
+
+.bootstrap-kicker { color: var(--accent); font-family: var(--font-mono); font-size: 12px; }

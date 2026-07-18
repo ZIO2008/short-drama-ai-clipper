@@ -1,0 +1,59 @@
+{
+  "name": "short-drama-ai-material-platform",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "短剧投流素材生成平台 Windows 桌面版",
+  "author": "ShortDramaAI",
+  "main": "./out/main/index.js",
+  "scripts": {
+    "dev": "pnpm run rebuild:electron && electron-vite dev",
+    "start": "pnpm run rebuild:electron && electron-vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "test": "pnpm run rebuild:node && vitest run",
+    "build": "electron-vite build",
+    "rebuild:electron": "electron-rebuild -f -w better-sqlite3",
+    "rebuild:node": "pnpm rebuild better-sqlite3",
+    "pack:dir": "pnpm run build && pnpm run rebuild:electron && electron-builder --dir"
+  },
+  "build": {
+    "appId": "local.shortdrama.materialstudio",
+    "productName": "短剧投流素材生成平台",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "out/**",
+      "package.json"
+    ],
+    "win": {
+      "target": "dir",
+      "signAndEditExecutable": false
+    }
+  },
+  "dependencies": {
+    "better-sqlite3": "12.11.1",
+    "drizzle-orm": "0.45.2",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "4.2.0",
+    "@types/better-sqlite3": "7.6.13",
+    "@types/node": "26.1.1",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.3",
+    "electron": "43.1.1",
+    "electron-builder": "26.15.3",
+    "electron-vite": "5.0.0",
+    "typescript": "7.0.2",
+    "vite": "8.1.5",
+    "vitest": "4.1.10"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@11.9.0"
+}
