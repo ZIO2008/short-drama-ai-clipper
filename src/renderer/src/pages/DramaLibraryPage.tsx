@@ -1,6 +1,7 @@
 import { useState, type FormEvent, type ReactElement } from 'react'
 import type { DramaDetail, DramaSummary, EpisodeUpdate, TagSummary } from '../../../shared/contracts.js'
-import { DramaEditorPage } from './DramaEditorPage.js'
+import { DramaWorkspacePage } from './DramaWorkspacePage.js'
+import type { ClipCandidate, MaterialSummary, MultiEpisodeConfig, MultiEpisodeConfigInput, MultiEpisodePreflight, MultiEpisodeTaskPlan } from '../../../shared/contracts.js'
 
 type DramaLibraryPageProps = {
   dramas: DramaSummary[] | null
@@ -19,9 +20,18 @@ type DramaLibraryPageProps = {
   onImportScript?: (dramaId: string) => Promise<Array<{ segmentId?: string; episodeNo: number; title: string; text: string }>>
   onLinkSegment?: (segmentId: string, episodeId: string | null) => Promise<void>
   onRelink?: (dramaId: string) => Promise<void>
+  onCreateCandidate?: (dramaId: string, episodeId: string, start: number, end: number) => Promise<ClipCandidate>
+  onListCandidates?: (dramaId: string) => Promise<ClipCandidate[]>
+  onConfirmCandidate?: (id: string) => Promise<ClipCandidate>
+  onExportCandidate?: (id: string, directory: string) => Promise<{ candidate: ClipCandidate; outputPath: string }>
+  onChooseOutputDirectory?: () => Promise<string | null>
+  onListMaterials?: (dramaId: string) => Promise<MaterialSummary[]>
+  onPreflightMultiTask?: (dramaId: string, config: MultiEpisodeConfigInput) => Promise<MultiEpisodePreflight>
+  onCreateMultiTask?: (dramaId: string, config: MultiEpisodeConfig) => Promise<MultiEpisodeTaskPlan>
+  onRunTask?: (taskId: string) => Promise<unknown>
 }
 
-export const DramaLibraryPage = ({ dramas, loading, error, onRetry, onCreate, tags, onRename, onLoad = async () => { throw new Error('Not available') }, onDelete, onImport, onAttachTag, onUpdateEpisode = async () => { throw new Error('Not available') }, onRemoveEpisode = async () => { throw new Error('Not available') }, onImportScript = async () => [], onLinkSegment = async () => undefined, onRelink = async () => undefined }: DramaLibraryPageProps): ReactElement => {
+export const DramaLibraryPage = ({ dramas, loading, error, onRetry, onCreate, tags, onRename, onLoad = async () => { throw new Error('Not available') }, onDelete, onImport, onAttachTag, onUpdateEpisode = async () => { throw new Error('Not available') }, onRemoveEpisode = async () => { throw new Error('Not available') }, onImportScript = async () => [], onLinkSegment = async () => undefined, onRelink = async () => undefined, onCreateCandidate = async () => { throw new Error('生产能力未接入') }, onListCandidates = async () => [], onConfirmCandidate = async () => { throw new Error('生产能力未接入') }, onExportCandidate = async () => { throw new Error('生产能力未接入') }, onChooseOutputDirectory = async () => null, onListMaterials = async () => [], onPreflightMultiTask = async () => ({ preflightId: '', windows: [] }), onCreateMultiTask = async () => { throw new Error('多集拼接能力未接入') }, onRunTask = async () => undefined }: DramaLibraryPageProps): ReactElement => {
   const [name, setName] = useState('')
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
@@ -47,7 +57,7 @@ export const DramaLibraryPage = ({ dramas, loading, error, onRetry, onCreate, ta
       </form>
       <div className="toolbar"><label>标签筛选<select value={tagFilter} onChange={(event) => setTagFilter(event.target.value)}><option value="">全部</option>{tags.map((tag) => <option key={tag.id} value={tag.name}>{tag.name}</option>)}</select></label><label>排序<select value={sort} onChange={(event) => setSort(event.target.value as 'recent' | 'name')}><option value="recent">最近更新</option><option value="name">剧名</option></select></label></div>
       {(dramas ?? []).length === 0 ? <div className="empty" role="status"><strong>还没有剧目</strong><p>先创建一部剧，再导入原片。</p></div> : visible.length === 0 ? <div className="empty" role="status"><strong>没有匹配剧目</strong><p>清除标签筛选后查看全部剧目。</p></div> : <div className="drama-grid">{visible.map((drama) => <article className="panel" key={drama.id}><h2>{drama.name}</h2><p>{drama.episodeCount} 集 · {drama.issueCount} 个资产问题</p>{drama.tagNames.length > 0 && <p>{drama.tagNames.join('、')}</p>}<button className="btn" type="button" onClick={() => setSelected(drama)}>编辑与导入</button></article>)}</div>}
-      {selected && <DramaEditorPage drama={selected} tags={tags} onClose={() => setSelected(null)} onLoad={() => onLoad(selected.id)} onRename={async (value) => { await onRename(selected.id, value); setSelected(null) }} onImport={() => onImport(selected.id)} onImportScript={() => onImportScript(selected.id)} onLinkSegment={onLinkSegment} onRelink={() => onRelink(selected.id)} onAttachTag={(tagId) => onAttachTag(selected.id, tagId)} onUpdateEpisode={(episodeId, update) => onUpdateEpisode(selected.id, episodeId, update)} onRemoveEpisode={(episodeId) => onRemoveEpisode(selected.id, episodeId)} onDelete={async (deleteTempFiles) => { await onDelete(selected.id, deleteTempFiles); setSelected(null) }} />}
+      {selected && <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label="编辑剧目"><DramaWorkspacePage drama={selected} tags={tags} onClose={() => setSelected(null)} onLoad={() => onLoad(selected.id)} onImport={() => onImport(selected.id)} onImportScript={() => onImportScript(selected.id)} onLinkSegment={onLinkSegment} onRelink={() => onRelink(selected.id)} onAttachTag={(tagId) => onAttachTag(selected.id, tagId)} onUpdateEpisode={(episodeId, update) => onUpdateEpisode(selected.id, episodeId, update)} onRemoveEpisode={(episodeId) => onRemoveEpisode(selected.id, episodeId)} onCreateCandidate={(episodeId, start, end) => onCreateCandidate(selected.id, episodeId, start, end)} onListCandidates={() => onListCandidates(selected.id)} onConfirmCandidate={onConfirmCandidate} onExportCandidate={onExportCandidate} onChooseOutputDirectory={onChooseOutputDirectory} onListMaterials={() => onListMaterials(selected.id)} onPreflightMultiTask={onPreflightMultiTask} onCreateMultiTask={onCreateMultiTask} onRunTask={onRunTask} /></div>}
     </section>
   )
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactElement } from 'react'
-import type { AppHealth, DesktopApi, DramaSummary, EpisodeUpdate, NotificationSnapshot, TagSummary } from '../../shared/contracts.js'
+import type { AppHealth, DesktopApi, DramaSummary, EpisodeUpdate, NotificationSnapshot, TagSummary, TaskSummary } from '../../shared/contracts.js'
 import { AppErrorBoundary } from './components/AppErrorBoundary.js'
 import { AppShell } from './layout/AppShell.js'
 import { getInitialRoute, type RouteId } from './navigation.js'
@@ -28,6 +28,12 @@ const AppRuntime = (): ReactElement => {
   const [dramasLoading, setDramasLoading] = useState(false)
   const [dramasError, setDramasError] = useState<string | null>(null)
   const [tags, setTags] = useState<TagSummary[]>([])
+  const [recoveryNotice, setRecoveryNotice] = useState<string | null>(null)
+  const [backgroundNotice, setBackgroundNotice] = useState<string | null>(null)
+  const [lastUnreadCount, setLastUnreadCount] = useState(0)
+  const [tasks, setTasks] = useState<TaskSummary[]>([])
+  const [tasksLoading, setTasksLoading] = useState(false)
+  const [tasksError, setTasksError] = useState<string | null>(null)
 
   const loadDramas = (): void => {
     if (!window.desktopApi) return
@@ -35,6 +41,15 @@ const AppRuntime = (): ReactElement => {
     window.desktopApi.listDramas().then((items) => setDramas(items)).catch(() => setDramasError('剧目库读取失败，请重试。')).finally(() => setDramasLoading(false))
   }
   const loadTags = (): void => { if (window.desktopApi) window.desktopApi.listTags().then(setTags).catch(() => setTags([])) }
+  const loadTasks = (): void => {
+    if (!window.desktopApi) return
+    setTasksLoading(true)
+    setTasksError(null)
+    window.desktopApi.listTasks()
+      .then(setTasks)
+      .catch(() => setTasksError('任务中心读取失败，请重试。'))
+      .finally(() => setTasksLoading(false))
+  }
 
   useEffect(() => {
     let active = true
@@ -52,13 +67,15 @@ const AppRuntime = (): ReactElement => {
         if (health.initializationErrorCode === 'DATABASE_UNAVAILABLE') {
           setLoadState({
             kind: 'error',
-            message: '本地数据无法初始化。请检查应用数据目录权限后重试。'
+            message: `本地数据无法初始化：${health.initializationErrorMessage ?? '请检查应用数据目录权限后重试。'}`
           })
           return
         }
         setLoadState({ kind: 'ready', health })
+        setRecoveryNotice(health.recoveryNotice)
         loadDramas()
         loadTags()
+        loadTasks()
       })
       .catch(() => {
         if (active) {
@@ -91,6 +108,15 @@ const AppRuntime = (): ReactElement => {
       active = false
     }
   }, [loadState.kind])
+
+  useEffect(() => {
+    if (loadState.kind !== 'ready' || !tasks.some((task) => ['running', 'pending', 'paused'].includes(task.status))) return
+    const timer = window.setInterval(() => {
+      loadTasks()
+      if (window.desktopApi) void window.desktopApi.getNotifications().then((snapshot) => { if (snapshot.unreadCount > lastUnreadCount) { setBackgroundNotice('后台任务有新的状态更新，可打开通知中心查看。'); window.setTimeout(() => setBackgroundNotice(null), 3500) } setLastUnreadCount(snapshot.unreadCount); setNotificationSnapshot(snapshot) })
+    }, 1000)
+    return () => window.clearInterval(timer)
+  }, [loadState.kind, tasks, lastUnreadCount])
 
   useEffect(() => {
     const syncRoute = (): void => setActiveRoute(getInitialRoute())
@@ -149,6 +175,8 @@ const AppRuntime = (): ReactElement => {
       onMarkAllNotificationsRead={() => updateNotifications((api) => api.markAllNotificationsRead())}
       onClearReadNotifications={() => updateNotifications((api) => api.clearReadNotifications())}
       onResolveNotification={(id) => updateNotifications((api) => api.resolveNotification(id))}
+      recoveryNotice={recoveryNotice}
+      backgroundNotice={backgroundNotice}
       dramas={dramas}
       dramasLoading={dramasLoading}
       dramasError={dramasError}
@@ -165,6 +193,27 @@ const AppRuntime = (): ReactElement => {
       onImportScript={async (dramaId) => { const path = await window.desktopApi.chooseScriptFile(); if (!path) return []; const result = await window.desktopApi.importScript(dramaId, path); return result.episodes }}
       onLinkSegment={(segmentId, episodeId) => window.desktopApi.linkScriptSegment(segmentId, episodeId)}
       onRelink={async (dramaId) => { const paths = await window.desktopApi.chooseVideoFiles(); if (paths.length > 0) await window.desktopApi.relinkEpisodes(dramaId, paths) }}
+      tasks={tasks}
+      tasksLoading={tasksLoading}
+      tasksError={tasksError}
+      onRetryTasks={loadTasks}
+      onRetryTask={async (taskId) => {
+        setTasksError(null)
+        try {
+          setTasks(await window.desktopApi.retryFailedTaskItems(taskId))
+        } catch {
+          setTasksError('失败项重试未能启动，请检查任务状态后重试。')
+        }
+      }}
+      onCreateCandidate={(dramaId, episodeId, start, end) => window.desktopApi.createClipCandidate(dramaId, episodeId, start, end)}
+      onListCandidates={(dramaId) => window.desktopApi.listClipCandidates(dramaId)}
+      onConfirmCandidate={(id) => window.desktopApi.confirmClipCandidate(id)}
+      onExportCandidate={(id, directory) => window.desktopApi.exportClipCandidate(id, directory)}
+      onChooseOutputDirectory={() => window.desktopApi.chooseOutputDirectory()}
+      onListMaterials={(dramaId) => window.desktopApi.listMaterials(dramaId)}
+      onPreflightMultiTask={(dramaId, config) => window.desktopApi.preflightMultiEpisode(dramaId, config)}
+      onCreateMultiTask={async (dramaId, config) => { const result = await window.desktopApi.createMultiEpisodeTask(dramaId, config); loadTasks(); return result }}
+      onRunTask={async (taskId) => { const result = await window.desktopApi.runProductionTask(taskId); loadTasks(); return result }}
       onCreateTag={async (name) => { await window.desktopApi.createTag(name); loadTags() }}
       onRenameTag={async (id, name) => { await window.desktopApi.renameTag(id, name); loadTags(); loadDramas() }}
       onDeleteTag={async (tag) => { await window.desktopApi.deleteTag(tag.id); loadTags(); loadDramas() }}

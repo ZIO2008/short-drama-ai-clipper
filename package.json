@@ -14,7 +14,8 @@
     "build": "electron-vite build",
     "rebuild:electron": "electron-rebuild -f -w better-sqlite3",
     "rebuild:node": "pnpm rebuild better-sqlite3",
-    "pack:dir": "pnpm run build && pnpm run rebuild:electron && electron-builder --dir"
+    "pack:dir": "pnpm run build && pnpm run rebuild:electron && electron-builder --dir",
+    "test:e2e": "pnpm run rebuild:electron && playwright test"
   },
   "build": {
     "appId": "local.shortdrama.materialstudio",
@@ -25,6 +26,10 @@
     "files": [
       "out/**",
       "package.json"
+    ],
+    "extraResources": [
+      { "from": "node_modules/ffmpeg-static/ffmpeg.exe", "to": "models/ffmpeg.exe" },
+      { "from": "node_modules/ffprobe-static/bin/win32/x64/ffprobe.exe", "to": "models/ffprobe.exe" }
     ],
     "win": {
       "target": "dir",
@@ -42,6 +47,7 @@
   },
   "devDependencies": {
     "@electron/rebuild": "4.2.0",
+    "@playwright/test": "1.61.1",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
     "@types/better-sqlite3": "7.6.13",

@@ -2,7 +2,7 @@ import { readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { parseProgressLine, runMediaProcess } from './ffmpeg-runner.js'
+import { parseProgressLine, resolveMediaBinary, runMediaProcess } from './ffmpeg-runner.js'
 
 describe('ffmpeg runner', () => {
   it('captures stdout and exit code from a successful process', async () => {
@@ -29,6 +29,11 @@ describe('ffmpeg runner', () => {
     expect(parseProgressLine('out_time_ms=1200000')).toEqual({ key: 'out_time_ms', value: '1200000' })
     expect(parseProgressLine('progress=end')).toEqual({ key: 'progress', value: 'end' })
     expect(parseProgressLine('not-progress')).toBeNull()
+  })
+
+  it('resolves bundled development media binaries', () => {
+    expect(resolveMediaBinary('ffmpeg')).toBeTruthy()
+    expect(resolveMediaBinary('ffprobe')).toBeTruthy()
   })
 })
 

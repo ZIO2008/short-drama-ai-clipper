@@ -142,6 +142,12 @@ p { text-wrap: pretty; }
 .input, .select, input, select { min-height: 40px; padding: 0 10px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); color: var(--fg); }
 table { width: 100%; border-collapse: collapse; } th, td { padding: 9px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: middle; } th { color: var(--muted); font: 11px var(--font-mono); }
 .table-wrap { overflow: auto; margin-block: 12px; }
+.progress-shell { display: grid; gap: 12px; padding: 18px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface-2); }
+.progress-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.progress { height: 8px; overflow: hidden; border-radius: 99px; background: var(--surface-3); }
+.progress > span { display: block; height: 100%; border-radius: inherit; background: var(--accent); transition: width .2s ease; }
+.progress-indeterminate { width: 42%; animation: progress-slide 1.2s ease-in-out infinite; }
+@keyframes progress-slide { from { transform: translateX(-110%); } to { transform: translateX(250%); } }
 .modal-backdrop { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 20px; background: color-mix(in oklch, var(--bg) 72%, transparent); }
 .modal { width: min(920px, 96vw); max-height: 92vh; overflow: auto; padding: 20px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface-3); box-shadow: 0 20px 80px color-mix(in oklch, var(--bg) 70%, transparent); }
 .danger-zone { display: grid; gap: 10px; margin-top: 14px; border-color: color-mix(in oklch, var(--danger) 40%, var(--border)); }

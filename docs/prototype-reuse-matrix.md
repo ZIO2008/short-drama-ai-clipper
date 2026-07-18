@@ -5,12 +5,14 @@
 | 原型区块 | P0 生产路由/组件 | 必须保留 | 允许差异 |
 |---|---|---|---|
 | `#screen-library` | `DramaLibraryPage` | 顶部工具区、剧目卡/列表、筛选与空态层级 | 演示剧目替换为 SQLite 数据。 |
+| `#drama-workspace` / 剧目详情工作区 | `DramaWorkspacePage`、`DramaWorkspaceTabs` | 当前剧目上下文、资产/生产/成果三标签和返回层级 | 工作区内容由真实剧目、任务和成果状态驱动。 |
 | `#screen-assets` 与剧目工作区标签 | `DramaAssetsPage`、`DramaWorkspaceTabs` | 资产表、异常优先级、剧目上下文与三工作区标签 | 资产探测状态替换为真实媒体状态。 |
 | `#screen-production` | `ProductionPage` | 生产方式卡片、P0/P1/P2 的可用/未来能力表达 | P1/P2 按钮在 P0 保持不可用。 |
 | `#screen-stitch`、`#stage-config`、`#stage-preflight`、运行/报告面板 | `MultiEpisodeWorkspacePage` | 配置到预检到运行的单工作区流程、表单分组、状态层级 | 动态窗口/预检/任务数据替换演示数据。 |
 | `#screen-clip` | `OriginalClipWorkspacePage` | 候选列表、监视器、审片参数、确认导出结构与键盘操作 | 候选、字幕和媒体时间码绑定真实数据。 |
 | `#screen-results` | `ResultsLibraryPage` | 成果卡、筛选、成果元数据与来源追溯 | 预览图和元数据替换真实成果。 |
 | `#screen-tasks` | `TaskCenterPage` | 紧凑任务表、筛选、状态和进度列 | P0 隐藏 AI 二创演示任务。 |
+| 运行面板 / 任务进度 | `HeavyTaskProgress`、后台轮询与 toast | 状态徽标、进度条、任务级通知和详情层级 | 进度与通知来自 SQLite 队列，不使用演示计数。 |
 | `#screen-tags` | `TagManagementPage` | 标签表、创建、重命名与危险删除语义 | 标签及使用数替换真实数据。 |
 | `#screen-settings` | `SettingsPage` | 设置分区、密钥掩码与导出/性能/日志结构 | P0 不触发 AI 云端执行。 |
 | `#noticeDrawer` | `NotificationDrawer` | 抽屉结构、未读数、语义状态、跳转与键盘焦点 | 通知记录替换 SQLite 数据；P1 待决策演示项不进入 P0 数据。 |
@@ -40,6 +42,8 @@
 | `#dramaModal`、`#exportModal`、`#packagingModal` | 领域对话框 | 焦点捕获、Escape、取消后焦点返回、字段验证和确认动作。 |
 | `[data-next-stage]`、`#stage-config`、`#stage-preflight` | `MultiEpisodeWorkspacePage` | 配置→预检→运行的顺序、返回修改保留数据、阻塞原因可见。 |
 | `[data-candidate]`、`#clipInPoint`、`#clipOutPoint`、`#clipReviewStatus` | 原剧切片候选/审片组件 | 鼠标、Enter、Space 选中候选；入/出点与状态同步。 |
+| 字幕导入与资产关联 | `subtitle-asset-service`、原剧切片工作区 | 字幕格式、集关联、状态和错误提示 | SRT/VTT 文件元数据持久化到 SQLite，源文件保持原位。 |
+| 多集真实预检 | `multi:preflight` IPC、`MultiEpisodeService` | 配置→预检→运行→报告的顺序与状态文案 | 预检窗口、媒体/磁盘检查、预估大小和一次性 `preflightId` 来自主进程。 |
 
 ## Phase 1 bootstrap exception
 

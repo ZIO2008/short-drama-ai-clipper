@@ -20,7 +20,7 @@ describe('migrateDatabase', () => {
 
     const tables = database.prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").all() as Array<{ name: string }>
     expect(tables.map(({ name }) => name)).toEqual(expect.arrayContaining(['app_logs', 'dramas', 'episodes', 'notifications', 'production_tasks', 'schema_migrations', 'secret_records']))
-    expect(database.prepare('SELECT COUNT(*) AS count FROM schema_migrations').get()).toEqual({ count: 6 })
+    expect(database.prepare('SELECT COUNT(*) AS count FROM schema_migrations').get()).toEqual({ count: 7 })
   })
 
   it('adds Phase 1 tables and indexes to an existing v1 database', () => {

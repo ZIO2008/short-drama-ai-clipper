@@ -9,11 +9,15 @@ type ProcessOptions = { signal?: AbortSignal; cwd?: string; env?: NodeJS.Process
 
 export const resolveMediaBinary = (binary: 'ffmpeg' | 'ffprobe', explicitPath?: string): string | null => {
   const envKey = binary === 'ffmpeg' ? 'SHORTDRAMA_FFMPEG_PATH' : 'SHORTDRAMA_FFPROBE_PATH'
+  const override = explicitPath ?? process.env[envKey]
   const candidates = [
-    explicitPath,
-    process.env[envKey],
-    process.env.SHORTDRAMA_RUNTIME_ROOT ? join(process.env.SHORTDRAMA_RUNTIME_ROOT, 'models', `${binary}.exe`) : undefined,
-    join(process.cwd(), 'models', `${binary}.exe`),
+    override,
+    ...(override ? [] : [
+      process.env.SHORTDRAMA_RUNTIME_ROOT ? join(process.env.SHORTDRAMA_RUNTIME_ROOT, 'models', `${binary}.exe`) : undefined,
+      process.resourcesPath ? join(process.resourcesPath, 'models', `${binary}.exe`) : undefined,
+      join(process.cwd(), 'models', `${binary}.exe`),
+      join(process.cwd(), 'node_modules', binary === 'ffmpeg' ? 'ffmpeg-static' : 'ffprobe-static', binary === 'ffmpeg' ? `${binary}.exe` : 'bin/win32/x64/ffprobe.exe')
+    ]),
     ...pathCandidates(binary)
   ].filter((candidate): candidate is string => Boolean(candidate))
   return candidates.find((candidate) => existsSync(candidate)) ?? findOnPath(binary)

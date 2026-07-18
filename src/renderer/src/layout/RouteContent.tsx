@@ -1,0 +1,30 @@
+import type { ReactElement } from 'react'
+import type { ClipCandidate, DramaDetail, DramaSummary, EpisodeUpdate, MaterialSummary, MultiEpisodeConfig, MultiEpisodeConfigInput, MultiEpisodePreflight, MultiEpisodeTaskPlan, TagSummary, TaskSummary } from '../../../shared/contracts.js'
+import type { RouteId } from '../navigation.js'
+import { DramaLibraryPage } from '../pages/DramaLibraryPage.js'
+import { TagManagementPage } from '../pages/TagManagementPage.js'
+import { TaskCenterPage } from '../pages/TaskCenterPage.js'
+import { SettingsPage } from '../pages/SettingsPage.js'
+
+export type RouteContentProps = {
+  route: RouteId; title: string; description: string; loadState: 'loading' | 'ready' | 'error'; errorMessage: string | null
+  dramas: DramaSummary[] | null; dramasLoading: boolean; dramasError: string | null; onRetryDramas: () => void; onCreateDrama: (name: string) => Promise<void>; tags: TagSummary[]
+  onRenameDrama: (id: string, name: string) => Promise<void>; onLoadDrama: (id: string) => Promise<DramaDetail>; onDeleteDrama: (id: string, deleteTempFiles: boolean) => Promise<void>; onImportEpisodes: (id: string) => Promise<void>; onAttachTag: (dramaId: string, tagId: string) => Promise<void>
+  onUpdateEpisode: (dramaId: string, episodeId: string, update: EpisodeUpdate) => Promise<DramaDetail>; onRemoveEpisode: (dramaId: string, episodeId: string) => Promise<DramaDetail>; onImportScript: (dramaId: string) => Promise<Array<{ segmentId?: string; episodeNo: number; title: string; text: string }>>; onLinkSegment: (id: string, episodeId: string | null) => Promise<void>; onRelink: (id: string) => Promise<void>
+  onCreateCandidate: (dramaId: string, episodeId: string, start: number, end: number) => Promise<ClipCandidate>; onListCandidates: (dramaId: string) => Promise<ClipCandidate[]>; onConfirmCandidate: (id: string) => Promise<ClipCandidate>; onExportCandidate: (id: string, directory: string) => Promise<{ candidate: ClipCandidate; outputPath: string }>; onChooseOutputDirectory: () => Promise<string | null>; onListMaterials: (dramaId: string) => Promise<MaterialSummary[]>; onPreflightMultiTask: (dramaId: string, config: MultiEpisodeConfigInput) => Promise<MultiEpisodePreflight>; onCreateMultiTask: (dramaId: string, config: MultiEpisodeConfig) => Promise<MultiEpisodeTaskPlan>; onRunTask: (taskId: string) => Promise<unknown>
+  tasks: TaskSummary[]; tasksLoading: boolean; tasksError: string | null; onRetryTasks: () => void; onRetryTask: (id: string) => Promise<void>; onSaveSecret: (value: string, secretRef: string) => Promise<void>; onCreateTag: (name: string) => Promise<void>; onRenameTag: (id: string, name: string) => Promise<void>; onDeleteTag: (tag: TagSummary) => Promise<void>
+}
+
+export const RouteContent = (props: RouteContentProps): ReactElement => {
+  if (props.route === 'library' && props.loadState === 'ready') return <DramaLibraryPage dramas={props.dramas} loading={props.dramasLoading} error={props.dramasError} onRetry={props.onRetryDramas} onCreate={props.onCreateDrama} tags={props.tags} onRename={props.onRenameDrama} onLoad={props.onLoadDrama} onDelete={(id, deleteTempFiles) => props.onDeleteDrama(id, deleteTempFiles ?? false)} onImport={props.onImportEpisodes} onAttachTag={props.onAttachTag} onUpdateEpisode={props.onUpdateEpisode} onRemoveEpisode={props.onRemoveEpisode} onImportScript={props.onImportScript} onLinkSegment={props.onLinkSegment} onRelink={props.onRelink} onCreateCandidate={props.onCreateCandidate} onListCandidates={props.onListCandidates} onConfirmCandidate={props.onConfirmCandidate} onExportCandidate={props.onExportCandidate} onChooseOutputDirectory={props.onChooseOutputDirectory} onListMaterials={props.onListMaterials} onPreflightMultiTask={props.onPreflightMultiTask} onCreateMultiTask={props.onCreateMultiTask} onRunTask={props.onRunTask} />
+  if (props.route === 'tags' && props.loadState === 'ready') return <TagManagementPage tags={props.tags} onCreate={props.onCreateTag} onRename={props.onRenameTag} onDelete={props.onDeleteTag} />
+  if (props.route === 'tasks' && props.loadState === 'ready') return <TaskCenterPage tasks={props.tasks} loading={props.tasksLoading} error={props.tasksError} onReload={props.onRetryTasks} onRetry={props.onRetryTask} />
+  if (props.route === 'settings' && props.loadState === 'ready') return <SettingsPage onSaveSecret={props.onSaveSecret} />
+  if (props.loadState === 'loading') return <LoadingState title={props.title} />
+  if (props.loadState === 'error') return <ErrorState message={props.errorMessage} />
+  return <section className="screen active" aria-labelledby={`${props.route}-title`}><div className="screen-head"><div><h1 id={`${props.route}-title`} tabIndex={-1}>{props.title}</h1><p>{props.description}</p></div></div><EmptyState route={props.route} /></section>
+}
+
+const LoadingState = ({ title }: { title: string }): ReactElement => <div className="state-panel" role="status"><div className="skeleton-line skeleton-title" /><p className="state-copy">正在读取{title}的本地数据。</p></div>
+const ErrorState = ({ message }: { message: string | null }): ReactElement => <div className="state-panel state-panel-error" role="alert"><p>无法读取当前工作区</p><p>{message ?? '请检查数据目录后重新载入应用。'}</p><button className="btn btn-primary" type="button" onClick={() => window.location.reload()}>重试</button></div>
+const EmptyState = ({ route }: { route: RouteId }): ReactElement => { const copy: Record<RouteId, string> = { library: '创建剧目后，原片、任务和成果会在这里统一管理。', tasks: '剧目开始生产后，任务状态会汇总到这里。', tags: '创建标签后，可以用它们整理和筛选剧目。', settings: '设置将在对应模块接入。' }; return <div className="empty" role="status"><strong>{copy[route]}</strong></div> }

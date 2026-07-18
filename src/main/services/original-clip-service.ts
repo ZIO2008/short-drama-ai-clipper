@@ -23,6 +23,19 @@ export class OriginalClipService {
     return { id: itemId, episodeId: episode, startSeconds: value.startSeconds, endSeconds: value.endSeconds, status: 'pending_review', reason: null }
   }
 
+  listCandidates(dramaIdInput: unknown): ClipCandidate[] {
+    const dramaId = z.string().trim().min(1).parse(dramaIdInput)
+    const rows = this.database.prepare(`
+      SELECT i.id, i.planned_range AS plannedRange, i.status, i.reason
+      FROM task_items i JOIN production_tasks t ON t.id = i.task_id
+      WHERE t.drama_id = ? AND t.type = ? ORDER BY i.created_at DESC
+    `).all(dramaId, 'original_clip') as Array<{ id: string; plannedRange: string; status: ClipCandidate['status']; reason: string | null }>
+    return rows.map((row) => {
+      const range = JSON.parse(row.plannedRange) as { episodeId: string; startSeconds: number; endSeconds: number }
+      return { id: row.id, episodeId: range.episodeId, startSeconds: range.startSeconds, endSeconds: range.endSeconds, status: row.status, reason: row.reason }
+    })
+  }
+
   confirmCandidate(candidateId: unknown): ClipCandidate {
     const id = z.string().trim().min(1).parse(candidateId); const now = new Date().toISOString()
     const result = this.database.prepare('UPDATE task_items SET status = ?, updated_at = ? WHERE id = ? AND status IN (?, ?)').run('confirmed', now, id, 'pending_review', 'editing')
@@ -44,6 +57,8 @@ export class OriginalClipService {
     if (!source) throw new Error('Source episode not found')
     await mkdir(directory, { recursive: true }); const outputPath = await uniqueOutputPath(directory, `clip-${id.slice(0, 8)}.mp4`); const now = new Date().toISOString()
     this.database.prepare('UPDATE task_items SET status = ?, updated_at = ? WHERE id = ?').run('exporting', now, id)
+    const taskConfig = this.database.prepare('SELECT task_id FROM task_items WHERE id = ?').get(id) as { task_id: string }
+    this.database.prepare('UPDATE production_tasks SET config_snapshot = json_set(config_snapshot, ?, ?), updated_at = ? WHERE id = ?').run('$.outputDirectory', directory, now, taskConfig.task_id)
     try {
       const result = await runMediaProcess(process.env.SHORTDRAMA_FFMPEG_PATH ?? 'ffmpeg', ['-y', '-ss', String(candidate.startSeconds), '-to', String(candidate.endSeconds), '-i', source.source_path, '-c', 'copy', outputPath])
       assertSuccessfulProcess(result); const metadata = await probeMedia(outputPath); const task = this.database.prepare('SELECT task_id FROM task_items WHERE id = ?').get(id) as { task_id: string }
@@ -51,6 +66,14 @@ export class OriginalClipService {
       this.database.prepare('INSERT INTO generated_materials (id, drama_id, task_id, task_item_id, path, duration_seconds, fps, size_bytes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(randomUUID(), source.drama_id, task.task_id, id, outputPath, metadata.durationSeconds, metadata.fps, (await stat(outputPath)).size, now, now)
       return { candidate: this.getCandidate(id), outputPath }
     } catch (error) { this.database.prepare('UPDATE task_items SET status = ?, reason = ?, updated_at = ? WHERE id = ?').run('failed', error instanceof Error ? error.message : 'Export failed', new Date().toISOString(), id); throw error }
+  }
+
+  async retryFailedCandidate(candidateId: unknown, outputDirectory: unknown): Promise<{ candidate: ClipCandidate; outputPath: string }> {
+    const id = z.string().trim().min(1).parse(candidateId)
+    const row = this.database.prepare('SELECT status FROM task_items WHERE id = ?').get(id) as { status: string } | undefined
+    if (!row || !['failed', 'pending', 'running'].includes(row.status)) throw new Error('该候选没有可重试的失败导出。')
+    this.database.prepare('UPDATE task_items SET status = ?, reason = NULL, updated_at = ? WHERE id = ?').run('confirmed', new Date().toISOString(), id)
+    return this.exportCandidate(id, outputDirectory)
   }
 }
 

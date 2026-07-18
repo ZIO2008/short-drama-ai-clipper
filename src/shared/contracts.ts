@@ -2,7 +2,9 @@ export type AppHealth = {
   appVersion: string
   databaseInitialized: boolean
   initializationErrorCode: 'DATABASE_UNAVAILABLE' | null
+  initializationErrorMessage: string | null
   isSecretStorageAvailable: boolean
+  recoveryNotice: string | null
 }
 
 export type SecretStatus = {
@@ -59,6 +61,16 @@ export type TagSummary = { id: string; name: string; usageCount: number }
 export type ScriptAssetSummary = { id: string; sourcePath: string; format: string; linkStatus: string; episodeId: string | null; extractedText: string | null }
 export type AssetHealth = { missing: string[]; unreadable: string[]; unsupported: string[]; duplicateEpisodeNumbers: number[]; missingEpisodeNumbers: number[]; issueCount: number }
 export type ClipCandidate = { id: string; episodeId: string; startSeconds: number; endSeconds: number; status: string; reason: string | null }
+export type MaterialSummary = { id: string; taskId: string; taskItemId: string | null; path: string; durationSeconds: number | null; fps: number | null; sizeBytes: number | null; createdAt: string }
+export type ProviderProfile = { id: string; capability: string; region: string; provider: string; endpoint: string | null; model: string | null; secretRef: string | null; timeoutMs: number | null }
+export type ProviderProfileInput = Omit<ProviderProfile, 'id'>
+export type SubtitleAsset = { id: string; dramaId: string; episodeId: string | null; sourcePath: string; format: string; cueCount: number; status: string }
+export type MultiEpisodeConfigInput = { startEpisode: number; endEpisode: number; groupSize: number; tailStrategy: 'reduce' | 'skip'; maxMinutes: number; outputDirectory: string; qualityMode: 'original' | 'bitrate' | 'size'; bitrateKbps?: number; targetSizeMb?: number; fps: 'source' | number; packagingEnabled: boolean }
+export type MultiEpisodeConfig = MultiEpisodeConfigInput & { preflightConfirmed: true; preflightId: string }
+export type MultiEpisodeWindow = { startEpisode: number; endEpisode: number; episodeNumbers: number[]; actualRange?: number[]; durationSeconds: number | null; status: 'ready' | 'reduced' | 'skipped' | 'blocked'; reason: string | null; ok: boolean; estimatedSizeMb: number | null; estimatedBitrateKbps: number | null }
+export type MultiEpisodePreflight = { preflightId: string; windows: MultiEpisodeWindow[] }
+export type MultiEpisodeTaskPlan = MultiEpisodePreflight & { taskId: string }
+export type TaskSummary = { id: string; dramaName: string; type: string; status: string; progressCurrent: number; progressTotal: number }
 
 export type DesktopApi = {
   getAppHealth: () => Promise<AppHealth>
@@ -94,6 +106,22 @@ export type DesktopApi = {
   createClipCandidate: (dramaId: string, episodeId: string, startSeconds: number, endSeconds: number) => Promise<ClipCandidate>
   confirmClipCandidate: (candidateId: string) => Promise<ClipCandidate>
   exportClipCandidate: (candidateId: string, outputDirectory: string) => Promise<{ candidate: ClipCandidate; outputPath: string }>
+  listClipCandidates: (dramaId: string) => Promise<ClipCandidate[]>
+  listMaterials: (dramaId: string) => Promise<MaterialSummary[]>
+  chooseOutputDirectory: () => Promise<string | null>
+  chooseSubtitleFile: () => Promise<string | null>
+  saveProviderProfile: (input: ProviderProfileInput) => Promise<string>
+  listProviderProfiles: () => Promise<ProviderProfile[]>
+  clearLogs: () => Promise<number>
+  exportDiagnostics: (directory: string) => Promise<string>
+  openPath: (path: string) => Promise<void>
+  importSubtitle: (dramaId: string, episodeId: string | null, path: string) => Promise<SubtitleAsset>
+  listSubtitles: (dramaId: string) => Promise<SubtitleAsset[]>
+  preflightMultiEpisode: (dramaId: string, config: MultiEpisodeConfigInput) => Promise<MultiEpisodePreflight>
+  createMultiEpisodeTask: (dramaId: string, config: MultiEpisodeConfig) => Promise<MultiEpisodeTaskPlan>
+  runProductionTask: (taskId: string) => Promise<unknown>
+  listTasks: () => Promise<TaskSummary[]>
+  retryFailedTaskItems: (taskId: string) => Promise<TaskSummary[]>
 }
 
 declare global {
