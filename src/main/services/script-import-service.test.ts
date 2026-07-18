@@ -2,6 +2,7 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { zipSync, strToU8 } from 'fflate'
 import { importScript, ScriptImportError, splitScriptByEpisode } from './script-import-service.js'
 
 describe('script import', () => {
@@ -15,4 +16,9 @@ describe('script import', () => {
   })
   it('returns an empty preview when a script has no recognizable headings', () => { expect(splitScriptByEpisode('人物：甲\n对白')).toEqual([]) })
   it('rejects unsupported extensions', async () => { await expect(importScript('script.doc')).rejects.toBeInstanceOf(ScriptImportError) })
+  it('extracts DOCX paragraph boundaries so episode headings split', async () => {
+    const folder = await mkdtemp(join(tmpdir(), 'short-drama-docx-')); const path = join(folder, 'script.docx')
+    const xml = '<w:document><w:body><w:p><w:r><w:t>第1集</w:t></w:r></w:p><w:p><w:r><w:t>内容一</w:t></w:r></w:p><w:p><w:r><w:t>第2集</w:t></w:r></w:p><w:p><w:r><w:t>内容二</w:t></w:r></w:p></w:body></w:document>'
+    try { await writeFile(path, zipSync({ 'word/document.xml': strToU8(xml) })); const result = await importScript(path); expect(result.episodes.map(({ episodeNo }) => episodeNo)).toEqual([1, 2]) } finally { await rm(folder, { recursive: true, force: true }) }
+  })
 })

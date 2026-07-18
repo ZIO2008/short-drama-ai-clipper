@@ -6,7 +6,6 @@ import { NAVIGATION_ITEMS, isRouteId, type RouteId } from '../navigation.js'
 import type { DramaDetail, DramaSummary, EpisodeUpdate, TagSummary } from '../../../shared/contracts.js'
 import { DramaLibraryPage } from '../pages/DramaLibraryPage.js'
 import { TagManagementPage } from '../pages/TagManagementPage.js'
-
 type AppShellProps = {
   activeRoute: RouteId
   appVersion: string | null
@@ -44,7 +43,6 @@ type AppShellProps = {
   onRenameTag?: (id: string, name: string) => Promise<void>
   onDeleteTag?: (tag: TagSummary) => Promise<void>
 }
-
 export const AppShell = ({
   activeRoute,
   appVersion,
@@ -85,12 +83,10 @@ export const AppShell = ({
   const activeItem = NAVIGATION_ITEMS.find((item) => item.id === activeRoute) ?? NAVIGATION_ITEMS[0]
   const notificationButtonRef = useRef<HTMLButtonElement>(null)
   const wasNotificationsOpen = useRef(false)
-
   useEffect(() => {
     if (wasNotificationsOpen.current && !notificationsOpen) notificationButtonRef.current?.focus()
     wasNotificationsOpen.current = notificationsOpen
   }, [notificationsOpen])
-
   return (
     <div className="app" data-prototype-source="app-shell">
       <aside className="sidebar">

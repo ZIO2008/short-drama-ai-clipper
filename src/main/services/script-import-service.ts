@@ -42,7 +42,12 @@ export const splitScriptByEpisode = (text: string): ScriptEpisodePreview[] => {
 const extractDocxText = (bytes: Uint8Array): string => {
   const document = unzipSync(bytes)['word/document.xml']
   if (!document) return ''
-  return strFromU8(document).replace(/<w:tab\s*\/?\s*>/g, '\t').replace(/<w:br\s*\/?\s*>/g, '\n').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+  return strFromU8(document)
+    .replace(/<\/w:p\s*>/g, '\n')
+    .replace(/<w:tab\s*\/?\s*>/g, '\t')
+    .replace(/<w:br\s*\/?\s*>/g, '\n')
+    .replace(/<[^>]+>/g, ' ')
+    .split('\n').map((line) => line.replace(/[ \t]+/g, ' ').trim()).filter(Boolean).join('\n').trim()
 }
 
 const extractPdfText = async (bytes: Uint8Array): Promise<string> => {
