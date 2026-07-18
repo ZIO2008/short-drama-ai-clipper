@@ -26,7 +26,7 @@ const createWindow = (): void => {
     minHeight: 720,
     backgroundColor: '#28231f',
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
+      preload: join(__dirname, '../preload/index.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true
