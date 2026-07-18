@@ -50,4 +50,4 @@
 - CSS token source: the `:root` block in `short-drama-material-studio.html`.
 - Layout, responsive, focus, drawer, modal, form, tab, filter, media-control and packaging interaction sources: the inline CSS and JavaScript in the same file.
 - Media assets: `Web-Prototype/assets/`; preserve their role and attribution rules from `assets/media-sources.md`.
-- Phase 1 only extracts this contract, token baseline and开发启动页。Full route/component porting begins in the corresponding later DEV-PLAN phases.
+- Phase 1 only extracts this contract, token baseline and开发启动页。Phase 2 freezes the extracted values in `src/renderer/src/styles/tokens.css` and ports the app shell; full domain route/component porting begins in the corresponding later DEV-PLAN phases.

@@ -23,31 +23,7 @@
   --gap-md: 16px;
   --gap-lg: 24px;
   --gap-xl: 32px;
+  --motion-fast: 150ms;
+  --motion-screen: 180ms;
+  --motion-easing: cubic-bezier(.2, 0, 0, 1);
 }
-
-* { box-sizing: border-box; }
-
-html, body, #root { min-width: 100%; min-height: 100%; margin: 0; }
-
-body {
-  background: var(--bg);
-  color: var(--fg);
-  font: 14px/1.5 var(--font-body);
-  text-rendering: optimizeLegibility;
-}
-
-.bootstrap-screen {
-  display: grid;
-  min-height: 100vh;
-  place-content: center;
-  gap: var(--gap-sm);
-  padding: var(--gap-xl);
-  background: var(--bg);
-  border-top: 1px solid var(--border);
-}
-
-.bootstrap-screen h1, .bootstrap-screen p { margin: 0; }
-
-.bootstrap-screen h1 { font: 600 24px/1.25 var(--font-display); }
-
-.bootstrap-kicker { color: var(--accent); font-family: var(--font-mono); font-size: 12px; }
