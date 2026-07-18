@@ -168,6 +168,7 @@ const AppRuntime = (): ReactElement => {
       onCreateTag={async (name) => { await window.desktopApi.createTag(name); loadTags() }}
       onRenameTag={async (id, name) => { await window.desktopApi.renameTag(id, name); loadTags(); loadDramas() }}
       onDeleteTag={async (tag) => { await window.desktopApi.deleteTag(tag.id); loadTags(); loadDramas() }}
+      onSaveSecret={async (value, secretRef) => { await window.desktopApi.saveSecret(value, secretRef) }}
     />
   )
 }

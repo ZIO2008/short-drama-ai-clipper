@@ -6,6 +6,8 @@ import { NAVIGATION_ITEMS, isRouteId, type RouteId } from '../navigation.js'
 import type { DramaDetail, DramaSummary, EpisodeUpdate, TagSummary } from '../../../shared/contracts.js'
 import { DramaLibraryPage } from '../pages/DramaLibraryPage.js'
 import { TagManagementPage } from '../pages/TagManagementPage.js'
+import { TaskCenterPage, type TaskRow } from '../pages/TaskCenterPage.js'
+import { SettingsPage } from '../pages/SettingsPage.js'
 type AppShellProps = {
   activeRoute: RouteId
   appVersion: string | null
@@ -39,6 +41,9 @@ type AppShellProps = {
   onImportScript?: (dramaId: string) => Promise<Array<{ segmentId?: string; episodeNo: number; title: string; text: string }>>
   onLinkSegment?: (segmentId: string, episodeId: string | null) => Promise<void>
   onRelink?: (dramaId: string) => Promise<void>
+  tasks?: TaskRow[]
+  onRetryTask?: (id: string) => void
+  onSaveSecret?: (value: string, secretRef: string) => Promise<void>
   onCreateTag?: (name: string) => Promise<void>
   onRenameTag?: (id: string, name: string) => Promise<void>
   onDeleteTag?: (tag: TagSummary) => Promise<void>
@@ -76,6 +81,9 @@ export const AppShell = ({
   onImportScript = async () => [],
   onLinkSegment = async () => undefined,
   onRelink = async () => undefined,
+  tasks = [],
+  onRetryTask = () => undefined,
+  onSaveSecret = async () => undefined,
   onCreateTag = async () => undefined,
   onRenameTag = async () => undefined,
   onDeleteTag = async () => undefined
@@ -165,6 +173,9 @@ export const AppShell = ({
               onImportScript={onImportScript}
               onLinkSegment={onLinkSegment}
               onRelink={onRelink}
+              tasks={tasks}
+              onRetryTask={onRetryTask}
+              onSaveSecret={onSaveSecret}
               onCreateTag={onCreateTag}
               onRenameTag={onRenameTag}
               onDeleteTag={onDeleteTag}
@@ -216,6 +227,9 @@ type RouteContentProps = {
   onImportScript: (dramaId: string) => Promise<Array<{ segmentId?: string; episodeNo: number; title: string; text: string }>>
   onLinkSegment: (segmentId: string, episodeId: string | null) => Promise<void>
   onRelink: (dramaId: string) => Promise<void>
+  tasks: TaskRow[]
+  onRetryTask: (id: string) => void
+  onSaveSecret: (value: string, secretRef: string) => Promise<void>
   onCreateTag: (name: string) => Promise<void>
   onRenameTag: (id: string, name: string) => Promise<void>
   onDeleteTag: (tag: TagSummary) => Promise<void>
@@ -243,6 +257,9 @@ const RouteContent = ({
   onImportScript,
   onLinkSegment,
   onRelink,
+  tasks,
+  onRetryTask,
+  onSaveSecret,
   onCreateTag,
   onRenameTag,
   onDeleteTag
@@ -250,6 +267,8 @@ const RouteContent = ({
   <section className="screen active" aria-labelledby={`${route}-title`}>
     {route === 'library' && loadState === 'ready' ? <DramaLibraryPage dramas={dramas} loading={dramasLoading} error={dramasError} onRetry={onRetryDramas} onCreate={onCreateDrama} tags={tags} onRename={onRenameDrama} onLoad={onLoadDrama} onDelete={(id, deleteTempFiles = false) => onDeleteDrama(id, deleteTempFiles)} onImport={onImportEpisodes} onAttachTag={onAttachTag} onUpdateEpisode={onUpdateEpisode} onRemoveEpisode={onRemoveEpisode} onImportScript={onImportScript} onLinkSegment={onLinkSegment} onRelink={onRelink} /> : null}
     {route === 'tags' && loadState === 'ready' ? <TagManagementPage tags={tags} onCreate={onCreateTag} onRename={onRenameTag} onDelete={onDeleteTag} /> : null}
+    {route === 'tasks' && loadState === 'ready' ? <TaskCenterPage tasks={tasks} onRetry={onRetryTask} /> : null}
+    {route === 'settings' && loadState === 'ready' ? <SettingsPage onSaveSecret={onSaveSecret} /> : null}
     {route !== 'library' && route !== 'tags' && <>
     <div className="screen-head">
       <div>
