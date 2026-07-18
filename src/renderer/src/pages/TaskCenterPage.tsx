@@ -1,0 +1,4 @@
+import type { ReactElement } from 'react'
+
+export type TaskRow = { id: string; dramaName: string; type: string; status: string; progressCurrent: number; progressTotal: number }
+export const TaskCenterPage = ({ tasks, onRetry }: { tasks: TaskRow[]; onRetry: (id: string) => void }): ReactElement => <section aria-labelledby="tasks-title"><div className="screen-head"><div><h1 id="tasks-title">任务中心</h1><p>汇总所有剧目与生产任务，失败项可单独重试。</p></div></div><div className="card table-wrap"><table><thead><tr><th>剧目</th><th>类型</th><th>状态</th><th>进度</th><th>操作</th></tr></thead><tbody>{tasks.map((task) => <tr key={task.id}><td>{task.dramaName}</td><td>{task.type}</td><td>{task.status}</td><td>{task.progressCurrent}/{task.progressTotal}</td><td>{task.status === 'failed' && <button className="btn" type="button" onClick={() => onRetry(task.id)}>重试失败项</button>}</td></tr>)}</tbody></table>{tasks.length === 0 && <div className="empty">暂无任务</div>}</div></section>
