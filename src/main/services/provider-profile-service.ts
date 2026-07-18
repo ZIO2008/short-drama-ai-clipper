@@ -1,0 +1,6 @@
+import { randomUUID } from 'node:crypto'
+import type Database from 'better-sqlite3'
+import { z } from 'zod'
+
+const profileSchema = z.object({ capability: z.string().trim().min(1), region: z.string().trim().min(1), provider: z.string().trim().min(1), endpoint: z.string().url().nullable().optional(), model: z.string().trim().nullable().optional(), secretRef: z.string().trim().nullable().optional(), timeoutMs: z.number().int().positive().max(600000).nullable().optional() })
+export class ProviderProfileService { constructor(private readonly database: Database.Database) {} save(input: unknown): string { const profile = profileSchema.parse(input); const id = randomUUID(); const now = new Date().toISOString(); this.database.prepare('INSERT INTO provider_profiles (id, capability, region, provider, endpoint, model, secret_ref, timeout_ms, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(id, profile.capability, profile.region, profile.provider, profile.endpoint ?? null, profile.model ?? null, profile.secretRef ?? null, profile.timeoutMs ?? null, now, now); return id } list(): unknown[] { return this.database.prepare('SELECT id, capability, region, provider, endpoint, model, secret_ref AS secretRef, timeout_ms AS timeoutMs FROM provider_profiles ORDER BY updated_at DESC').all() } }

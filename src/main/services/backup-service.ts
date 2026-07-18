@@ -1,0 +1,3 @@
+import { copyFile, mkdir, readdir, rm } from 'node:fs/promises'
+import { join } from 'node:path'
+export class BackupService { async create(databasePath: string, backupDirectory: string, reason: string): Promise<string> { await mkdir(backupDirectory, { recursive: true }); const destination = join(backupDirectory, `material-studio-${Date.now()}-${reason}.sqlite`); await copyFile(databasePath, destination); await this.rotate(backupDirectory, 7); return destination } async rotate(directory: string, keep: number): Promise<void> { const files = (await readdir(directory)).filter((file) => file.endsWith('.sqlite')).sort().reverse(); for (const file of files.slice(keep)) await rm(join(directory, file), { force: true }) } }
