@@ -51,5 +51,6 @@ const extractDocxText = (bytes: Uint8Array): string => {
 }
 
 const extractPdfText = async (bytes: Uint8Array): Promise<string> => {
-  try { const parser = new PDFParse({ data: bytes }); const result = await parser.getText(); await parser.destroy(); return result.text.trim() } catch { return '' }
+  const parser = new PDFParse({ data: bytes })
+  try { const result = await parser.getText(); return result.text.trim() } catch { return '' } finally { await parser.destroy() }
 }
