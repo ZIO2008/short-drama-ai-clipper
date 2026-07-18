@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactElement } from 'react'
 import type { NotificationItem, NotificationSeverity, NotificationSnapshot } from '../../../shared/contracts.js'
+import { UiIcon } from './UiIcon.js'
 
 type NotificationDrawerProps = {
   open: boolean
@@ -74,7 +75,7 @@ export const NotificationDrawer = ({
           <h2 id="drawer-title">通知中心</h2>
           <div className="meta">{snapshot ? `${snapshot.unreadCount} 条未读` : '读取中'}</div>
         </div>
-        <button className="btn icon-btn" type="button" aria-label="关闭通知中心" onClick={onClose} ref={closeButtonRef}>×</button>
+        <button className="btn icon-btn" type="button" aria-label="关闭通知中心" onClick={onClose} ref={closeButtonRef}><UiIcon name="close" /></button>
       </div>
       <div className="drawer-body">
         <div className="toolbar drawer-toolbar">

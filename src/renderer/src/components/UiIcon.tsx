@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react'
 
-export type IconName = 'library' | 'tasks' | 'tags' | 'settings' | 'bell'
+export type IconName = 'library' | 'tasks' | 'tags' | 'settings' | 'bell' | 'close'
 
 export const UiIcon = ({ name }: { name: IconName }): ReactElement => (
   <svg className="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -44,5 +44,7 @@ const getPaths = (name: IconName): ReactElement => {
           <path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" />
         </>
       )
+    case 'close':
+      return <path d="m7 7 10 10M17 7 7 17" />
   }
 }
