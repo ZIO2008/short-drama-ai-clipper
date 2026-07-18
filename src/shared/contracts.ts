@@ -58,6 +58,7 @@ export type EpisodeUpdate = { episodeNo: number | null; sortOrder: number; sourc
 export type TagSummary = { id: string; name: string; usageCount: number }
 export type ScriptAssetSummary = { id: string; sourcePath: string; format: string; linkStatus: string; episodeId: string | null; extractedText: string | null }
 export type AssetHealth = { missing: string[]; unreadable: string[]; unsupported: string[]; duplicateEpisodeNumbers: number[]; missingEpisodeNumbers: number[]; issueCount: number }
+export type ClipCandidate = { id: string; episodeId: string; startSeconds: number; endSeconds: number; status: string; reason: string | null }
 
 export type DesktopApi = {
   getAppHealth: () => Promise<AppHealth>
@@ -90,6 +91,9 @@ export type DesktopApi = {
   linkScriptSegment: (segmentId: string, episodeId: string | null) => Promise<void>
   inspectAssetHealth: (dramaId: string) => Promise<AssetHealth>
   relinkEpisodes: (dramaId: string, paths: string[]) => Promise<{ relinked: number; unresolved: string[] }>
+  createClipCandidate: (dramaId: string, episodeId: string, startSeconds: number, endSeconds: number) => Promise<ClipCandidate>
+  confirmClipCandidate: (candidateId: string) => Promise<ClipCandidate>
+  exportClipCandidate: (candidateId: string, outputDirectory: string) => Promise<{ candidate: ClipCandidate; outputPath: string }>
 }
 
 declare global {

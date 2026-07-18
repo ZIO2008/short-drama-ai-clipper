@@ -32,6 +32,9 @@ const desktopApi: DesktopApi = {
   ,linkScriptSegment: (segmentId, episodeId) => ipcRenderer.invoke('scripts:link-segment', segmentId, episodeId)
   ,inspectAssetHealth: (dramaId) => ipcRenderer.invoke('assets:health', dramaId)
   ,relinkEpisodes: (dramaId, paths) => ipcRenderer.invoke('assets:relink', dramaId, paths)
+  ,createClipCandidate: (dramaId, episodeId, startSeconds, endSeconds) => ipcRenderer.invoke('clips:create-candidate', dramaId, episodeId, startSeconds, endSeconds)
+  ,confirmClipCandidate: (candidateId) => ipcRenderer.invoke('clips:confirm', candidateId)
+  ,exportClipCandidate: (candidateId, outputDirectory) => ipcRenderer.invoke('clips:export', candidateId, outputDirectory)
 }
 
 contextBridge.exposeInMainWorld('desktopApi', desktopApi)

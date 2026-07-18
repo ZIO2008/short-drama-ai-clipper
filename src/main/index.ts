@@ -9,6 +9,7 @@ import { TagService } from './services/tag-service.js'
 import { ScriptAssetService } from './services/script-asset-service.js'
 import { AssetHealthService } from './services/asset-health-service.js'
 import { RelinkService } from './services/relink-service.js'
+import { OriginalClipService } from './services/original-clip-service.js'
 import type { AppHealth } from '../shared/contracts.js'
 
 const APP_ID = 'local.shortdrama.materialstudio'
@@ -27,6 +28,7 @@ let tagService: TagService | null = null
 let scriptAssetService: ScriptAssetService | null = null
 let assetHealthService: AssetHealthService | null = null
 let relinkService: RelinkService | null = null
+let originalClipService: OriginalClipService | null = null
 
 const createWindow = (): void => {
   mainWindow = new BrowserWindow({
@@ -92,6 +94,9 @@ const registerIpc = (): void => {
   ipcMain.handle('scripts:link-segment', (_event, segmentId: unknown, episodeId: unknown) => requireScriptAssetService().linkSegment(segmentId, episodeId))
   ipcMain.handle('assets:health', (_event, dramaId: unknown) => requireAssetHealthService().inspect(String(dramaId)))
   ipcMain.handle('assets:relink', (_event, dramaId: unknown, paths: unknown) => requireRelinkService().relink(String(dramaId), paths as string[]))
+  ipcMain.handle('clips:create-candidate', (_event, dramaId: unknown, episodeId: unknown, start: unknown, end: unknown) => requireOriginalClipService().createCandidate(dramaId, episodeId, { startSeconds: Number(start), endSeconds: Number(end) }))
+  ipcMain.handle('clips:confirm', (_event, candidateId: unknown) => requireOriginalClipService().confirmCandidate(candidateId))
+  ipcMain.handle('clips:export', (_event, candidateId: unknown, outputDirectory: unknown) => requireOriginalClipService().exportCandidate(candidateId, outputDirectory))
   ipcMain.handle('scripts:choose-file', async () => { const options: OpenDialogOptions = { properties: ['openFile'], filters: [{ name: 'Scripts', extensions: ['txt', 'docx', 'pdf'] }] }; const result = mainWindow ? await dialog.showOpenDialog(mainWindow, options) : await dialog.showOpenDialog(options); return result.canceled ? null : result.filePaths[0] ?? null })
 }
 
@@ -124,6 +129,7 @@ const requireScriptAssetService = (): ScriptAssetService => {
 }
 const requireAssetHealthService = (): AssetHealthService => { if (!assetHealthService) throw new Error('Local database is not initialized'); return assetHealthService }
 const requireRelinkService = (): RelinkService => { if (!relinkService) throw new Error('Local database is not initialized'); return relinkService }
+const requireOriginalClipService = (): OriginalClipService => { if (!originalClipService) throw new Error('Local database is not initialized'); return originalClipService }
 
 app.whenReady().then(() => {
   databasePath = join(app.getPath('userData'), 'data', 'material-studio.sqlite')
@@ -136,6 +142,7 @@ app.whenReady().then(() => {
     scriptAssetService = new ScriptAssetService(database)
     assetHealthService = new AssetHealthService(database)
     relinkService = new RelinkService(database, dramaService)
+    originalClipService = new OriginalClipService(database)
   } catch (error) {
     startupErrorCode = 'DATABASE_UNAVAILABLE'
     console.error('Database initialization failed', error)
