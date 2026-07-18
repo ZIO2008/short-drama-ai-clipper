@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactElement } from 'react'
-import type { AppHealth, DesktopApi, NotificationSnapshot } from '../../shared/contracts.js'
+import type { AppHealth, DesktopApi, DramaSummary, EpisodeUpdate, NotificationSnapshot, TagSummary } from '../../shared/contracts.js'
 import { AppErrorBoundary } from './components/AppErrorBoundary.js'
 import { AppShell } from './layout/AppShell.js'
 import { getInitialRoute, type RouteId } from './navigation.js'
@@ -24,6 +24,17 @@ const AppRuntime = (): ReactElement => {
   const [notificationLoadState, setNotificationLoadState] = useState<NotificationLoadState>('idle')
   const [notificationError, setNotificationError] = useState<string | null>(null)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [dramas, setDramas] = useState<DramaSummary[] | null>(null)
+  const [dramasLoading, setDramasLoading] = useState(false)
+  const [dramasError, setDramasError] = useState<string | null>(null)
+  const [tags, setTags] = useState<TagSummary[]>([])
+
+  const loadDramas = (): void => {
+    if (!window.desktopApi) return
+    setDramasLoading(true); setDramasError(null)
+    window.desktopApi.listDramas().then((items) => setDramas(items)).catch(() => setDramasError('剧目库读取失败，请重试。')).finally(() => setDramasLoading(false))
+  }
+  const loadTags = (): void => { if (window.desktopApi) window.desktopApi.listTags().then(setTags).catch(() => setTags([])) }
 
   useEffect(() => {
     let active = true
@@ -46,6 +57,8 @@ const AppRuntime = (): ReactElement => {
           return
         }
         setLoadState({ kind: 'ready', health })
+        loadDramas()
+        loadTags()
       })
       .catch(() => {
         if (active) {
@@ -136,6 +149,22 @@ const AppRuntime = (): ReactElement => {
       onMarkAllNotificationsRead={() => updateNotifications((api) => api.markAllNotificationsRead())}
       onClearReadNotifications={() => updateNotifications((api) => api.clearReadNotifications())}
       onResolveNotification={(id) => updateNotifications((api) => api.resolveNotification(id))}
+      dramas={dramas}
+      dramasLoading={dramasLoading}
+      dramasError={dramasError}
+      onRetryDramas={loadDramas}
+      onCreateDrama={async (name) => { await window.desktopApi.createDrama(name); loadDramas() }}
+      tags={tags}
+      onRenameDrama={async (id, name) => { await window.desktopApi.updateDrama(id, name); loadDramas() }}
+      onLoadDrama={(id) => window.desktopApi.getDrama(id)}
+      onDeleteDrama={async (id, deleteTempFiles) => { await window.desktopApi.deleteDrama(id, deleteTempFiles); loadDramas() }}
+      onImportEpisodes={async (id) => { const paths = await window.desktopApi.chooseVideoFiles(); if (paths.length > 0) await window.desktopApi.importEpisodes(id, paths); loadDramas() }}
+      onAttachTag={async (dramaId, tagId) => { await window.desktopApi.attachTag(dramaId, tagId); loadDramas(); loadTags() }}
+      onUpdateEpisode={(dramaId, episodeId, update: EpisodeUpdate) => window.desktopApi.updateEpisode(dramaId, episodeId, update)}
+      onRemoveEpisode={(dramaId, episodeId) => window.desktopApi.removeEpisode(dramaId, episodeId)}
+      onCreateTag={async (name) => { await window.desktopApi.createTag(name); loadTags() }}
+      onRenameTag={async (id, name) => { await window.desktopApi.renameTag(id, name); loadTags(); loadDramas() }}
+      onDeleteTag={async (tag) => { await window.desktopApi.deleteTag(tag.id); loadTags(); loadDramas() }}
     />
   )
 }

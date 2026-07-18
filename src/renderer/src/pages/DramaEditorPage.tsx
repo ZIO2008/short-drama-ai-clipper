@@ -1,0 +1,35 @@
+import { useEffect, useRef, useState, type ReactElement } from 'react'
+import type { DramaDetail, DramaSummary, EpisodeAsset, EpisodeUpdate, TagSummary } from '../../../shared/contracts.js'
+
+type Props = {
+  drama: DramaSummary; tags: TagSummary[]; onClose: () => void; onLoad: () => Promise<DramaDetail>
+  onRename: (name: string) => Promise<void>; onImport: () => Promise<void>; onAttachTag: (tagId: string) => Promise<void>
+  onUpdateEpisode: (episodeId: string, update: EpisodeUpdate) => Promise<DramaDetail>; onRemoveEpisode: (episodeId: string) => Promise<DramaDetail>
+  onDelete: (deleteTempFiles: boolean) => Promise<void>
+}
+
+export const DramaEditorPage = (props: Props): ReactElement => {
+  const [name, setName] = useState(props.drama.name)
+  const [detail, setDetail] = useState<DramaDetail | null>(null)
+  const [busy, setBusy] = useState(false)
+  const [deleteTempFiles, setDeleteTempFiles] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const closeRef = useRef<HTMLButtonElement>(null)
+  const modalRef = useRef<HTMLElement>(null)
+  useEffect(() => { void props.onLoad().then(setDetail).catch(() => setError('剧集读取失败')); closeRef.current?.focus() }, [])
+  useEffect(() => { const close = (event: KeyboardEvent): void => { if (event.key === 'Escape') props.onClose(); if (event.key === 'Tab') { const focusable = modalRef.current?.querySelectorAll<HTMLElement>('button,input,select,[tabindex="0"]'); if (!focusable?.length) return; const first = focusable[0]; const last = focusable[focusable.length - 1]; if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() } else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() } } }; window.addEventListener('keydown', close); return () => window.removeEventListener('keydown', close) }, [props.onClose])
+  const run = async (operation: () => Promise<void>): Promise<void> => { setBusy(true); setError(null); try { await operation() } catch (cause) { setError(cause instanceof Error ? cause.message : '操作失败') } finally { setBusy(false) } }
+  const updateEpisode = async (episode: EpisodeAsset, update: Partial<EpisodeUpdate>): Promise<void> => {
+    try { setDetail(await props.onUpdateEpisode(episode.id, { episodeNo: episode.episodeNo, sortOrder: episode.sortOrder, sourcePath: episode.sourcePath, ...update })); setError(null) }
+    catch { setError('集号重复或路径无效，请修正高亮行。') }
+  }
+  return <div className="modal-backdrop"><section ref={modalRef} className="modal" role="dialog" aria-modal="true" aria-labelledby="drama-editor-title">
+    <div className="screen-head"><h2 id="drama-editor-title">编辑剧目</h2><button ref={closeRef} className="btn" type="button" onClick={props.onClose}>关闭</button></div>
+    <div className="field"><label htmlFor="edit-drama-name">剧名</label><input className="input" id="edit-drama-name" value={name} onChange={(event) => setName(event.target.value)} /></div>
+    <div className="toolbar"><button className="btn btn-primary" disabled={busy} type="button" onClick={() => void run(() => props.onRename(name))}>保存名称</button><button className="btn" disabled={busy} type="button" onClick={() => void run(async () => { await props.onImport(); setDetail(await props.onLoad()) })}>选择并导入视频</button></div>
+    <div className="field"><label htmlFor="editor-tag">关联标签</label><select className="select" id="editor-tag" defaultValue="" onChange={(event) => { if (event.target.value) void run(() => props.onAttachTag(event.target.value)) }}><option value="">选择标签</option>{props.tags.map((tag) => <option key={tag.id} value={tag.id}>{tag.name}</option>)}</select></div>
+    <div className="table-wrap"><table><thead><tr><th>集号</th><th>顺序</th><th>原路径</th><th>状态</th><th>操作</th></tr></thead><tbody>{detail?.episodes.map((episode) => <tr key={episode.id}><td><input className="input" aria-label={`${episode.sourcePath} 集号`} type="number" min="1" value={episode.episodeNo ?? ''} onChange={(event) => void updateEpisode(episode, { episodeNo: event.target.value ? Number(event.target.value) : null })} /></td><td><input className="input" aria-label={`${episode.sourcePath} 顺序`} type="number" min="0" value={episode.sortOrder} onChange={(event) => void updateEpisode(episode, { sortOrder: Number(event.target.value) })} /></td><td><input className="input" aria-label={`${episode.sourcePath} 路径`} value={episode.sourcePath} onChange={(event) => void updateEpisode(episode, { sourcePath: event.target.value })} /></td><td>{episode.status}</td><td><button className="btn" type="button" onClick={() => void props.onRemoveEpisode(episode.id).then(setDetail)}>移除</button></td></tr>)}</tbody></table></div>
+    {error && <p role="alert">{error}</p>}
+    <div className="card danger-zone"><p>删除应用记录不会删除原片、剧本源文件或导出成片。当前登记临时缓存：0 B。</p><label><input type="checkbox" checked={deleteTempFiles} onChange={(event) => setDeleteTempFiles(event.target.checked)} /> 同时删除本应用生成的临时文件</label><button className="btn" disabled={busy} type="button" onClick={() => { if (window.confirm('确认删除剧目？原片不会被删除。')) void run(() => props.onDelete(deleteTempFiles)) }}>删除剧目</button></div>
+  </section></div>
+}

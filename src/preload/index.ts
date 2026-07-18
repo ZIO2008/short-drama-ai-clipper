@@ -10,7 +10,21 @@ const desktopApi: DesktopApi = {
   markNotificationRead: (notificationId) => ipcRenderer.invoke('notifications:mark-read', notificationId),
   markAllNotificationsRead: () => ipcRenderer.invoke('notifications:mark-all-read'),
   clearReadNotifications: () => ipcRenderer.invoke('notifications:clear-read'),
-  resolveNotification: (notificationId) => ipcRenderer.invoke('notifications:resolve', notificationId)
+  resolveNotification: (notificationId) => ipcRenderer.invoke('notifications:resolve', notificationId),
+  listDramas: () => ipcRenderer.invoke('dramas:list'),
+  getDrama: (dramaId) => ipcRenderer.invoke('dramas:get', dramaId),
+  createDrama: (name) => ipcRenderer.invoke('dramas:create', name),
+  updateDrama: (dramaId, name) => ipcRenderer.invoke('dramas:update', dramaId, name),
+  deleteDrama: (dramaId, deleteTempFiles) => ipcRenderer.invoke('dramas:delete', dramaId, deleteTempFiles),
+  importEpisodes: (dramaId, paths) => ipcRenderer.invoke('episodes:import', dramaId, paths),
+  chooseVideoFiles: () => ipcRenderer.invoke('episodes:choose-files'),
+  updateEpisode: (dramaId, episodeId, update) => ipcRenderer.invoke('episodes:update', dramaId, episodeId, update),
+  removeEpisode: (dramaId, episodeId) => ipcRenderer.invoke('episodes:remove', dramaId, episodeId),
+  listTags: () => ipcRenderer.invoke('tags:list'),
+  createTag: (name) => ipcRenderer.invoke('tags:create', name),
+  renameTag: (tagId, name) => ipcRenderer.invoke('tags:rename', tagId, name),
+  deleteTag: (tagId) => ipcRenderer.invoke('tags:delete', tagId),
+  attachTag: (dramaId, tagId) => ipcRenderer.invoke('tags:attach', dramaId, tagId)
 }
 
 contextBridge.exposeInMainWorld('desktopApi', desktopApi)

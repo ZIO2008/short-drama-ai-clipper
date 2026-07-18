@@ -1,9 +1,11 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, type OpenDialogOptions } from 'electron'
 import { join } from 'node:path'
 import { openDatabase } from './db/migrate.js'
 import { canStoreSecrets } from './security/secret-store.js'
 import { SecretService } from './security/secret-service.js'
 import { NotificationService } from './services/notification-service.js'
+import { DramaService } from './services/drama-service.js'
+import { TagService } from './services/tag-service.js'
 import type { AppHealth } from '../shared/contracts.js'
 
 const APP_ID = 'local.shortdrama.materialstudio'
@@ -17,6 +19,8 @@ let databasePath = ''
 let startupErrorCode: AppHealth['initializationErrorCode'] = null
 let secretService: SecretService | null = null
 let notificationService: NotificationService | null = null
+let dramaService: DramaService | null = null
+let tagService: TagService | null = null
 
 const createWindow = (): void => {
   mainWindow = new BrowserWindow({
@@ -58,6 +62,24 @@ const registerIpc = (): void => {
   ipcMain.handle('notifications:mark-all-read', () => requireNotificationService().markAllRead())
   ipcMain.handle('notifications:clear-read', () => requireNotificationService().clearRead())
   ipcMain.handle('notifications:resolve', (_event, notificationId: unknown) => requireNotificationService().resolve(notificationId))
+  ipcMain.handle('dramas:list', () => requireDramaService().list())
+  ipcMain.handle('dramas:get', (_event, dramaId: unknown) => requireDramaService().get(dramaId))
+  ipcMain.handle('dramas:create', (_event, name: unknown) => requireDramaService().create(name))
+  ipcMain.handle('dramas:update', (_event, dramaId: unknown, name: unknown) => requireDramaService().update(dramaId, name))
+  ipcMain.handle('dramas:delete', (_event, dramaId: unknown, deleteTempFiles: unknown) => requireDramaService().delete(dramaId, deleteTempFiles))
+  ipcMain.handle('episodes:import', (_event, dramaId: unknown, paths: unknown) => requireDramaService().importEpisodes(dramaId, paths))
+  ipcMain.handle('episodes:update', (_event, dramaId: unknown, episodeId: unknown, update: unknown) => requireDramaService().updateEpisode(dramaId, episodeId, update))
+  ipcMain.handle('episodes:remove', (_event, dramaId: unknown, episodeId: unknown) => requireDramaService().removeEpisode(dramaId, episodeId))
+  ipcMain.handle('episodes:choose-files', async () => {
+    const options: OpenDialogOptions = { properties: ['openFile', 'multiSelections'], filters: [{ name: 'Video files', extensions: ['mp4', 'mov', 'mkv', 'avi', 'webm'] }] }
+    const result = mainWindow ? await dialog.showOpenDialog(mainWindow, options) : await dialog.showOpenDialog(options)
+    return result.canceled ? [] : result.filePaths
+  })
+  ipcMain.handle('tags:list', () => requireTagService().list())
+  ipcMain.handle('tags:create', (_event, name: unknown) => requireTagService().create(name))
+  ipcMain.handle('tags:rename', (_event, tagId: unknown, name: unknown) => requireTagService().rename(tagId, name))
+  ipcMain.handle('tags:delete', (_event, tagId: unknown) => requireTagService().delete(tagId))
+  ipcMain.handle('tags:attach', (_event, dramaId: unknown, tagId: unknown) => requireTagService().attach(dramaId, tagId))
 }
 
 const requireNotificationService = (): NotificationService => {
@@ -75,12 +97,23 @@ const requireSecretService = (): SecretService => {
   return secretService
 }
 
+const requireDramaService = (): DramaService => {
+  if (!dramaService) throw new Error('Local database is not initialized')
+  return dramaService
+}
+const requireTagService = (): TagService => {
+  if (!tagService) throw new Error('Local database is not initialized')
+  return tagService
+}
+
 app.whenReady().then(() => {
   databasePath = join(app.getPath('userData'), 'data', 'material-studio.sqlite')
   try {
     const database = openDatabase(databasePath)
     secretService = new SecretService(database)
     notificationService = new NotificationService(database)
+    dramaService = new DramaService(database)
+    tagService = new TagService(database)
   } catch (error) {
     startupErrorCode = 'DATABASE_UNAVAILABLE'
     console.error('Database initialization failed', error)

@@ -3,6 +3,9 @@ import type { NotificationSnapshot } from '../../../shared/contracts.js'
 import { NotificationDrawer } from '../components/NotificationDrawer.js'
 import { UiIcon } from '../components/UiIcon.js'
 import { NAVIGATION_ITEMS, isRouteId, type RouteId } from '../navigation.js'
+import type { DramaDetail, DramaSummary, EpisodeUpdate, TagSummary } from '../../../shared/contracts.js'
+import { DramaLibraryPage } from '../pages/DramaLibraryPage.js'
+import { TagManagementPage } from '../pages/TagManagementPage.js'
 
 type AppShellProps = {
   activeRoute: RouteId
@@ -21,6 +24,22 @@ type AppShellProps = {
   onMarkAllNotificationsRead: () => void
   onClearReadNotifications: () => void
   onResolveNotification: (notificationId: string) => void
+  dramas?: DramaSummary[] | null
+  dramasLoading?: boolean
+  dramasError?: string | null
+  onRetryDramas?: () => void
+  onCreateDrama?: (name: string) => Promise<void>
+  tags?: TagSummary[]
+  onRenameDrama?: (id: string, name: string) => Promise<void>
+  onLoadDrama?: (id: string) => Promise<DramaDetail>
+  onDeleteDrama?: (id: string, deleteTempFiles: boolean) => Promise<void>
+  onImportEpisodes?: (id: string) => Promise<void>
+  onAttachTag?: (dramaId: string, tagId: string) => Promise<void>
+  onUpdateEpisode?: (dramaId: string, episodeId: string, update: EpisodeUpdate) => Promise<DramaDetail>
+  onRemoveEpisode?: (dramaId: string, episodeId: string) => Promise<DramaDetail>
+  onCreateTag?: (name: string) => Promise<void>
+  onRenameTag?: (id: string, name: string) => Promise<void>
+  onDeleteTag?: (tag: TagSummary) => Promise<void>
 }
 
 export const AppShell = ({
@@ -39,7 +58,23 @@ export const AppShell = ({
   onMarkNotificationRead,
   onMarkAllNotificationsRead,
   onClearReadNotifications,
-  onResolveNotification
+  onResolveNotification,
+  dramas = null,
+  dramasLoading = false,
+  dramasError = null,
+  onRetryDramas = () => undefined,
+  onCreateDrama = async () => undefined,
+  tags = [],
+  onRenameDrama = async () => undefined,
+  onLoadDrama = async () => { throw new Error('Not available') },
+  onDeleteDrama = async () => undefined,
+  onImportEpisodes = async () => undefined,
+  onAttachTag = async () => undefined,
+  onUpdateEpisode = async () => { throw new Error('Not available') },
+  onRemoveEpisode = async () => { throw new Error('Not available') },
+  onCreateTag = async () => undefined,
+  onRenameTag = async () => undefined,
+  onDeleteTag = async () => undefined
 }: AppShellProps): ReactElement => {
   const activeItem = NAVIGATION_ITEMS.find((item) => item.id === activeRoute) ?? NAVIGATION_ITEMS[0]
   const notificationButtonRef = useRef<HTMLButtonElement>(null)
@@ -106,12 +141,28 @@ export const AppShell = ({
           </div>
         </header>
         <main className="content" id="main-content">
-          <RouteContent
-            route={activeRoute}
+            <RouteContent
+              route={activeRoute}
             title={activeItem.label}
             description={activeItem.description}
             loadState={loadState}
-            errorMessage={errorMessage}
+              errorMessage={errorMessage}
+              dramas={dramas}
+              dramasLoading={dramasLoading}
+              dramasError={dramasError}
+              onRetryDramas={onRetryDramas}
+              onCreateDrama={onCreateDrama}
+              tags={tags}
+              onRenameDrama={onRenameDrama}
+              onLoadDrama={onLoadDrama}
+              onDeleteDrama={onDeleteDrama}
+              onImportEpisodes={onImportEpisodes}
+              onAttachTag={onAttachTag}
+              onUpdateEpisode={onUpdateEpisode}
+              onRemoveEpisode={onRemoveEpisode}
+              onCreateTag={onCreateTag}
+              onRenameTag={onRenameTag}
+              onDeleteTag={onDeleteTag}
           />
         </main>
       </div>
@@ -144,6 +195,22 @@ type RouteContentProps = {
   description: string
   loadState: AppShellProps['loadState']
   errorMessage: string | null
+  dramas: DramaSummary[] | null
+  dramasLoading: boolean
+  dramasError: string | null
+  onRetryDramas: () => void
+  onCreateDrama: (name: string) => Promise<void>
+  tags: TagSummary[]
+  onRenameDrama: (id: string, name: string) => Promise<void>
+  onLoadDrama: (id: string) => Promise<DramaDetail>
+  onDeleteDrama: (id: string, deleteTempFiles: boolean) => Promise<void>
+  onImportEpisodes: (id: string) => Promise<void>
+  onAttachTag: (dramaId: string, tagId: string) => Promise<void>
+  onUpdateEpisode: (dramaId: string, episodeId: string, update: EpisodeUpdate) => Promise<DramaDetail>
+  onRemoveEpisode: (dramaId: string, episodeId: string) => Promise<DramaDetail>
+  onCreateTag: (name: string) => Promise<void>
+  onRenameTag: (id: string, name: string) => Promise<void>
+  onDeleteTag: (tag: TagSummary) => Promise<void>
 }
 
 const RouteContent = ({
@@ -151,9 +218,28 @@ const RouteContent = ({
   title,
   description,
   loadState,
-  errorMessage
+  errorMessage,
+  dramas,
+  dramasLoading,
+  dramasError,
+  onRetryDramas,
+  onCreateDrama,
+  tags,
+  onRenameDrama,
+  onLoadDrama,
+  onDeleteDrama,
+  onImportEpisodes,
+  onAttachTag,
+  onUpdateEpisode,
+  onRemoveEpisode,
+  onCreateTag,
+  onRenameTag,
+  onDeleteTag
 }: RouteContentProps): ReactElement => (
   <section className="screen active" aria-labelledby={`${route}-title`}>
+    {route === 'library' && loadState === 'ready' ? <DramaLibraryPage dramas={dramas} loading={dramasLoading} error={dramasError} onRetry={onRetryDramas} onCreate={onCreateDrama} tags={tags} onRename={onRenameDrama} onLoad={onLoadDrama} onDelete={(id, deleteTempFiles = false) => onDeleteDrama(id, deleteTempFiles)} onImport={onImportEpisodes} onAttachTag={onAttachTag} onUpdateEpisode={onUpdateEpisode} onRemoveEpisode={onRemoveEpisode} /> : null}
+    {route === 'tags' && loadState === 'ready' ? <TagManagementPage tags={tags} onCreate={onCreateTag} onRename={onRenameTag} onDelete={onDeleteTag} /> : null}
+    {route !== 'library' && route !== 'tags' && <>
     <div className="screen-head">
       <div>
         <h1 id={`${route}-title`} tabIndex={-1}>{title}</h1>
@@ -162,7 +248,7 @@ const RouteContent = ({
     </div>
     {loadState === 'loading' && <LoadingState title={title} />}
     {loadState === 'error' && <ErrorState message={errorMessage} />}
-    {loadState === 'ready' && <EmptyState route={route} />}
+    {loadState === 'ready' && <EmptyState route={route} />}</>}
   </section>
 )
 
