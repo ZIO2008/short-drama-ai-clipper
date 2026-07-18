@@ -2,3 +2,4 @@ allowBuilds:
   better-sqlite3: true
   electron-winstaller: false
   esbuild: true
+  ffmpeg-static: true
