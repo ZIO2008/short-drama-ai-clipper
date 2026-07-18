@@ -1,6 +1,8 @@
-import type { ReactElement } from 'react'
+import { useEffect, useRef, type ReactElement } from 'react'
+import type { NotificationSnapshot } from '../../../shared/contracts.js'
+import { NotificationDrawer } from '../components/NotificationDrawer.js'
 import { UiIcon } from '../components/UiIcon.js'
-import { NAVIGATION_ITEMS, type RouteId } from '../navigation.js'
+import { NAVIGATION_ITEMS, isRouteId, type RouteId } from '../navigation.js'
 
 type AppShellProps = {
   activeRoute: RouteId
@@ -8,6 +10,17 @@ type AppShellProps = {
   loadState: 'loading' | 'ready' | 'error'
   errorMessage: string | null
   onNavigate: (route: RouteId) => void
+  notificationSnapshot: NotificationSnapshot | null
+  notificationLoadState: 'idle' | 'loading' | 'ready' | 'error'
+  notificationError: string | null
+  notificationsOpen: boolean
+  onOpenNotifications: () => void
+  onCloseNotifications: () => void
+  onRetryNotifications: () => void
+  onMarkNotificationRead: (notificationId: string) => void
+  onMarkAllNotificationsRead: () => void
+  onClearReadNotifications: () => void
+  onResolveNotification: (notificationId: string) => void
 }
 
 export const AppShell = ({
@@ -15,9 +28,27 @@ export const AppShell = ({
   appVersion,
   loadState,
   errorMessage,
-  onNavigate
+  onNavigate,
+  notificationSnapshot,
+  notificationLoadState,
+  notificationError,
+  notificationsOpen,
+  onOpenNotifications,
+  onCloseNotifications,
+  onRetryNotifications,
+  onMarkNotificationRead,
+  onMarkAllNotificationsRead,
+  onClearReadNotifications,
+  onResolveNotification
 }: AppShellProps): ReactElement => {
   const activeItem = NAVIGATION_ITEMS.find((item) => item.id === activeRoute) ?? NAVIGATION_ITEMS[0]
+  const notificationButtonRef = useRef<HTMLButtonElement>(null)
+  const wasNotificationsOpen = useRef(false)
+
+  useEffect(() => {
+    if (wasNotificationsOpen.current && !notificationsOpen) notificationButtonRef.current?.focus()
+    wasNotificationsOpen.current = notificationsOpen
+  }, [notificationsOpen])
 
   return (
     <div className="app" data-prototype-source="app-shell">
@@ -59,10 +90,18 @@ export const AppShell = ({
               className="btn icon-btn"
               type="button"
               aria-label="打开通知中心"
-              title="通知中心将在通知抽屉接入后启用"
-              disabled
+              title={notificationLoadState === 'error' ? '通知暂时不可用' : '通知中心'}
+              aria-haspopup="dialog"
+              aria-expanded={notificationsOpen}
+              onClick={onOpenNotifications}
+              ref={notificationButtonRef}
             >
               <UiIcon name="bell" />
+              {notificationSnapshot && notificationSnapshot.unreadCount > 0 && (
+                <span className="count" aria-label={`${notificationSnapshot.unreadCount} 条未读通知`}>
+                  {notificationSnapshot.unreadCount > 99 ? '99+' : notificationSnapshot.unreadCount}
+                </span>
+              )}
             </button>
           </div>
         </header>
@@ -76,6 +115,25 @@ export const AppShell = ({
           />
         </main>
       </div>
+      <NotificationDrawer
+        open={notificationsOpen}
+        snapshot={notificationSnapshot}
+        loadState={notificationLoadState}
+        errorMessage={notificationError}
+        onClose={onCloseNotifications}
+        onRetry={onRetryNotifications}
+        onMarkRead={onMarkNotificationRead}
+        onMarkAllRead={onMarkAllNotificationsRead}
+        onClearRead={onClearReadNotifications}
+        onResolve={onResolveNotification}
+        onOpenTarget={(target) => {
+          if (isRouteId(target)) {
+            onNavigate(target)
+            return true
+          }
+          return false
+        }}
+      />
     </div>
   )
 }

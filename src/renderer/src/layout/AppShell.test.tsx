@@ -12,6 +12,17 @@ describe('AppShell', () => {
         loadState="ready"
         errorMessage={null}
         onNavigate={vi.fn()}
+        notificationSnapshot={null}
+        notificationLoadState="ready"
+        notificationError={null}
+        notificationsOpen={false}
+        onOpenNotifications={vi.fn()}
+        onCloseNotifications={vi.fn()}
+        onRetryNotifications={vi.fn()}
+        onMarkNotificationRead={vi.fn()}
+        onMarkAllNotificationsRead={vi.fn()}
+        onClearReadNotifications={vi.fn()}
+        onResolveNotification={vi.fn()}
       />
     )
 

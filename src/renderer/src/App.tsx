@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactElement } from 'react'
-import type { AppHealth } from '../../shared/contracts.js'
+import type { AppHealth, DesktopApi, NotificationSnapshot } from '../../shared/contracts.js'
 import { AppErrorBoundary } from './components/AppErrorBoundary.js'
 import { AppShell } from './layout/AppShell.js'
 import { getInitialRoute, type RouteId } from './navigation.js'
@@ -8,6 +8,8 @@ type LoadState =
   | { kind: 'loading' }
   | { kind: 'ready'; health: AppHealth }
   | { kind: 'error'; message: string }
+
+type NotificationLoadState = 'idle' | 'loading' | 'ready' | 'error'
 
 export const App = (): ReactElement => (
   <AppErrorBoundary>
@@ -18,6 +20,10 @@ export const App = (): ReactElement => (
 const AppRuntime = (): ReactElement => {
   const [activeRoute, setActiveRoute] = useState<RouteId>(getInitialRoute)
   const [loadState, setLoadState] = useState<LoadState>({ kind: 'loading' })
+  const [notificationSnapshot, setNotificationSnapshot] = useState<NotificationSnapshot | null>(null)
+  const [notificationLoadState, setNotificationLoadState] = useState<NotificationLoadState>('idle')
+  const [notificationError, setNotificationError] = useState<string | null>(null)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
 
   useEffect(() => {
     let active = true
@@ -55,6 +61,25 @@ const AppRuntime = (): ReactElement => {
   }, [])
 
   useEffect(() => {
+    if (loadState.kind !== 'ready' || !window.desktopApi) return
+    let active = true
+    setNotificationLoadState('loading')
+    window.desktopApi.getNotifications().then((snapshot) => {
+      if (!active) return
+      setNotificationSnapshot(snapshot)
+      setNotificationLoadState('ready')
+      setNotificationError(null)
+    }).catch(() => {
+      if (!active) return
+      setNotificationLoadState('error')
+      setNotificationError('通知读取失败，当前页面仍可继续工作。')
+    })
+    return () => {
+      active = false
+    }
+  }, [loadState.kind])
+
+  useEffect(() => {
     const syncRoute = (): void => setActiveRoute(getInitialRoute())
     window.addEventListener('hashchange', syncRoute)
     return () => window.removeEventListener('hashchange', syncRoute)
@@ -67,6 +92,32 @@ const AppRuntime = (): ReactElement => {
     setActiveRoute(route)
   }
 
+  const updateNotifications = (operation: (api: DesktopApi) => Promise<NotificationSnapshot>): void => {
+    if (!window.desktopApi) return
+    setNotificationLoadState('loading')
+    operation(window.desktopApi).then((snapshot) => {
+      setNotificationSnapshot(snapshot)
+      setNotificationLoadState('ready')
+      setNotificationError(null)
+    }).catch(() => {
+      setNotificationLoadState('error')
+      setNotificationError('通知操作失败，请重试。')
+    })
+  }
+
+  const retryNotifications = (): void => {
+    if (!window.desktopApi) return
+    setNotificationLoadState('loading')
+    window.desktopApi.getNotifications().then((snapshot) => {
+      setNotificationSnapshot(snapshot)
+      setNotificationLoadState('ready')
+      setNotificationError(null)
+    }).catch(() => {
+      setNotificationLoadState('error')
+      setNotificationError('通知读取失败，当前页面仍可继续工作。')
+    })
+  }
+
   return (
     <AppShell
       activeRoute={activeRoute}
@@ -74,6 +125,17 @@ const AppRuntime = (): ReactElement => {
       loadState={loadState.kind}
       errorMessage={loadState.kind === 'error' ? loadState.message : null}
       onNavigate={navigate}
+      notificationSnapshot={notificationSnapshot}
+      notificationLoadState={notificationLoadState}
+      notificationError={notificationError}
+      notificationsOpen={notificationsOpen}
+      onOpenNotifications={() => setNotificationsOpen(true)}
+      onCloseNotifications={() => setNotificationsOpen(false)}
+      onRetryNotifications={retryNotifications}
+      onMarkNotificationRead={(id) => updateNotifications((api) => api.markNotificationRead(id))}
+      onMarkAllNotificationsRead={() => updateNotifications((api) => api.markAllNotificationsRead())}
+      onClearReadNotifications={() => updateNotifications((api) => api.clearReadNotifications())}
+      onResolveNotification={(id) => updateNotifications((api) => api.resolveNotification(id))}
     />
   )
 }
