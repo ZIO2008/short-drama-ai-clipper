@@ -38,9 +38,28 @@ describe('TaskCenterService', () => {
   it('lists persisted tasks with drama identity and progress', () => {
     const { service } = setup()
     expect(service.list()).toEqual([{
-      id: 'task-1', dramaName: '测试剧目', type: 'multi_episode', status: 'partial',
-      progressCurrent: 2, progressTotal: 3
+      id: 'task-1', dramaId: 'drama-1', dramaName: '测试剧目', type: 'multi_episode', status: 'partial',
+      progressCurrent: 2, progressTotal: 3, createdAt: expect.any(String), updatedAt: expect.any(String)
     }])
+  })
+
+  it('includes P1 remix tasks but keeps deferred P2 tasks out of the task center', () => {
+    const { database, service } = setup()
+    const now = new Date().toISOString()
+    database.prepare(`
+      INSERT INTO production_tasks
+        (id, drama_id, type, config_snapshot, status, progress_current, progress_total, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run('ai-task-1', 'drama-1', 'ai_remix', '{}', 'paused', 0, 1, now, now)
+    database.prepare(`
+      INSERT INTO production_tasks
+        (id, drama_id, type, config_snapshot, status, progress_current, progress_total, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run('p2-task-1', 'drama-1', 'ai_narration', '{}', 'paused', 0, 1, now, now)
+
+    expect(service.list().map((task) => task.id)).toEqual(expect.arrayContaining(['task-1', 'ai-task-1']))
+    expect(service.list().map((task) => task.id)).not.toContain('p2-task-1')
+    expect(service.report('p2-task-1')).toEqual([])
   })
 
   it('resets only failed items and preserves completed progress', () => {
@@ -58,10 +77,41 @@ describe('TaskCenterService', () => {
     expect(service.list()[0]?.progressCurrent).toBe(2)
   })
 
+  it('returns every persisted window with its planned range, actual range and output path', () => {
+    const { database, service } = setup()
+    const now = new Date().toISOString()
+    database.prepare('UPDATE task_items SET planned_range = ?, actual_range = ? WHERE id = ?')
+      .run(JSON.stringify({ episodeNumbers: [1, 2, 3] }), JSON.stringify([1, 2]), 'item-1')
+    database.prepare(`
+      INSERT INTO generated_materials
+        (id, drama_id, task_id, task_item_id, path, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run('material-1', 'drama-1', 'task-1', 'item-1', 'D:\\output\\result.mp4', now, now)
+
+    expect(service.report('task-1')).toEqual([
+      expect.objectContaining({
+        id: 'item-1',
+        plannedRange: JSON.stringify({ episodeNumbers: [1, 2, 3] }),
+        actualRange: JSON.stringify([1, 2]),
+        status: 'succeeded',
+        outputPath: 'D:\\output\\result.mp4'
+      }),
+      expect.objectContaining({ id: 'item-2', status: 'exported', outputPath: null }),
+      expect.objectContaining({ id: 'item-3', status: 'failed', reason: '编码失败', outputPath: null })
+    ])
+  })
+
   it('rejects unknown tasks and tasks without failed items', () => {
     const { database, service } = setup()
     expect(() => service.retryFailedItems('missing')).toThrow('任务不存在')
     database.prepare('UPDATE task_items SET status = ? WHERE status = ?').run('succeeded', 'failed')
     expect(() => service.retryFailedItems('task-1')).toThrow('没有可重试')
+  })
+
+  it('refuses the legacy status-only retry path for original clip tasks', () => {
+    const { database, service } = setup()
+    database.prepare('UPDATE production_tasks SET type = ? WHERE id = ?').run('original_clip', 'task-1')
+    expect(() => service.retryFailedItems('task-1')).toThrow('真实导出重试服务')
+    expect(database.prepare('SELECT status FROM task_items WHERE id = ?').get('item-3')).toEqual({ status: 'failed' })
   })
 })

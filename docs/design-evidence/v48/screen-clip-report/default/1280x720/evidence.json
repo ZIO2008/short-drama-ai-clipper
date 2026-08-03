@@ -1,0 +1,27 @@
+{
+  "projectId": "01b5725c-2688-4cbc-bc29-7432712449b3",
+  "version": "48",
+  "source": "open-design-project-library-preview",
+  "screen": "screen-clip-report",
+  "state": "default",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "fixture": "隔离 Electron fixture：真实 FFmpeg 导出后进入原剧切片完成报告，截图验证任务候选 ID 绑定、按集结果和 1280×720 首屏无横向溢出。",
+  "test": "tests/e2e/phase8-original-clip-workflow.spec.ts",
+  "allowedDifferences": [
+    "当前工作树没有对应的 1280×720 项目库预览基线；Electron 截图已真实采集，但不能用 1440×900 预览缩放或复制替代。"
+  ],
+  "comparisonRegions": [
+    {
+      "label": "应用壳、阶段进度与按集完成报告",
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720,
+      "maxChangedPixelRatio": 0,
+      "maxMeanRgbDelta": 0
+    }
+  ]
+}

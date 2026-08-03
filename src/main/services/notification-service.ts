@@ -120,6 +120,13 @@ export class NotificationService {
     return this.list()
   }
 
+  resolveEvent(eventKeyInput: unknown): void {
+    const eventKey = z.string().trim().min(1).max(160).parse(eventKeyInput)
+    const now = new Date().toISOString()
+    this.database.prepare('UPDATE notifications SET resolved_at = ?, read_at = COALESCE(read_at, ?), updated_at = ? WHERE event_key = ?')
+      .run(now, now, now, eventKey)
+  }
+
   private getByEventKey(eventKey: string): NotificationItem {
     const row = this.database.prepare(`
       SELECT n.id, n.drama_id, d.name AS drama_name, n.task_id, n.task_item_id, t.type AS task_type,

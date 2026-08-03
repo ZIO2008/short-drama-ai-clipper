@@ -9,6 +9,7 @@ describe('AppShell', () => {
       <AppShell
         activeRoute="library"
         appVersion="0.1.0"
+        releaseLabel="P1 · 内部试点"
         loadState="ready"
         errorMessage={null}
         onNavigate={vi.fn()}

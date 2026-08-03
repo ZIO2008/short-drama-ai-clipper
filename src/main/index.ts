@@ -1,10 +1,11 @@
-import { app, BrowserWindow, dialog, ipcMain, shell, type OpenDialogOptions } from 'electron'
+import { app, BrowserWindow, dialog } from 'electron'
 import { join, resolve } from 'node:path'
 import { openDatabase } from './db/migrate.js'
 import { canStoreSecrets } from './security/secret-store.js'
 import { SecretService } from './security/secret-service.js'
 import { NotificationService } from './services/notification-service.js'
 import { DramaService } from './services/drama-service.js'
+import { DramaCoverService } from './services/drama-cover-service.js'
 import { TagService } from './services/tag-service.js'
 import { ScriptAssetService } from './services/script-asset-service.js'
 import { AssetHealthService } from './services/asset-health-service.js'
@@ -18,13 +19,30 @@ import { LogService } from './services/log-service.js'
 import { ProviderProfileService } from './services/provider-profile-service.js'
 import { MultiEpisodeService } from './services/multi-episode-service.js'
 import { SubtitleAssetService } from './services/subtitle-asset-service.js'
+import { SubtitleEvidenceService } from './services/subtitle-evidence-service.js'
+import { LocalOcrSubtitleService } from './services/local-ocr-subtitle-service.js'
+import { TaskCheckpointService } from './tasks/task-checkpoint-service.js'
+import { registerAppIpc } from './ipc/app-ipc.js'
+import { createMainWindow } from './window-factory.js'
+import { AiAnalysisService } from './ai/ai-analysis-service.js'
+import { AiTaskLifecycleService } from './ai/ai-task-lifecycle-service.js'
+import { TimelineService } from './ai/timeline-service.js'
+import { RemixExportService } from './ai/remix-export-service.js'
+import { ProjectLibraryIntegrityService } from './services/project-library-integrity-service.js'
 import type { AppHealth } from '../shared/contracts.js'
+import { RELEASE_METADATA } from '../shared/release-metadata.js'
 import type Database from 'better-sqlite3'
-import { z } from 'zod'
 
 const APP_ID = 'local.shortdrama.materialstudio'
+// The workspace is a data-focused desktop app; software rendering keeps clean
+// Windows/VM environments usable when Chromium cannot initialize a GPU process.
+app.disableHardwareAcceleration()
+app.commandLine.appendSwitch('disable-gpu')
+app.commandLine.appendSwitch('disable-gpu-compositing')
+app.commandLine.appendSwitch('in-process-gpu')
+app.commandLine.appendSwitch('use-gl', 'swiftshader')
+app.commandLine.appendSwitch('use-angle', 'swiftshader')
 const CHANNEL = process.env.SHORTDRAMA_MATERIAL_CHANNEL ?? (app.isPackaged ? 'stable' : 'development')
-
 app.setAppUserModelId(APP_ID)
 const explicitTestDataPath = process.env.SHORTDRAMA_MATERIAL_E2E === '1' && process.env.SHORTDRAMA_MATERIAL_USER_DATA ? resolve(process.env.SHORTDRAMA_MATERIAL_USER_DATA) : null
 app.setPath('userData', explicitTestDataPath ?? join(app.getPath('appData'), 'ShortDramaMaterialStudio', CHANNEL))
@@ -37,6 +55,7 @@ let recoveryNotice: string | null = null
 let secretService: SecretService | null = null
 let notificationService: NotificationService | null = null
 let dramaService: DramaService | null = null
+let dramaCoverService: DramaCoverService | null = null
 let tagService: TagService | null = null
 let scriptAssetService: ScriptAssetService | null = null
 let assetHealthService: AssetHealthService | null = null
@@ -47,98 +66,28 @@ let databaseHandle: Database.Database | null = null
 let taskQueue: TaskQueue | null = null
 let multiEpisodeService: MultiEpisodeService | null = null
 let subtitleAssetService: SubtitleAssetService | null = null
+let subtitleEvidenceService: SubtitleEvidenceService | null = null
+let localOcrSubtitleService: LocalOcrSubtitleService | null = null
 let quittingAfterConfirmation = false
 let backupService: BackupService | null = null
 let logService: LogService | null = null
 let providerProfileService: ProviderProfileService | null = null
+let aiAnalysisService: AiAnalysisService | null = null
+let aiTaskLifecycleService: AiTaskLifecycleService | null = null
+let timelineService: TimelineService | null = null
+let remixExportService: RemixExportService | null = null
+let projectLibraryIntegrityService: ProjectLibraryIntegrityService | null = null
 
-const createWindow = (): void => {
-  mainWindow = new BrowserWindow({
-    width: 1440,
-    height: 900,
-    minWidth: 1280,
-    minHeight: 720,
-    backgroundColor: '#28231f',
-    webPreferences: {
-      preload: join(__dirname, '../preload/index.cjs'),
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: true
-    }
-  })
+const createWindow = (): void => { mainWindow = createMainWindow() }
 
-  if (process.env.ELECTRON_RENDERER_URL) {
-    void mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL)
-  } else {
-    void mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
-  }
-}
-
-const registerIpc = (): void => {
-  ipcMain.handle('app:get-health', (): AppHealth => ({
-    appVersion: app.getVersion(),
-    databaseInitialized: startupErrorCode === null,
-    initializationErrorCode: startupErrorCode,
-    initializationErrorMessage: startupErrorMessage,
-    isSecretStorageAvailable: canStoreSecrets(),
-    recoveryNotice
-  }))
-
-  ipcMain.handle('secrets:save', (_event, value: unknown, secretRef?: unknown) => {
-    return requireSecretService().save({ secretRef, value })
-  })
-  ipcMain.handle('secrets:get-status', (_event, secretRef: unknown) => requireSecretService().getStatus(secretRef))
-  ipcMain.handle('secrets:delete', (_event, secretRef: unknown) => requireSecretService().delete(secretRef))
-  ipcMain.handle('notifications:list', () => requireNotificationService().list())
-  ipcMain.handle('notifications:mark-read', (_event, notificationId: unknown) => requireNotificationService().markRead(notificationId))
-  ipcMain.handle('notifications:mark-all-read', () => requireNotificationService().markAllRead())
-  ipcMain.handle('notifications:clear-read', () => requireNotificationService().clearRead())
-  ipcMain.handle('notifications:resolve', (_event, notificationId: unknown) => requireNotificationService().resolve(notificationId))
-  ipcMain.handle('dramas:list', () => requireDramaService().list())
-  ipcMain.handle('dramas:get', (_event, dramaId: unknown) => requireDramaService().get(dramaId))
-  ipcMain.handle('dramas:create', (_event, name: unknown) => requireDramaService().create(name))
-  ipcMain.handle('dramas:update', (_event, dramaId: unknown, name: unknown) => requireDramaService().update(dramaId, name))
-  ipcMain.handle('dramas:delete', (_event, dramaId: unknown, deleteTempFiles: unknown) => requireDramaService().delete(dramaId, deleteTempFiles))
-  ipcMain.handle('episodes:import', (_event, dramaId: unknown, paths: unknown) => requireDramaService().importEpisodes(dramaId, paths))
-  ipcMain.handle('episodes:update', (_event, dramaId: unknown, episodeId: unknown, update: unknown) => requireDramaService().updateEpisode(dramaId, episodeId, update))
-  ipcMain.handle('episodes:remove', (_event, dramaId: unknown, episodeId: unknown) => requireDramaService().removeEpisode(dramaId, episodeId))
-  ipcMain.handle('episodes:choose-files', async () => {
-    const options: OpenDialogOptions = { properties: ['openFile', 'multiSelections'], filters: [{ name: 'Video files', extensions: ['mp4', 'mov', 'mkv', 'avi', 'webm'] }] }
-    const result = mainWindow ? await dialog.showOpenDialog(mainWindow, options) : await dialog.showOpenDialog(options)
-    return result.canceled ? [] : result.filePaths
-  })
-  ipcMain.handle('tags:list', () => requireTagService().list())
-  ipcMain.handle('tags:create', (_event, name: unknown) => requireTagService().create(name))
-  ipcMain.handle('tags:rename', (_event, tagId: unknown, name: unknown) => requireTagService().rename(tagId, name))
-  ipcMain.handle('tags:delete', (_event, tagId: unknown) => requireTagService().delete(tagId))
-  ipcMain.handle('tags:attach', (_event, dramaId: unknown, tagId: unknown) => requireTagService().attach(dramaId, tagId))
-  ipcMain.handle('scripts:list', (_event, dramaId: unknown) => requireScriptAssetService().list(dramaId))
-  ipcMain.handle('scripts:import', (_event, dramaId: unknown, path: unknown) => requireScriptAssetService().import(dramaId, path))
-  ipcMain.handle('scripts:link-episode', (_event, scriptId: unknown, episodeId: unknown) => requireScriptAssetService().link(scriptId, episodeId))
-  ipcMain.handle('scripts:link-segment', (_event, segmentId: unknown, episodeId: unknown) => requireScriptAssetService().linkSegment(segmentId, episodeId))
-  ipcMain.handle('assets:health', (_event, dramaId: unknown) => requireAssetHealthService().inspect(String(dramaId)))
-  ipcMain.handle('assets:relink', (_event, dramaId: unknown, paths: unknown) => requireRelinkService().relink(String(dramaId), paths as string[]))
-  ipcMain.handle('clips:create-candidate', (_event, dramaId: unknown, episodeId: unknown, start: unknown, end: unknown) => requireOriginalClipService().createCandidate(dramaId, episodeId, { startSeconds: Number(start), endSeconds: Number(end) }))
-  ipcMain.handle('clips:list-candidates', (_event, dramaId: unknown) => requireOriginalClipService().listCandidates(dramaId))
-  ipcMain.handle('clips:confirm', (_event, candidateId: unknown) => requireOriginalClipService().confirmCandidate(candidateId))
-  ipcMain.handle('clips:export', (_event, candidateId: unknown, outputDirectory: unknown) => requireOriginalClipService().exportCandidate(candidateId, outputDirectory))
-  ipcMain.handle('materials:list', (_event, dramaId: unknown) => requireDatabase().prepare('SELECT id, task_id AS taskId, task_item_id AS taskItemId, path, duration_seconds AS durationSeconds, fps, size_bytes AS sizeBytes, created_at AS createdAt FROM generated_materials WHERE drama_id = ? ORDER BY created_at DESC').all(String(dramaId)))
-  ipcMain.handle('output:choose-directory', async () => { const result = mainWindow ? await dialog.showOpenDialog(mainWindow, { properties: ['openDirectory', 'createDirectory'] }) : await dialog.showOpenDialog({ properties: ['openDirectory', 'createDirectory'] }); return result.canceled ? null : result.filePaths[0] ?? null })
-  ipcMain.handle('subtitles:choose-file', async () => { const options: OpenDialogOptions = { properties: ['openFile'], filters: [{ name: 'Subtitles', extensions: ['srt', 'vtt'] }] }; const result = mainWindow ? await dialog.showOpenDialog(mainWindow, options) : await dialog.showOpenDialog(options); return result.canceled ? null : result.filePaths[0] ?? null })
-  ipcMain.handle('subtitles:import', (_event, dramaId: unknown, episodeId: unknown, path: unknown) => requireSubtitleAssetService().importFile(dramaId, episodeId, path))
-  ipcMain.handle('subtitles:list', (_event, dramaId: unknown) => requireSubtitleAssetService().list(dramaId))
-  ipcMain.handle('providers:list', () => { if (!providerProfileService) throw new Error('本地数据尚未初始化'); return providerProfileService.list() })
-  ipcMain.handle('providers:save', (_event, input: unknown) => { if (!providerProfileService) throw new Error('本地数据尚未初始化'); return providerProfileService.save(input) })
-  ipcMain.handle('logs:clear', () => { if (!logService) throw new Error('本地数据尚未初始化'); return logService.clear() })
-  ipcMain.handle('diagnostics:export', async (_event, directory: unknown) => writeDiagnosticManifest(z.string().trim().min(1).parse(directory), { appVersion: app.getVersion(), databaseInitialized: startupErrorCode === null }))
-  ipcMain.handle('paths:open', (_event, path: unknown) => shell.showItemInFolder(z.string().trim().min(1).parse(path)))
-  ipcMain.handle('tasks:list', () => requireTaskCenterService().list())
-  ipcMain.handle('tasks:retry-failed', async (_event, taskId: unknown) => { const id = z.string().trim().min(1).parse(taskId); const task = requireDatabase().prepare('SELECT type FROM production_tasks WHERE id = ?').get(id) as { type: string } | undefined; const result = task?.type === 'multi_episode' ? await requireMultiEpisodeService().retryFailed(id) : await requireTaskQueue().retryFailed(id, taskExecutor); recordTaskCompletion(id); return requireTaskCenterService().list().map((item) => item.id === id ? { ...item, status: typeof result === 'object' && result !== null && 'status' in result ? String(result.status) : item.status } : item) })
-  ipcMain.handle('tasks:run', async (_event, taskId: unknown) => { const id = z.string().trim().min(1).parse(taskId); const task = requireDatabase().prepare('SELECT type FROM production_tasks WHERE id = ?').get(id) as { type: string } | undefined; const result = task?.type === 'multi_episode' ? await requireMultiEpisodeService().run(id) : await requireTaskQueue().run(id, taskExecutor); recordTaskCompletion(id); return result })
-  ipcMain.handle('multi:preflight', (_event, dramaId: unknown, config: unknown) => requireMultiEpisodeService().preflight(dramaId, config))
-  ipcMain.handle('multi:create-task', (_event, dramaId: unknown, config: unknown) => requireMultiEpisodeService().createTask(dramaId, config))
-  ipcMain.handle('scripts:choose-file', async () => { const options: OpenDialogOptions = { properties: ['openFile'], filters: [{ name: 'Scripts', extensions: ['txt', 'docx', 'pdf'] }] }; const result = mainWindow ? await dialog.showOpenDialog(mainWindow, options) : await dialog.showOpenDialog(options); return result.canceled ? null : result.filePaths[0] ?? null })
-}
+const registerIpc = (): void => registerAppIpc({
+  getHealth: () => ({ appVersion: app.getVersion(), releaseScope: RELEASE_METADATA.scope, releaseChannel: RELEASE_METADATA.channel, releaseChannelLabel: RELEASE_METADATA.channelLabel, projectLibraryIntegrity: projectLibraryIntegrityService?.inspect() ?? null, databaseInitialized: startupErrorCode === null, initializationErrorCode: startupErrorCode, initializationErrorMessage: startupErrorMessage, isSecretStorageAvailable: canStoreSecrets(), recoveryNotice }),
+  getMainWindow: () => mainWindow,
+  getAppVersion: () => app.getVersion(),
+  resolveLastImportDirectory,
+  exportDiagnostics: (directory) => writeDiagnosticManifest(directory, { appVersion: app.getVersion(), databaseInitialized: startupErrorCode === null }),
+  requireSecretService, requireNotificationService, requireDramaService, requireDramaCoverService, requireTagService, requireScriptAssetService, requireAssetHealthService, requireRelinkService, requireDatabase, requireSubtitleAssetService, requireSubtitleEvidenceService, requireLocalOcrSubtitleService, requireProviderProfileService, requireLogService, requireAiAnalysisService, requireAiTaskLifecycleService, requireTimelineService, requireRemixExportService, requireOriginalClipService, requireTaskCenterService, requireTaskQueue, requireMultiEpisodeService, requireP0Task, taskExecutor, resumeP0Task, recordTaskCompletion, writeTechnicalLog
+})
 
 const requireNotificationService = (): NotificationService => {
   if (!notificationService) {
@@ -159,6 +108,14 @@ const requireDramaService = (): DramaService => {
   if (!dramaService) throw new Error('Local database is not initialized')
   return dramaService
 }
+const requireDramaCoverService = (): DramaCoverService => {
+  if (!dramaCoverService) throw new Error('Local database is not initialized')
+  return dramaCoverService
+}
+const resolveLastImportDirectory = (dramaId: unknown): string | undefined => {
+  if (typeof dramaId !== 'string' || !dramaId.trim()) return undefined
+  return requireDramaService().getLastImportDirectory(dramaId) ?? undefined
+}
 const requireTagService = (): TagService => {
   if (!tagService) throw new Error('Local database is not initialized')
   return tagService
@@ -174,7 +131,39 @@ const requireTaskCenterService = (): TaskCenterService => { if (!taskCenterServi
 const requireTaskQueue = (): TaskQueue => { if (!taskQueue) throw new Error('Task queue is not initialized'); return taskQueue }
 const requireMultiEpisodeService = (): MultiEpisodeService => { if (!multiEpisodeService) throw new Error('多集拼接服务尚未初始化'); return multiEpisodeService }
 const requireSubtitleAssetService = (): SubtitleAssetService => { if (!subtitleAssetService) throw new Error('字幕服务尚未初始化'); return subtitleAssetService }
+const requireSubtitleEvidenceService = (): SubtitleEvidenceService => { if (!subtitleEvidenceService) throw new Error('字幕证据服务尚未初始化'); return subtitleEvidenceService }
+const requireLocalOcrSubtitleService = (): LocalOcrSubtitleService => { if (!localOcrSubtitleService) throw new Error('本地 OCR 服务尚未初始化'); return localOcrSubtitleService }
+const requireProviderProfileService = (): ProviderProfileService => { if (!providerProfileService) throw new Error('供应商配置服务尚未初始化'); return providerProfileService }
+const requireLogService = (): LogService => { if (!logService) throw new Error('本地数据尚未初始化'); return logService }
+const requireAiAnalysisService = (): AiAnalysisService => { if (!aiAnalysisService) throw new Error('AI 分析服务尚未初始化'); return aiAnalysisService }
+const requireAiTaskLifecycleService = (): AiTaskLifecycleService => { if (!aiTaskLifecycleService) throw new Error('AI 任务服务尚未初始化'); return aiTaskLifecycleService }
+const requireTimelineService = (): TimelineService => { if (!timelineService) throw new Error('审核时间线服务尚未初始化'); return timelineService }
+const requireRemixExportService = (): RemixExportService => { if (!remixExportService) throw new Error('审核导出服务尚未初始化'); return remixExportService }
 const requireDatabase = (): Database.Database => { if (!databaseHandle) throw new Error('Local database is not initialized'); return databaseHandle }
+const requireP0Task = (taskId: string): { type: 'original_clip' | 'multi_episode' } => {
+  const task = requireDatabase().prepare("SELECT type FROM production_tasks WHERE id = ? AND type IN ('original_clip', 'multi_episode')").get(taskId) as { type: 'original_clip' | 'multi_episode' } | undefined
+  if (!task) throw new Error('该任务不属于当前 P0 候选版本，无法继续执行。')
+  return task
+}
+const resumeP0Task = async (taskId: string): Promise<void> => {
+  const task = requireP0Task(taskId)
+  try {
+    requireTaskQueue().resume(taskId)
+    return
+  } catch (error) {
+    if (!(error instanceof Error) || error.message !== 'Task is not running in this queue') throw error
+  }
+  if (task.type === 'multi_episode') await requireMultiEpisodeService().recover(taskId)
+  else await requireTaskQueue().recover(taskId, taskExecutor)
+}
+
+const writeTechnicalLog = (level: 'info' | 'warning' | 'error', eventType: string, details: Record<string, unknown> = {}): void => {
+  try {
+    logService?.write(level, eventType, details)
+  } catch {
+    // Logging must never prevent startup or fail an IPC request.
+  }
+}
 
 const taskExecutor: TaskExecutor = async (item) => {
   const database = requireDatabase()
@@ -196,7 +185,7 @@ const recordTaskCompletion = (taskId: string): void => {
   const status = row.status === 'partial' || row.status === 'partially_completed' ? 'partial' : row.status
   const severity = status === 'completed' ? 'success' : status === 'partial' ? 'warning' : status === 'failed' ? 'error' : 'info'
   const title = status === 'completed' ? '生产任务已完成' : status === 'partial' ? '生产任务部分完成' : status === 'failed' ? '生产任务连续失败' : `生产任务${status}`
-  notificationService.recordTaskEvent({ eventKey: `${taskId}:${status}`, taskId, severity, title, summary, actionTarget: 'tasks' })
+  notificationService.recordTaskEvent({ eventKey: `${taskId}:${status}`, taskId, severity, title, summary, actionTarget: `tasks/${taskId}` })
 }
 
 app.whenReady().then(async () => {
@@ -212,31 +201,46 @@ app.whenReady().then(async () => {
       database = openDatabase(databasePath)
     }
     databaseHandle = database
+    new TaskCheckpointService(database).normalizeInterruptedTasks()
     secretService = new SecretService(database)
     notificationService = new NotificationService(database)
-    dramaService = new DramaService(database)
+    dramaService = new DramaService(database, join(app.getPath('userData'), 'cache'))
+    dramaCoverService = new DramaCoverService(database, join(app.getPath('userData'), 'cache'))
     tagService = new TagService(database)
     scriptAssetService = new ScriptAssetService(database)
     assetHealthService = new AssetHealthService(database)
     relinkService = new RelinkService(database, dramaService)
-    originalClipService = new OriginalClipService(database)
     taskCenterService = new TaskCenterService(database)
-    taskQueue = new TaskQueue(database)
+    logService = new LogService(database)
+    writeTechnicalLog('info', 'app.initialization.completed', { appVersion: app.getVersion(), channel: CHANNEL })
+    taskQueue = new TaskQueue(database, 2, logService)
+    originalClipService = new OriginalClipService(database, taskQueue)
     multiEpisodeService = new MultiEpisodeService(database, taskQueue)
     subtitleAssetService = new SubtitleAssetService(database)
-    logService = new LogService(database)
+    subtitleEvidenceService = new SubtitleEvidenceService(database)
+    localOcrSubtitleService = new LocalOcrSubtitleService(database, subtitleEvidenceService)
     providerProfileService = new ProviderProfileService(database)
+    aiAnalysisService = new AiAnalysisService(database)
+    aiTaskLifecycleService = new AiTaskLifecycleService(database, taskQueue, notificationService)
+    timelineService = new TimelineService(database)
+    remixExportService = new RemixExportService(database)
+    projectLibraryIntegrityService = new ProjectLibraryIntegrityService(database)
     logService.rotate()
     const backupDirectory = join(app.getPath('userData'), 'backups')
     const latest = database.prepare('SELECT created_at AS createdAt FROM app_backups ORDER BY created_at DESC LIMIT 1').get() as { createdAt: string } | undefined
-    if (shouldCreateDailyBackup(latest?.createdAt ?? null) || shouldBackupBeforeUpgrade(null, app.getVersion())) await backupService.create(database, backupDirectory, 'daily', database)
+    const previousStart = database.prepare("SELECT details_json AS details FROM app_logs WHERE event_type = 'app.started' ORDER BY created_at DESC LIMIT 1").get() as { details: string | null } | undefined
+    let previousVersion: string | null = null
+    try { const details = previousStart?.details ? JSON.parse(previousStart.details) as { appVersion?: unknown } : null; previousVersion = typeof details?.appVersion === 'string' ? details.appVersion : null } catch { previousVersion = null }
+    if (shouldCreateDailyBackup(latest?.createdAt ?? null) || shouldBackupBeforeUpgrade(previousVersion, app.getVersion())) await backupService.create(database, backupDirectory, shouldBackupBeforeUpgrade(previousVersion, app.getVersion()) ? 'upgrade' : 'daily', database)
   } catch (error) {
     startupErrorCode = 'DATABASE_UNAVAILABLE'
     startupErrorMessage = error instanceof Error ? error.message : '未知数据库初始化错误。'
+    writeTechnicalLog('error', 'app.initialization.failed', { errorCode: 'DATABASE_UNAVAILABLE' })
     console.error('Database initialization failed', error)
   }
   registerIpc()
   createWindow()
+  writeTechnicalLog('info', 'app.started', { appVersion: app.getVersion(), channel: CHANNEL })
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

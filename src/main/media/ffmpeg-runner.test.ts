@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto'
 import { readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -13,10 +14,10 @@ describe('ffmpeg runner', () => {
 
   it('terminates a cancelled process with an actionable media error', async () => {
     const controller = new AbortController()
-    const marker = join(tmpdir(), `short-drama-runner-${process.pid}.txt`)
+    const marker = join(tmpdir(), `short-drama-runner-${process.pid}-${randomUUID()}.txt`)
     const script = `require('node:fs').writeFileSync(${JSON.stringify(marker)}, String(process.pid)); setInterval(() => {}, 1000)`
     const running = runMediaProcess(process.execPath, ['-e', script], { signal: controller.signal })
-    for (let attempt = 0; attempt < 20 && !(await fileExists(marker)); attempt += 1) await new Promise((resolve) => setTimeout(resolve, 25))
+    await waitForFile(marker)
     controller.abort()
     await expect(running).rejects.toMatchObject({ code: 'CANCELLED' })
     const childPid = Number(await readFile(marker, 'utf8'))
@@ -43,6 +44,14 @@ const fileExists = async (path: string): Promise<boolean> => {
     return true
   } catch {
     return false
+  }
+}
+
+const waitForFile = async (path: string, timeoutMs = 5_000): Promise<void> => {
+  const deadline = Date.now() + timeoutMs
+  while (!(await fileExists(path))) {
+    if (Date.now() >= deadline) throw new Error(`Cancelled child process did not create marker: ${path}`)
+    await new Promise((resolve) => setTimeout(resolve, 25))
   }
 }
 

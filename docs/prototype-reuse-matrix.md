@@ -8,15 +8,21 @@
 | `#drama-workspace` / 剧目详情工作区 | `DramaWorkspacePage`、`DramaWorkspaceTabs` | 当前剧目上下文、资产/生产/成果三标签和返回层级 | 工作区内容由真实剧目、任务和成果状态驱动。 |
 | `#screen-assets` 与剧目工作区标签 | `DramaAssetsPage`、`DramaWorkspaceTabs` | 资产表、异常优先级、剧目上下文与三工作区标签 | 资产探测状态替换为真实媒体状态。 |
 | `#screen-production` | `ProductionPage` | 生产方式卡片、P0/P1/P2 的可用/未来能力表达 | P1/P2 按钮在 P0 保持不可用。 |
-| `#screen-stitch`、`#stage-config`、`#stage-preflight`、运行/报告面板 | `MultiEpisodeWorkspacePage` | 配置到预检到运行的单工作区流程、表单分组、状态层级 | 动态窗口/预检/任务数据替换演示数据。 |
+| `#screen-stitch`、`#stage-config`、`#stage-preflight`、运行/报告面板 | `MultiEpisodeWorkspacePage`、`ExportSettingsDialog`、`PackagingSettingsDialog` | 配置到预检到运行的单工作区流程、导出/包装对话框字段顺序、安全区预览与状态层级 | 动态窗口/预检/任务数据替换演示数据。 |
 | `#screen-clip` | `OriginalClipWorkspacePage` | 候选列表、监视器、审片参数、确认导出结构与键盘操作 | 候选、字幕和媒体时间码绑定真实数据。 |
-| `#screen-results` | `ResultsLibraryPage` | 成果卡、筛选、成果元数据与来源追溯 | 预览图和元数据替换真实成果。 |
+| `#screen-results` | `ResultsLibraryPage`（当前由 `DramaWorkspacePage` 的成果面板承载） | 成果筛选、成果元数据与来源追溯、三列成果卡 | P0 输出是本地文件；真实缩略图可用时优先展示，无缩略图时使用本地代表剧照回退，卡片仍可打开本地文件位置。 |
 | `#screen-tasks` | `TaskCenterPage` | 紧凑任务表、筛选、状态和进度列 | P0 隐藏 AI 二创演示任务。 |
 | 运行面板 / 任务进度 | `HeavyTaskProgress`、后台轮询与 toast | 状态徽标、进度条、任务级通知和详情层级 | 进度与通知来自 SQLite 队列，不使用演示计数。 |
 | `#screen-tags` | `TagManagementPage` | 标签表、创建、重命名与危险删除语义 | 标签及使用数替换真实数据。 |
 | `#screen-settings` | `SettingsPage` | 设置分区、密钥掩码与导出/性能/日志结构 | P0 不触发 AI 云端执行。 |
 | `#noticeDrawer` | `NotificationDrawer` | 抽屉结构、未读数、语义状态、跳转与键盘焦点 | 通知记录替换 SQLite 数据；P1 待决策演示项不进入 P0 数据。 |
-| `#dramaModal`、`#exportModal`、`#packagingModal` | 领域对话框组件 | 原型中的字段顺序、确认语义、焦点管理和危险操作分离 | 绑定真实校验、文件系统与任务配置。 |
+| `#dramaModal`、`#exportModal`、`#packagingModal` | 创建剧目、`ExportSettingsDialog`、`PackagingSettingsDialog` | 原型中的字段顺序、确认语义、焦点管理、包装安全区预览和危险操作分离 | 绑定真实校验、文件系统与任务配置。 |
+
+## Recorded P0 structural differences
+
+- `DramaWorkspacePage` follows the prototype's screen-switch behavior: opening a drama replaces the library content in the shared application shell, and returning restores the library. The library and workspace must never be rendered as vertically sequential surfaces.
+- `#dramaModal` is retained for both creation and editing. The real editor may expose additional asset-management controls, but it must remain a focus-managed dialog over the current workspace rather than replace the screen.
+- P0 original-clip generation is an explicit, human-selected time range. Subtitle persistence and playback are supported, while automatic semantic/batch candidate generation remains outside P0 and is not represented as an enabled control.
 
 ## Token extraction
 

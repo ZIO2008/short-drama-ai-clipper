@@ -9,3 +9,11 @@ coverage/
 *.sqlite-wal
 test-results/
 playwright-report/
+
+# Historical packages and superseded design snapshots stay local for traceability.
+release-v*/
+design/open-design/v2026-07-27/
+design/open-design/v2026-07-29/
+design/open-design/v2026-07-29-r2/
+design/open-design/v2026-07-29-r3/
+design/open-design/v2026-07-29-r5-merged/

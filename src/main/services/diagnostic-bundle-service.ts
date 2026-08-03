@@ -1,4 +1,4 @@
-import { mkdir, readdir, writeFile } from 'node:fs/promises'
+import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { sanitizePrivacyRecord } from './privacy-sanitizer.js'
 
@@ -18,8 +18,7 @@ export async function writeDiagnosticManifest(directory: string, details: Record
   await mkdir(directory, { recursive: true })
   const path = join(directory, 'manifest.json')
   const safeDetails = sanitizePrivacyRecord(details)
-  const files = (await readdir(directory)).filter((file) => file !== 'manifest.json').sort()
-  const manifest = createDiagnosticManifest(undefined, ['manifest.json', ...files])
+  const manifest = createDiagnosticManifest()
   await writeFile(path, JSON.stringify({ manifest, details: safeDetails }, null, 2), 'utf8')
   return path
 }

@@ -1,0 +1,25 @@
+{
+  "projectId": "01b5725c-2688-4cbc-bc29-7432712449b3",
+  "version": "48",
+  "source": "open-design-project-library-preview",
+  "screen": "screen-subtitles",
+  "state": "needs-review",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "fixture": "Open Design Version 48 内置剧目第 05 集 ASR + OCR 待校验详情弹窗（项目库全屏预览，只读采集）",
+  "test": "tests/e2e/phase8-original-clip-workflow.spec.ts（待补同状态 Electron 截图与断言）",
+  "allowedDifferences": [],
+  "comparisonRegions": [
+    {
+      "label": "字幕资产列表背景与待校验详情弹窗",
+      "x": 0,
+      "y": 0,
+      "width": 1440,
+      "height": 900,
+      "maxChangedPixelRatio": 0,
+      "maxMeanRgbDelta": 0
+    }
+  ]
+}

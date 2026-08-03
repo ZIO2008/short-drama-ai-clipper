@@ -37,8 +37,13 @@ export class ScriptAssetService {
   linkSegment(segmentId: unknown, episodeId: unknown): void {
     const segment = idSchema.parse(segmentId); const episode = episodeId === null ? null : idSchema.parse(episodeId); const now = new Date().toISOString()
     if (episode && !this.database.prepare('SELECT 1 FROM script_asset_segments s JOIN script_assets a ON a.id = s.script_asset_id JOIN episodes e ON e.drama_id = a.drama_id WHERE s.id = ? AND e.id = ?').get(segment, episode)) throw new Error('Script segment and episode belong to different dramas')
+    const owner = this.database.prepare('SELECT script_asset_id AS scriptAssetId FROM script_asset_segments WHERE id = ?').get(segment) as { scriptAssetId: string } | undefined
     const result = this.database.prepare('UPDATE script_asset_segments SET episode_id = ?, updated_at = ? WHERE id = ?').run(episode, now, segment)
     if (result.changes === 0) throw new Error('Script segment not found')
+    if (owner) {
+      const remaining = this.database.prepare('SELECT COUNT(*) AS count FROM script_asset_segments WHERE script_asset_id = ? AND episode_id IS NULL').get(owner.scriptAssetId) as { count: number }
+      this.database.prepare('UPDATE script_assets SET link_status = ?, updated_at = ? WHERE id = ?').run(remaining.count === 0 ? 'linked' : 'needs_confirmation', now, owner.scriptAssetId)
+    }
   }
 }
 

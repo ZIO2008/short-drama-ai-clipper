@@ -1,0 +1,25 @@
+{
+  "projectId": "01b5725c-2688-4cbc-bc29-7432712449b3",
+  "version": "48",
+  "source": "open-design-project-library-preview",
+  "screen": "screen-library",
+  "state": "default",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "fixture": "Open Design Version 48 内置剧目库默认演示数据（项目库全屏预览，只读采集）",
+  "test": "tests/e2e/p0-workflows.spec.ts（待补同状态 Electron 截图与断言）",
+  "allowedDifferences": [],
+  "comparisonRegions": [
+    {
+      "label": "应用壳与主画布",
+      "x": 0,
+      "y": 0,
+      "width": 1440,
+      "height": 900,
+      "maxChangedPixelRatio": 0,
+      "maxMeanRgbDelta": 0
+    }
+  ]
+}

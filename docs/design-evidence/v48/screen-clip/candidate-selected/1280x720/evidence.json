@@ -1,0 +1,27 @@
+{
+  "projectId": "01b5725c-2688-4cbc-bc29-7432712449b3",
+  "version": "48",
+  "source": "open-design-project-library-preview",
+  "screen": "screen-clip",
+  "state": "candidate-selected",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "fixture": "隔离 Electron fixture：第 01 集已生成、确认并选中真实候选；第 02 集缺媒体。源视频是含暖色场景骨架的实际 FFmpeg 文件，截图前主内容滚动回 Version 48 首屏位置。",
+  "test": "tests/e2e/phase10-v48-fixture-mapping.spec.ts",
+  "allowedDifferences": [
+    "待采集同状态 1280×720 Open Design 项目库预览；不得以 1440×900 缩放、裁切或历史截图充当基线。"
+  ],
+  "comparisonRegions": [
+    {
+      "label": "应用壳与当前工作区主画布",
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720,
+      "maxChangedPixelRatio": 0,
+      "maxMeanRgbDelta": 0
+    }
+  ]
+}

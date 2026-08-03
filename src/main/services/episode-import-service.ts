@@ -15,7 +15,10 @@ export const extractEpisodeNumber = (filePath: string): number | null => {
 
 export const sortEpisodeCandidates = (paths: readonly string[]): EpisodeCandidate[] => paths
   .map((path, index) => ({ path, episodeNo: extractEpisodeNumber(path), sortOrder: index }))
-  .sort((left, right) => (left.episodeNo ?? Number.MAX_SAFE_INTEGER) - (right.episodeNo ?? Number.MAX_SAFE_INTEGER) || left.path.localeCompare(right.path))
+  .sort((left, right) => {
+    if (left.episodeNo === null && right.episodeNo === null) return left.sortOrder - right.sortOrder
+    return (left.episodeNo ?? Number.MAX_SAFE_INTEGER) - (right.episodeNo ?? Number.MAX_SAFE_INTEGER) || left.path.localeCompare(right.path)
+  })
   .map((candidate, index) => ({ ...candidate, sortOrder: index }))
 
 export const findDuplicateEpisodeNumbers = (candidates: readonly EpisodeCandidate[]): number[] => {

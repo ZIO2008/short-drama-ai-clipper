@@ -11,6 +11,10 @@ describe('episode import rules', () => {
     expect(sortEpisodeCandidates(['10.mp4', '02.mp4', '01（戏后）.mp4']).map(({ episodeNo }) => episodeNo)).toEqual([1, 2, 10])
   })
 
+  it('keeps files without an episode number at the end in their input order', () => {
+    expect(sortEpisodeCandidates(['10.mp4', 'z-bonus.mp4', '02.mp4', 'a-trailer.mp4']).map(({ path }) => path)).toEqual(['02.mp4', '10.mp4', 'z-bonus.mp4', 'a-trailer.mp4'])
+  })
+
   it('detects duplicate numbers and blocks windows over gaps', () => {
     const candidates = sortEpisodeCandidates(['01.mp4', '02.mp4', '02-copy.mp4', '04.mp4'])
     expect(findDuplicateEpisodeNumbers(candidates)).toEqual([2])

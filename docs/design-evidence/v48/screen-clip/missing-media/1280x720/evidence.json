@@ -1,0 +1,24 @@
+{
+  "projectId": "01b5725c-2688-4cbc-bc29-7432712449b3",
+  "version": "48",
+  "source": "open-design-project-library-preview",
+  "screen": "screen-clip",
+  "state": "missing-media",
+  "viewport": { "width": 1280, "height": 720 },
+  "fixture": "隔离 Electron fixture：第 02 集通过真实 IPC 更新为不存在的源路径后，在原剧切片工作区选择该集。监视器保持持久化画幅并显示重新定位处置，不使用 DOM 注入。",
+  "test": "tests/e2e/phase10-v48-fixture-mapping.spec.ts",
+  "allowedDifferences": [
+    "尚未采集同状态的 1280×720 Open Design 项目库预览；不得以 1440×900 截图缩放、裁切或任何其他状态替代媒体缺失基线。"
+  ],
+  "comparisonRegions": [
+    {
+      "label": "媒体缺失工作台与重新定位处置",
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720,
+      "maxChangedPixelRatio": 0,
+      "maxMeanRgbDelta": 0
+    }
+  ]
+}

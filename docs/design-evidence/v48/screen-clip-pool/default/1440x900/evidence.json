@@ -1,0 +1,27 @@
+{
+  "projectId": "01b5725c-2688-4cbc-bc29-7432712449b3",
+  "version": "48",
+  "source": "open-design-project-library-preview",
+  "screen": "screen-clip-pool",
+  "state": "default",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "fixture": "项目库基线为 Open Design Version 48 内置剧目“破茧之后”第 01 集逐集候选窗口；Electron 为隔离剧目的真实生成、确认后候选池，含当前分集窗口、筛选、批量选择和待导出队列。",
+  "test": "tests/e2e/phase8-original-clip-workflow.spec.ts：1440×900/1280×720 首屏边界、无横向溢出、当前分集窗口与真实导出回链。",
+  "allowedDifferences": [
+    "Electron fixture 只有 2 个分集和少量真实候选；项目库演示数据展示 12 集与 5,000 候选压力汇总。数据量差异不得用于豁免工作区标题、当前分集窗口、筛选、队列或应用壳结构差异。"
+  ],
+  "comparisonRegions": [
+    {
+      "label": "应用壳、逐集候选窗口、筛选和待导出检查器",
+      "x": 0,
+      "y": 0,
+      "width": 1440,
+      "height": 900,
+      "maxChangedPixelRatio": 0,
+      "maxMeanRgbDelta": 0
+    }
+  ]
+}

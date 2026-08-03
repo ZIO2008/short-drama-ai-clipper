@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "status": "ready",
+  "authority": {
+    "projectId": "01b5725c-2688-4cbc-bc29-7432712449b3",
+    "version": "48",
+    "entry": "design/open-design/v2026-07-30-open-design-final/short-drama-material-studio.html",
+    "sha256": "D86D634D67B7DE5F62D5EEAD2737CCC2C4A60401CF7F34F7521BA581CBB6C92B"
+  },
+  "requiredProjectArtifacts": [
+    "artifact.json",
+    "short-drama-material-studio.html",
+    "design-brief.md",
+    "Product-Spec.md"
+  ],
+  "sourceMirror": {
+    "projectDirectory": "C:/Users/ZIO/AppData/Roaming/Open Design/namespaces/release-stable-win/data/projects/01b5725c-2688-4cbc-bc29-7432712449b3",
+    "artifactSource": "short-drama-material-studio.html.artifact.json",
+    "files": {
+      "artifact.json": "26BD8F9CD57A635E5E4323374390170B7B87D794752F07297C82790E8C62B2F1",
+      "design-brief.md": "988B547B2056DB1BD8F51B201BF8C045CB73265107394E79111CCD05B3298331",
+      "Product-Spec.md": "8196AA1746A896C34EBE85665934B0D617EE8F8BDF0100815E8B3705B4E431A3"
+    },
+    "scope": "Design-Brief.md 与 Product-Spec.md 是 Open Design 项目级交接文档；Version 48 HTML 是页面视觉与交互的最终裁决源，二者冲突时以 HTML 为准。"
+  },
+  "viewports": [
+    { "width": 1440, "height": 900 },
+    { "width": 1280, "height": 720 }
+  ],
+  "screens": [
+    { "id": "screen-library", "states": ["default", "empty", "error"] },
+    { "id": "screen-assets", "states": ["default", "loading", "empty", "error"] },
+    { "id": "screen-production", "states": ["default", "blocked"] },
+    { "id": "screen-clip", "states": ["default", "loading", "missing-media", "candidate-selected"] },
+    { "id": "screen-clip-pool", "states": ["default", "empty", "filtered", "high-volume"] },
+    { "id": "screen-clip-export", "states": ["default", "preflight", "running", "failed", "completed"] },
+    { "id": "screen-clip-report", "states": ["default", "exception-only", "completed"] },
+    { "id": "screen-subtitles", "states": ["loading", "empty", "incomplete", "needs-review", "validated", "missing-media", "read-error"] },
+    { "id": "screen-results", "states": ["default", "empty"] },
+    { "id": "screen-tasks", "states": ["default", "failed", "retrying"] },
+    { "id": "screen-settings", "states": ["default", "missing-credential", "saved"] },
+    { "id": "screen-stitch", "states": ["default", "preflight", "running"] },
+    { "id": "screen-ai", "states": ["default", "review", "blocked"] }
+  ],
+  "evidencePolicy": {
+    "requireProjectPreviewBaseline": true,
+    "requireElectronCapturePerScreenState": true,
+    "forbidStatuses": [
+      "skipped-historical-baseline-not-present",
+      "captured-current-flow-historical-reference-unavailable",
+      "superseded-by-final-open-design",
+      "approved-runtime-layout"
+    ]
+  }
+}

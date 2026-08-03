@@ -13,6 +13,10 @@ import type {
 
 export type { QueueMode, TaskExecutor, TaskExecutionItem, TaskItemResult, TaskRunOptions } from './task-types.js'
 
+export type TaskLogger = {
+  write: (level: 'info' | 'warning' | 'error', eventType: string, details?: Record<string, unknown>) => void
+}
+
 export type TaskRunResult = {
   taskId: string
   status: ReturnType<typeof aggregateTaskStatus>
@@ -27,6 +31,7 @@ type ActiveExecution = {
   controllers: Map<string, AbortController>
   waiters: Set<() => void>
   executorCheckpoint: unknown | null
+  timing: { startedAt: string; elapsedMs: number; activeSince: string | null }
 }
 
 const RUNNABLE_STATUSES = new Set(['pending', 'running', 'paused'])
@@ -38,7 +43,8 @@ export class TaskQueue {
 
   constructor(
     private readonly database: Database.Database,
-    private readonly speedConcurrency = 2
+    private readonly speedConcurrency = 2,
+    private readonly logger?: TaskLogger
   ) {
     if (!Number.isInteger(speedConcurrency) || speedConcurrency < 1 || speedConcurrency > 4) {
       throw new Error('Speed concurrency must be an integer between 1 and 4')
@@ -71,16 +77,21 @@ export class TaskQueue {
   pause(taskId: string): void {
     const active = this.requireActive(taskId)
     active.paused = true
+    for (const controller of active.controllers.values()) controller.abort()
     this.store.markTaskStatus(taskId, 'paused')
-    this.checkpoints.saveProgress(taskId, active.executorCheckpoint)
+    this.pauseTimer(active)
+    this.checkpoints.saveProgress(taskId, active.executorCheckpoint, active.timing)
+    this.writeLog('info', 'task.paused', { taskId })
   }
 
   resume(taskId: string): void {
     const active = this.requireActive(taskId)
     if (active.stopReason) throw new Error('Stopped tasks must be recovered with an executor')
     active.paused = false
+    this.startTimer(active)
     this.store.markTaskStatus(taskId, 'running')
     this.releaseWaiters(active)
+    this.writeLog('info', 'task.resumed', { taskId })
   }
 
   cancel(taskId: string): void {
@@ -93,7 +104,9 @@ export class TaskQueue {
     }
     this.store.cancelRunnableItems(taskId)
     this.store.markTaskStatus(taskId, 'cancelled')
-    this.checkpoints.saveProgress(taskId, active?.executorCheckpoint)
+    if (active) this.pauseTimer(active)
+    this.checkpoints.saveProgress(taskId, active?.executorCheckpoint, active?.timing)
+    this.writeLog('warning', 'task.cancelled', { taskId })
   }
 
   stopForShutdown(taskId: string): void {
@@ -103,7 +116,9 @@ export class TaskQueue {
     this.store.markTaskStatus(taskId, 'paused')
     for (const controller of active.controllers.values()) controller.abort()
     this.releaseWaiters(active)
-    this.checkpoints.saveProgress(taskId, active.executorCheckpoint)
+    this.pauseTimer(active)
+    this.checkpoints.saveProgress(taskId, active.executorCheckpoint, active.timing)
+    this.writeLog('info', 'task.shutdown_checkpoint_saved', { taskId })
   }
 
   private async execute(
@@ -116,16 +131,21 @@ export class TaskQueue {
     this.store.assertTask(taskId)
     const items = this.store.listItems(taskId).filter((item) =>
       RUNNABLE_STATUSES.has(item.status) && (!selectedIds || selectedIds.has(item.id)))
+    const existing = this.checkpoints.load(taskId)
+    const checkpoint = isQueueCheckpoint(existing) ? existing : null
+    const now = new Date().toISOString()
     const active: ActiveExecution = {
       taskId,
       paused: false,
       stopReason: null,
       controllers: new Map(),
       waiters: new Set(),
-      executorCheckpoint: this.checkpoints.load(taskId)
+      executorCheckpoint: checkpoint ? checkpoint.executor : existing,
+      timing: { startedAt: checkpoint?.startedAt ?? now, elapsedMs: checkpoint?.elapsedMs ?? 0, activeSince: now }
     }
     this.active = active
     this.store.markTaskStarted(taskId)
+    this.writeLog('info', 'task.started', { taskId, mode, itemCount: items.length })
     try {
       const concurrency = mode === 'background' ? 1 : Math.min(this.speedConcurrency, Math.max(items.length, 1))
       let nextIndex = 0
@@ -174,20 +194,29 @@ export class TaskQueue {
           break
         }
         if (active.stopReason === 'cancel') break
+        // FFmpeg observes pause as an AbortSignal. It is not a failed attempt:
+        // persist the item, wait for an explicit resume, then retry this item.
+        if (active.paused) {
+          this.store.pauseRunningItem(item.id)
+          if (!(await this.waitUntilRunnable(active))) break
+          continue
+        }
         const reason = error instanceof Error ? error.message : '任务项执行失败。'
         const decision = decideAfterFailure(retryCount)
         retryCount = decision.retryCount
         if (!decision.shouldRetry) {
           this.store.markItemFailed(item.id, retryCount, reason)
+          this.writeLog('error', 'task.item.failed', { taskId: active.taskId, taskItemId: item.id, attempts: retryCount + 1, errorCode: 'TASK_ITEM_FAILED' })
           break
         }
         this.store.markItemRetry(item.id, retryCount, reason)
+        this.writeLog('warning', 'task.item.retrying', { taskId: active.taskId, taskItemId: item.id, attempt: retryCount + 1, errorCode: 'TASK_ITEM_FAILED' })
       } finally {
         active.controllers.delete(item.id)
       }
     }
     this.store.refreshProgress(active.taskId)
-    this.checkpoints.saveProgress(active.taskId, active.executorCheckpoint)
+    this.checkpoints.saveProgress(active.taskId, active.executorCheckpoint, active.timing)
   }
 
   private finishExecution(active: ActiveExecution): TaskRunResult {
@@ -199,9 +228,20 @@ export class TaskQueue {
       : active.stopReason === 'cancel'
         ? 'cancelled'
         : aggregateTaskStatus(items.map(({ status: itemStatus }) => itemStatus))
+    this.pauseTimer(active)
     this.store.markTaskStatus(active.taskId, status)
-    this.checkpoints.saveProgress(active.taskId, active.executorCheckpoint)
+    this.checkpoints.saveProgress(active.taskId, active.executorCheckpoint, active.timing)
+    const reportCounts = { succeeded: report.succeeded, reduced: report.reduced, failed: report.failed, skipped: report.skipped }
+    this.writeLog(status === 'failed' ? 'error' : 'info', 'task.completed', { taskId: active.taskId, status, ...reportCounts })
     return { taskId: active.taskId, status, report }
+  }
+
+  private writeLog(level: 'info' | 'warning' | 'error', eventType: string, details: Record<string, unknown>): void {
+    try {
+      this.logger?.write(level, eventType, details)
+    } catch {
+      // Logging must never make a production task fail.
+    }
   }
 
   private waitUntilRunnable(active: ActiveExecution): Promise<boolean> {
@@ -219,6 +259,17 @@ export class TaskQueue {
     for (const wake of waiters) wake()
   }
 
+  private startTimer(active: ActiveExecution): void {
+    if (active.timing.activeSince === null) active.timing.activeSince = new Date().toISOString()
+  }
+
+  private pauseTimer(active: ActiveExecution): void {
+    if (!active.timing.activeSince) return
+    const elapsed = Date.now() - new Date(active.timing.activeSince).getTime()
+    active.timing.elapsedMs += Math.max(0, elapsed)
+    active.timing.activeSince = null
+  }
+
   private requireActive(taskId: string): ActiveExecution {
     if (!this.active || this.active.taskId !== taskId) throw new Error('Task is not running in this queue')
     return this.active
@@ -230,3 +281,6 @@ export class TaskQueue {
 }
 
 const yieldToEventLoop = (): Promise<void> => new Promise((resolve) => setImmediate(resolve))
+
+const isQueueCheckpoint = (value: unknown): value is { executor: unknown | null; startedAt?: string; elapsedMs?: number } =>
+  typeof value === 'object' && value !== null && 'executor' in value && 'completedItemIds' in value

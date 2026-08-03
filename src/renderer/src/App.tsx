@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactElement } from 'react'
-import type { AppHealth, DesktopApi, DramaSummary, EpisodeUpdate, NotificationSnapshot, TagSummary, TaskSummary } from '../../shared/contracts.js'
+import type { AppHealth, DesktopApi, DramaSummary, EpisodeImportSummary, EpisodeUpdate, NotificationSnapshot, TagSummary, TaskSummary } from '../../shared/contracts.js'
 import { AppErrorBoundary } from './components/AppErrorBoundary.js'
 import { AppShell } from './layout/AppShell.js'
 import { getInitialRoute, type RouteId } from './navigation.js'
@@ -34,6 +34,14 @@ const AppRuntime = (): ReactElement => {
   const [tasks, setTasks] = useState<TaskSummary[]>([])
   const [tasksLoading, setTasksLoading] = useState(false)
   const [tasksError, setTasksError] = useState<string | null>(null)
+  const [libraryInstanceKey, setLibraryInstanceKey] = useState(0)
+
+  const showImportSummary = (summary: EpisodeImportSummary): void => {
+    const examples = summary.conflicts.slice(0, 2).map((item) => `第 ${item.episodeNo ?? '待填写'} 集：${fileName(item.sourcePath)} 与 ${fileName(item.existingSourcePath)}`).join('；')
+    const conflict = summary.conflicts.length > 0 ? `，冲突 ${summary.conflicts.length}（未覆盖已有引用）${examples ? `：${examples}${summary.conflicts.length > 2 ? ' 等' : ''}` : ''}` : ''
+    setBackgroundNotice(`本次导入：新增 ${summary.imported}，跳过 ${summary.skipped}${conflict}`)
+    window.setTimeout(() => setBackgroundNotice(null), 8000)
+  }
 
   const loadDramas = (): void => {
     if (!window.desktopApi) return
@@ -124,7 +132,15 @@ const AppRuntime = (): ReactElement => {
     return () => window.removeEventListener('hashchange', syncRoute)
   }, [])
 
+  useEffect(() => {
+    if (activeRoute === 'tasks') loadTasks()
+  }, [activeRoute])
+
   const navigate = (route: RouteId): void => {
+    if (route === 'library') {
+      setLibraryInstanceKey((value) => value + 1)
+      loadDramas()
+    }
     if (window.location.hash !== `#/${route}`) {
       window.location.hash = `/${route}`
     }
@@ -160,7 +176,9 @@ const AppRuntime = (): ReactElement => {
   return (
     <AppShell
       activeRoute={activeRoute}
+      libraryInstanceKey={libraryInstanceKey}
       appVersion={loadState.kind === 'ready' ? loadState.health.appVersion : null}
+      releaseLabel={loadState.kind === 'ready' ? `${loadState.health.releaseScope} · ${loadState.health.releaseChannelLabel}` : null}
       loadState={loadState.kind}
       errorMessage={loadState.kind === 'error' ? loadState.message : null}
       onNavigate={navigate}
@@ -168,7 +186,7 @@ const AppRuntime = (): ReactElement => {
       notificationLoadState={notificationLoadState}
       notificationError={notificationError}
       notificationsOpen={notificationsOpen}
-      onOpenNotifications={() => setNotificationsOpen(true)}
+       onOpenNotifications={() => { setNotificationsOpen(true); retryNotifications() }}
       onCloseNotifications={() => setNotificationsOpen(false)}
       onRetryNotifications={retryNotifications}
       onMarkNotificationRead={(id) => updateNotifications((api) => api.markNotificationRead(id))}
@@ -181,18 +199,23 @@ const AppRuntime = (): ReactElement => {
       dramasLoading={dramasLoading}
       dramasError={dramasError}
       onRetryDramas={loadDramas}
-      onCreateDrama={async (name) => { await window.desktopApi.createDrama(name); loadDramas() }}
+      onCreateDrama={async (name) => { const created = await window.desktopApi.createDrama(name); loadDramas(); return created }}
+      onChooseVideoFiles={() => window.desktopApi.chooseVideoFiles()}
+      onChooseVideoFolder={() => window.desktopApi.chooseVideoFolder()}
+      onImportEpisodePaths={async (id, paths) => { const result = await window.desktopApi.importEpisodes(id, paths); showImportSummary(result.summary); loadDramas() }}
       tags={tags}
       onRenameDrama={async (id, name) => { await window.desktopApi.updateDrama(id, name); loadDramas() }}
       onLoadDrama={(id) => window.desktopApi.getDrama(id)}
       onDeleteDrama={async (id, deleteTempFiles) => { await window.desktopApi.deleteDrama(id, deleteTempFiles); loadDramas() }}
-      onImportEpisodes={async (id) => { const paths = await window.desktopApi.chooseVideoFiles(); if (paths.length > 0) await window.desktopApi.importEpisodes(id, paths); loadDramas() }}
+      onImportEpisodes={async (id) => { const paths = await window.desktopApi.chooseVideoFiles(id); if (paths.length > 0) { const result = await window.desktopApi.importEpisodes(id, paths); showImportSummary(result.summary) }; loadDramas() }}
+      onImportEpisodeFolder={async (id) => { const paths = await window.desktopApi.chooseVideoFolder(id); if (paths.length > 0) { const result = await window.desktopApi.importEpisodes(id, paths); showImportSummary(result.summary) }; loadDramas() }}
       onAttachTag={async (dramaId, tagId) => { await window.desktopApi.attachTag(dramaId, tagId); loadDramas(); loadTags() }}
       onUpdateEpisode={(dramaId, episodeId, update: EpisodeUpdate) => window.desktopApi.updateEpisode(dramaId, episodeId, update)}
       onRemoveEpisode={(dramaId, episodeId) => window.desktopApi.removeEpisode(dramaId, episodeId)}
-      onImportScript={async (dramaId) => { const path = await window.desktopApi.chooseScriptFile(); if (!path) return []; const result = await window.desktopApi.importScript(dramaId, path); return result.episodes }}
+      onImportScript={async (dramaId) => { const path = await window.desktopApi.chooseScriptFile(); if (!path) return []; const result = await window.desktopApi.importScript(dramaId, path); return result.episodes.length > 0 ? result.episodes.map((episode) => ({ ...episode, scriptAssetId: result.asset.id })) : [{ scriptAssetId: result.asset.id, episodeNo: null, title: '整部剧本（待手工关联）', text: result.asset.extractedText ?? '' }] }}
+      onLinkScript={(scriptId, episodeId) => window.desktopApi.linkScriptEpisode(scriptId, episodeId)}
       onLinkSegment={(segmentId, episodeId) => window.desktopApi.linkScriptSegment(segmentId, episodeId)}
-      onRelink={async (dramaId) => { const paths = await window.desktopApi.chooseVideoFiles(); if (paths.length > 0) await window.desktopApi.relinkEpisodes(dramaId, paths) }}
+      onRelink={async (dramaId) => { const paths = await window.desktopApi.chooseVideoFiles(dramaId); if (paths.length > 0) await window.desktopApi.relinkEpisodes(dramaId, paths) }}
       tasks={tasks}
       tasksLoading={tasksLoading}
       tasksError={tasksError}
@@ -201,8 +224,8 @@ const AppRuntime = (): ReactElement => {
         setTasksError(null)
         try {
           setTasks(await window.desktopApi.retryFailedTaskItems(taskId))
-        } catch {
-          setTasksError('失败项重试未能启动，请检查任务状态后重试。')
+        } catch (error) {
+          throw error
         }
       }}
       onCreateCandidate={(dramaId, episodeId, start, end) => window.desktopApi.createClipCandidate(dramaId, episodeId, start, end)}
@@ -221,3 +244,5 @@ const AppRuntime = (): ReactElement => {
     />
   )
 }
+
+const fileName = (path: string): string => path.split(/[\\/]/).at(-1) ?? path

@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "composite": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "target": "ES2022",
@@ -10,5 +9,13 @@
     "types": ["vite/client"],
     "outDir": "out"
   },
-  "include": ["src/renderer/src/**/*.ts", "src/renderer/src/**/*.tsx", "src/shared/**/*.ts"]
+  "include": ["src/renderer/src/**/*.ts", "src/renderer/src/**/*.tsx", "src/shared/**/*.ts"],
+  "exclude": [
+    "src/renderer/src/pages/AiRemixWorkspacePage.tsx",
+    "src/renderer/src/pages/AiRemixWorkspacePage.test.tsx",
+    "src/renderer/src/pages/AiReviewTimelinePage.tsx",
+    "src/renderer/src/pages/AiReviewTimelinePage.test.tsx",
+    "src/renderer/src/pages/NarrationWorkspacePage.tsx",
+    "src/renderer/src/pages/NarrationWorkspacePage.test.tsx"
+  ]
 }

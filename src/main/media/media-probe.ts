@@ -34,6 +34,20 @@ export const probeMedia = async (filePath: string, ffprobePath?: string): Promis
   }
 }
 
+export const probeDuration = async (filePath: string, ffprobePath?: string): Promise<number> => {
+  await assertReadable(filePath)
+  const binary = resolveMediaBinary('ffprobe', ffprobePath)
+  if (!binary) throw new MediaError('FFMPEG_UNAVAILABLE', '找不到 ffprobe。', '在设置中配置 ffprobe 路径后重试。')
+  const result = await runMediaProcess(binary, ['-v', 'error', '-print_format', 'json', '-show_entries', 'format=duration', filePath])
+  if (result.exitCode !== 0) throw new MediaError('MEDIA_PROBE_FAILED', '无法读取音频时长。', '检查音频文件和 ffprobe 后重试。', result.exitCode)
+  try {
+    const payload = JSON.parse(result.stdout) as { format?: { duration?: unknown } }
+    const duration = toNumber(payload.format?.duration)
+    if (duration === null || duration <= 0) throw new Error('invalid duration')
+    return duration
+  } catch { throw new MediaError('UNSUPPORTED_FORMAT', '音频没有可用时长信息。', '请选择可读取的音频文件。') }
+}
+
 export const parseProbePayload = async (filePath: string, payload: unknown): Promise<MediaProbeResult> => {
   if (!isRecord(payload)) throw new MediaError('UNSUPPORTED_FORMAT', 'ffprobe 返回了无法识别的数据。', '请选择包含可读视频流的文件。')
   const streams = Array.isArray(payload.streams) ? payload.streams.filter(isRecord) : []

@@ -5,5 +5,9 @@ export default defineConfig({
   timeout: 120_000,
   expect: { timeout: 10_000 },
   reporter: [['list'], ['html', { open: 'never' }]],
-  outputDir: 'test-results/e2e'
+  // P2's historical positive workflow stays excluded; p2-freeze.spec.ts is the
+  // mandatory negative regression gate for the frozen surface.
+  testIgnore: ['**/p2-narration-workflow.spec.ts'],
+  preserveOutput: 'always',
+  outputDir: process.env.PLAYWRIGHT_OUTPUT_DIR ?? 'test-results/e2e'
 })

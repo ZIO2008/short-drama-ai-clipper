@@ -1,0 +1,27 @@
+{
+  "projectId": "01b5725c-2688-4cbc-bc29-7432712449b3",
+  "version": "48",
+  "source": "open-design-project-library-preview",
+  "screen": "screen-clip-pool",
+  "state": "default",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "fixture": "隔离 Electron fixture：第 01 集已真实生成、确认并进入逐集候选池；第 02 集保留为缺媒体。截图断言主内容回到首屏、候选池/源分集栏/主候选区均完整位于视口内。",
+  "test": "tests/e2e/phase8-original-clip-workflow.spec.ts",
+  "allowedDifferences": [
+    "1280×720 的 Electron 证据已经真实采集，但当前工作树没有对应项目库预览基线。不得用 1440×900 基线缩放或复制替代；视觉审计应如实报告缺失。"
+  ],
+  "comparisonRegions": [
+    {
+      "label": "应用壳、逐集候选窗口、筛选和待导出检查器",
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720,
+      "maxChangedPixelRatio": 0,
+      "maxMeanRgbDelta": 0
+    }
+  ]
+}

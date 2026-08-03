@@ -1,0 +1,27 @@
+{
+  "projectId": "01b5725c-2688-4cbc-bc29-7432712449b3",
+  "version": "48",
+  "source": "open-design-project-library-preview",
+  "screen": "screen-clip-report",
+  "state": "default",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "fixture": "项目库基线为 Open Design Version 48 内置“原剧切片”任务的按集完成报告；Electron 为隔离剧目的真实导出批次，报告仅接收本次 candidate ID，不混入历史候选。",
+  "test": "tests/e2e/phase8-original-clip-workflow.spec.ts：真实 FFmpeg 导出后报告、1440×900/1280×720 截图与无横向溢出。",
+  "allowedDifferences": [
+    "Electron 仅有隔离剧目的 1 个真实导出候选和 2 集源媒体；项目库基线为演示数据。数据差异不得豁免模块标题、按集报告、任务回链或应用壳结构。"
+  ],
+  "comparisonRegions": [
+    {
+      "label": "应用壳、三阶段进度与按集完成报告",
+      "x": 0,
+      "y": 0,
+      "width": 1440,
+      "height": 900,
+      "maxChangedPixelRatio": 0,
+      "maxMeanRgbDelta": 0
+    }
+  ]
+}

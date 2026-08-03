@@ -25,7 +25,7 @@ export const importScript = async (filePath: string): Promise<{ format: ScriptFo
   const text = result.text.replace(/\r\n/g, '\n').trim()
   if (!text) throw new ScriptImportError(result.format === 'pdf' ? 'SCANNED_PDF_UNSUPPORTED' : 'EMPTY_SCRIPT', result.format === 'pdf' ? '扫描版 PDF 暂不支持 OCR' : '剧本文本为空')
   const episodes = splitScriptByEpisode(text)
-  return { ...result, text, episodes: episodes.length > 0 ? episodes : [{ episodeNo: 0, title: '整部剧本（待手工关联）', text }] }
+  return { ...result, text, episodes }
 }
 
 export const splitScriptByEpisode = (text: string): ScriptEpisodePreview[] => {

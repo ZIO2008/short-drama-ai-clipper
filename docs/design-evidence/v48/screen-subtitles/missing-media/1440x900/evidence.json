@@ -1,0 +1,27 @@
+{
+  "projectId": "01b5725c-2688-4cbc-bc29-7432712449b3",
+  "version": "48",
+  "source": "open-design-project-library-preview",
+  "screen": "screen-subtitles",
+  "state": "missing-media",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "fixture": "隔离 Electron fixture：第 02 集经重新打开剧目后读取为缺媒体，详情提供重新关联动作。",
+  "test": "tests/e2e/phase10-v48-fixture-mapping.spec.ts",
+  "allowedDifferences": [
+    "待采集同状态 Open Design 项目库预览；媒体画面、剧集编号和真实文件路径均为 fixture 差异。"
+  ],
+  "comparisonRegions": [
+    {
+      "label": "应用壳与当前工作区主画布",
+      "x": 0,
+      "y": 0,
+      "width": 1440,
+      "height": 900,
+      "maxChangedPixelRatio": 0,
+      "maxMeanRgbDelta": 0
+    }
+  ]
+}

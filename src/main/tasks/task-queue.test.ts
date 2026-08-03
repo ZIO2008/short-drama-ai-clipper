@@ -2,6 +2,7 @@ import Database from 'better-sqlite3'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { migrateDatabase } from '../db/migrate.js'
 import { TaskQueue, type TaskExecutor } from './task-queue.js'
+import { TaskCheckpointService } from './task-checkpoint-service.js'
 
 const databases: Database.Database[] = []
 
@@ -10,6 +11,22 @@ afterEach(() => {
 })
 
 describe('TaskQueue persistence and recovery', () => {
+  it('writes technical lifecycle logs without persisting sensitive error text', async () => {
+    const database = setupTask(['one', 'two'])
+    const writes: Array<{ level: string; eventType: string; details: Record<string, unknown> }> = []
+    const logger = { write: (level: 'info' | 'warning' | 'error', eventType: string, details: Record<string, unknown> = {}) => { writes.push({ level, eventType, details }) } }
+    const result = await new TaskQueue(database, 2, logger).run('task', async (item) => {
+      if (item.id === 'two') throw new Error('读取 C:\\private\\剧本\\字幕.srt 失败，apiKey=sk-secret')
+    })
+
+    expect(result.status).toBe('partial')
+    expect(writes.map(({ eventType }) => eventType)).toEqual(expect.arrayContaining(['task.started', 'task.item.retrying', 'task.item.failed', 'task.completed']))
+    expect(JSON.stringify(writes)).not.toContain('C:\\private')
+    expect(JSON.stringify(writes)).not.toContain('剧本')
+    expect(JSON.stringify(writes)).not.toContain('字幕')
+    expect(JSON.stringify(writes)).not.toContain('sk-secret')
+  })
+
   it('persists two failures, continues later items, and finishes partial', async () => {
     const database = setupTask(['i1', 'i2', 'i3', 'i4'])
     const attempts = new Map<string, number>()
@@ -116,6 +133,30 @@ describe('TaskQueue persistence and recovery', () => {
     expect(executed).toEqual(['first', 'second'])
   })
 
+  it('treats an AbortSignal caused by pause as resumable instead of a failed retry', async () => {
+    const database = setupTask(['active', 'waiting'])
+    const started = deferred<AbortSignal>()
+    const queue = new TaskQueue(database)
+    const attempts: string[] = []
+    const running = queue.run('task', async (item, { signal }) => {
+      attempts.push(item.id)
+      if (item.id === 'active' && attempts.filter((id) => id === 'active').length === 1) {
+        started.resolve(signal)
+        await rejectWhenAborted(signal)
+      }
+    })
+    const signal = await started.promise
+    queue.pause('task')
+    expect(signal.aborted).toBe(true)
+    await waitFor(() => itemRows(database)[0]?.status === 'paused')
+    expect(attempts).toEqual(['active'])
+
+    queue.resume('task')
+    await expect(running).resolves.toMatchObject({ status: 'completed' })
+    expect(attempts).toEqual(['active', 'active', 'waiting'])
+    expect(itemRows(database).map(({ status }) => status)).toEqual(['succeeded', 'succeeded'])
+  })
+
   it('passes cancellation to the executor and persists cancelled items', async () => {
     const database = setupTask(['active', 'waiting'])
     const started = deferred<AbortSignal>()
@@ -155,6 +196,24 @@ describe('TaskQueue persistence and recovery', () => {
     await secondQueue.recover('task', async (item) => { recovered.push(item.id) })
     expect(recovered).toEqual(['active', 'waiting'])
     expect(taskRow(database)).toMatchObject({ status: 'completed', progressCurrent: 3 })
+  })
+
+  it('normalizes stale running items after an ungraceful restart', () => {
+    const database = setupTask(['finished', 'interrupted'])
+    setItemStatus(database, 'finished', 'succeeded')
+    setItemStatus(database, 'interrupted', 'running')
+    database.prepare("UPDATE production_tasks SET status = 'running', progress_current = 1").run()
+    expect(new TaskCheckpointService(database).normalizeInterruptedTasks()).toBe(1)
+    expect(taskRow(database)).toMatchObject({ status: 'paused' })
+    expect(itemRows(database).map(({ status }) => status)).toEqual(['succeeded', 'paused'])
+  })
+
+  it('marks a task completed when the last item finished before the process crashed', () => {
+    const database = setupTask(['finished'])
+    setItemStatus(database, 'finished', 'succeeded')
+    database.prepare("UPDATE production_tasks SET status = 'running', progress_current = 1").run()
+    new TaskCheckpointService(database).normalizeInterruptedTasks()
+    expect(taskRow(database)).toMatchObject({ status: 'completed' })
   })
 })
 

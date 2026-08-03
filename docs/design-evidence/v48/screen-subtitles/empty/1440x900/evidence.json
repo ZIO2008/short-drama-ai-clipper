@@ -1,0 +1,27 @@
+{
+  "projectId": "01b5725c-2688-4cbc-bc29-7432712449b3",
+  "version": "48",
+  "source": "open-design-project-library-preview",
+  "screen": "screen-subtitles",
+  "state": "empty",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "fixture": "隔离 Electron fixture：两集均无 ASR/OCR 资产，包含一个可用分集和一个待重关联分集。",
+  "test": "tests/e2e/phase10-v48-fixture-mapping.spec.ts",
+  "allowedDifferences": [
+    "待采集同状态 Open Design 项目库预览；概览数据量、剧集名称和媒体画面属于 fixture 差异，不能作为布局偏差豁免。"
+  ],
+  "comparisonRegions": [
+    {
+      "label": "应用壳与当前工作区主画布",
+      "x": 0,
+      "y": 0,
+      "width": 1440,
+      "height": 900,
+      "maxChangedPixelRatio": 0,
+      "maxMeanRgbDelta": 0
+    }
+  ]
+}

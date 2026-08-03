@@ -1,6 +1,6 @@
 {
   "name": "short-drama-ai-material-platform",
-  "version": "0.1.0",
+  "version": "0.1.32",
   "private": true,
   "type": "module",
   "description": "短剧投流素材生成平台 Windows 桌面版",
@@ -11,11 +11,17 @@
     "start": "pnpm run rebuild:electron && electron-vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "test": "pnpm run rebuild:node && vitest run",
-    "build": "electron-vite build",
+    "clean:build-metadata": "node -e \"for (const file of ['out/tsconfig.node.tsbuildinfo','out/tsconfig.web.tsbuildinfo']) require('node:fs').rmSync(file,{force:true})\"",
+    "check:version": "node tools/check-version-consistency.mjs",
+    "validate:design-contract": "node tools/validate-design-contract.mjs",
+    "build": "pnpm run check:version && pnpm run clean:build-metadata && electron-vite build",
     "rebuild:electron": "electron-rebuild -f -w better-sqlite3",
     "rebuild:node": "pnpm rebuild better-sqlite3",
-    "pack:dir": "pnpm run build && pnpm run rebuild:electron && electron-builder --dir",
-    "test:e2e": "pnpm run rebuild:electron && playwright test"
+    "pack:dir": "pnpm run pack:current",
+    "pack:current": "node tools/pack-current-candidate.mjs",
+    "test:e2e": "pnpm run build && pnpm run rebuild:electron && playwright test",
+    "release:verify": "pnpm run pack:current && node tools/run-current-packaged-e2e.mjs",
+    "audit:fidelity": "node tools/visual-fidelity-report.mjs"
   },
   "build": {
     "appId": "local.shortdrama.materialstudio",
@@ -25,11 +31,22 @@
     },
     "files": [
       "out/**",
-      "package.json"
+      "!out/**/*.tsbuildinfo",
+      "package.json",
+      "node_modules/better-sqlite3/build/Release/better_sqlite3.node"
+    ],
+    "asarUnpack": [
+      "node_modules/better-sqlite3/build/Release/*.node"
     ],
     "extraResources": [
-      { "from": "node_modules/ffmpeg-static/ffmpeg.exe", "to": "models/ffmpeg.exe" },
-      { "from": "node_modules/ffprobe-static/bin/win32/x64/ffprobe.exe", "to": "models/ffprobe.exe" }
+      {
+        "from": "node_modules/ffmpeg-static/ffmpeg.exe",
+        "to": "models/ffmpeg.exe"
+      },
+      {
+        "from": "node_modules/ffprobe-static/bin/win32/x64/ffprobe.exe",
+        "to": "models/ffprobe.exe"
+      }
     ],
     "win": {
       "target": "dir",
@@ -47,6 +64,7 @@
   },
   "devDependencies": {
     "@electron/rebuild": "4.2.0",
+    "@napi-rs/canvas": "0.1.80",
     "@playwright/test": "1.61.1",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",

@@ -54,6 +54,7 @@ export class BackupService {
         ? (opened = new Database(source, { readonly: true, fileMustExist: true }))
         : source
       await database.backup(temporary)
+      redactContent(temporary)
       if (!integrityCheck(temporary)) throw new Error('backup integrity check failed')
       await rename(temporary, destination)
       if (indexDatabase) {
@@ -104,5 +105,19 @@ export class BackupService {
       source.close()
       await rm(temporary, { force: true })
     }
+  }
+}
+
+/** Backups retain task/asset metadata but never retain script or subtitle contents/paths. */
+function redactContent(path: string): void {
+  const backup = new Database(path)
+  try {
+    backup.transaction(() => {
+      backup.prepare("UPDATE script_assets SET source_path = '[redacted]', extracted_text = NULL").run()
+      backup.prepare("UPDATE script_asset_segments SET extracted_text = ''").run()
+      backup.prepare("UPDATE subtitle_assets SET source_path = '[redacted]'").run()
+    })()
+  } finally {
+    backup.close()
   }
 }
