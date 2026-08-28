@@ -2,6 +2,7 @@ import { mkdir, readdir, rename, rm, stat } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { randomUUID } from 'node:crypto'
 import Database from 'better-sqlite3'
+import { sanitizePrivacyValue } from './privacy-sanitizer.js'
 
 export type BackupSource = Database.Database | string
 export type BackupInfo = { path: string; createdAt: string }
@@ -108,14 +109,29 @@ export class BackupService {
   }
 }
 
-/** Backups retain task/asset metadata but never retain script or subtitle contents/paths. */
+/** Backups retain task/asset metadata but never retain user media paths or secret-bearing snapshots. */
 function redactContent(path: string): void {
   const backup = new Database(path)
   try {
     backup.transaction(() => {
+      backup.prepare("UPDATE episodes SET source_path = '[redacted]'").run()
+      backup.prepare("UPDATE drama_import_preferences SET last_import_directory = '[redacted]'").run()
+      backup.prepare("UPDATE drama_covers SET path = '[redacted]'").run()
       backup.prepare("UPDATE script_assets SET source_path = '[redacted]', extracted_text = NULL").run()
       backup.prepare("UPDATE script_asset_segments SET extracted_text = ''").run()
       backup.prepare("UPDATE subtitle_assets SET source_path = '[redacted]'").run()
+      backup.prepare("UPDATE generated_materials SET path = '[redacted]'").run()
+      backup.prepare("UPDATE app_backups SET path = '[redacted]'").run()
+      const tasks = backup.prepare('SELECT id, config_snapshot AS configSnapshot FROM production_tasks').all() as Array<{ id: string; configSnapshot: string }>
+      const updateTask = backup.prepare('UPDATE production_tasks SET config_snapshot = ? WHERE id = ?')
+      for (const task of tasks) {
+        try {
+          const parsed: unknown = JSON.parse(task.configSnapshot)
+          updateTask.run(JSON.stringify(sanitizePrivacyValue(parsed)), task.id)
+        } catch {
+          updateTask.run('[redacted]', task.id)
+        }
+      }
     })()
   } finally {
     backup.close()

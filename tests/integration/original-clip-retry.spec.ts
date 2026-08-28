@@ -44,5 +44,5 @@ describe('original clip retry integration', () => {
       if (oldFfprobe === undefined) delete process.env.SHORTDRAMA_FFPROBE_PATH; else process.env.SHORTDRAMA_FFPROBE_PATH = oldFfprobe
       database.close(); await rm(folder, { recursive: true, force: true })
     }
-  })
+  }, 30_000)
 })

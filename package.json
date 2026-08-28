@@ -1,6 +1,6 @@
 {
   "name": "short-drama-ai-material-platform",
-  "version": "0.1.32",
+  "version": "0.1.92",
   "private": true,
   "type": "module",
   "description": "短剧投流素材生成平台 Windows 桌面版",
@@ -13,19 +13,33 @@
     "test": "pnpm run rebuild:node && vitest run",
     "clean:build-metadata": "node -e \"for (const file of ['out/tsconfig.node.tsbuildinfo','out/tsconfig.web.tsbuildinfo']) require('node:fs').rmSync(file,{force:true})\"",
     "check:version": "node tools/check-version-consistency.mjs",
+    "validate:baseline-registry": "node tools/validate-baseline-registry.mjs",
+    "validate:test-boundary": "node tools/validate-playwright-suite-boundary.mjs",
+    "validate:current-references": "node tools/validate-current-reference-boundary.mjs",
+    "validate:phase29-acceptance": "node tools/validate-phase29-acceptance.mjs",
+    "status:current": "node tools/current-workspace-status.mjs",
     "validate:design-contract": "node tools/validate-design-contract.mjs",
-    "build": "pnpm run check:version && pnpm run clean:build-metadata && electron-vite build",
+    "build": "pnpm run check:version && pnpm run validate:phase29-acceptance && pnpm run clean:build-metadata && electron-vite build && pnpm run verify:renderer-model-studio-boundary",
     "rebuild:electron": "electron-rebuild -f -w better-sqlite3",
     "rebuild:node": "pnpm rebuild better-sqlite3",
     "pack:dir": "pnpm run pack:current",
     "pack:current": "node tools/pack-current-candidate.mjs",
+    "pack:verification": "node tools/pack-current-candidate.mjs --verification",
     "test:e2e": "pnpm run build && pnpm run rebuild:electron && playwright test",
+    "test:e2e:compatibility": "pnpm run build && pnpm run rebuild:electron && node tools/run-playwright-suite.mjs compatibility",
+    "test:e2e:legacy": "pnpm run build && pnpm run rebuild:electron && node tools/run-playwright-suite.mjs legacy",
+    "test:e2e:all": "pnpm run build && pnpm run rebuild:electron && node tools/run-playwright-suite.mjs all",
     "release:verify": "pnpm run pack:current && node tools/run-current-packaged-e2e.mjs",
-    "audit:fidelity": "node tools/visual-fidelity-report.mjs"
+    "audit:fidelity": "node tools/visual-fidelity-report.mjs",
+    "verify:renderer-model-studio-boundary": "node tools/verify-renderer-model-studio-boundary.mjs",
+    "verify:clip-evidence-baseline": "node tools/verify-clip-evidence-baseline.mjs",
+    "build:local-ocr": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/build-local-ocr-runner.ps1",
+    "build:real-asr-evidence": "node node_modules/.pnpm/esbuild@0.25.12/node_modules/esbuild/bin/esbuild tools/real-asr-evidence-baseline.ts --bundle --platform=node --format=esm --packages=external --outfile=tools/real-asr-evidence-baseline.bundle.mjs"
   },
   "build": {
     "appId": "local.shortdrama.materialstudio",
     "productName": "短剧投流素材生成平台",
+    "npmRebuild": false,
     "directories": {
       "output": "release"
     },
@@ -33,6 +47,8 @@
       "out/**",
       "!out/**/*.tsbuildinfo",
       "package.json",
+      "!node_modules/better-sqlite3/build/**",
+      "!node_modules/better-sqlite3/bin/**",
       "node_modules/better-sqlite3/build/Release/better_sqlite3.node"
     ],
     "asarUnpack": [
@@ -46,6 +62,16 @@
       {
         "from": "node_modules/ffprobe-static/bin/win32/x64/ffprobe.exe",
         "to": "models/ffprobe.exe"
+      },
+      {
+        "from": "tools/local-ocr/runtime",
+        "to": "tools/local-ocr/runtime",
+        "filter": [
+          "**/*",
+          "!**/__pycache__/**",
+          "!**/*.pyc",
+          "!**/.env*"
+        ]
       }
     ],
     "win": {

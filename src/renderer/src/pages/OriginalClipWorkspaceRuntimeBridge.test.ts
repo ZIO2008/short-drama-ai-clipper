@@ -1,27 +1,8 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest'
-import type { ClipCandidate, ClipEpisodeStatus, DesktopApi, EpisodeAsset } from '../../../shared/contracts.js'
+import type { ClipCandidate } from '../../../shared/contracts.js'
 import { bindOriginalClipWorkspaceRuntime, refreshOriginalClipWorkspace, selectOriginalClipWorkspaceCandidate } from './OriginalClipWorkspaceRuntimeBridge.js'
-
-const episodes: EpisodeAsset[] = [
-  { id: 'e1', episodeNo: 1, sortOrder: 1, sourcePath: 'D:\\episode-01.mp4', durationSeconds: 60, fps: 25, videoWidth: 1920, videoHeight: 1080, status: 'ready' },
-  { id: 'e2', episodeNo: 2, sortOrder: 2, sourcePath: '', durationSeconds: null, fps: null, videoWidth: null, videoHeight: null, status: 'missing' }
-]
-const candidate = (id = 'candidate-1', status: ClipCandidate['status'] = 'pending_review'): ClipCandidate => ({ id, episodeId: 'e1', startSeconds: 10, endSeconds: 25, status, reason: null })
-const statuses: ClipEpisodeStatus[] = [
-  { episodeId: 'e1', episodeNo: 1, sourceStatus: 'ready', candidateCount: 1, pendingCount: 1, confirmedCount: 0, exportedCount: 0, failedCount: 0, productionStatus: 'pending_confirmation' },
-  { episodeId: 'e2', episodeNo: 2, sourceStatus: 'missing', candidateCount: 0, pendingCount: 0, confirmedCount: 0, exportedCount: 0, failedCount: 0, productionStatus: 'missing_media' }
-]
-const surface = (): Document => {
-  const result = document.implementation.createHTMLDocument('clip')
-  result.body.innerHTML = '<section id="screen-clip"><div class="r5-panel-head"><span class="meta"></span></div><div class="r5-episodes"></div><div class="r5-frame"><i class="r5-window"></i><i class="r5-figure"></i><i class="r5-sub-region"></i><span class="r5-timecode"></span><div class="r5-monitor-caption"><span></span><span></span></div></div><section class="r5-timeline"><div class="r5-timeline-head"><span></span></div><div class="r5-track"><i class="r5-range"></i></div></section><section class="r5-timeline"><div class="r5-timeline-head"><span></span></div><div class="r5-track"><i class="r5-range"></i><i class="r5-anchor"></i></div></section><aside class="r5-inspector"><div class="r5-panel-head"><span class="meta"></span></div></aside><div class="r5-candidate-id"></div><div class="r5-nudge"><button></button><button></button><button></button><button></button></div><button data-r5-confirm></button><button data-r5-open="generate"></button><div class="r5-note"></div></section>'
-  const inspectorBody = result.createElement('div'); inspectorBody.className = 'r5-inspector-body'
-  inspectorBody.innerHTML = '<div data-inline-candidate-switcher><span data-inline-candidate-page-label></span><div class="r5-candidate-switch-grid"></div><button data-inline-candidate-page="prev"></button><span data-inline-candidate-window></span><button data-inline-candidate-page="next"></button></div>'
-  result.querySelector('.r5-inspector')?.append(inspectorBody)
-  return result
-}
-const api = (overrides: Partial<DesktopApi> = {}): DesktopApi => ({ listClipCandidates: vi.fn().mockResolvedValue([candidate()]), listClipEpisodeStatuses: vi.fn().mockResolvedValue(statuses), updateClipCandidate: vi.fn().mockImplementation(async (id, startSeconds, endSeconds) => candidate(id, 'editing') && { ...candidate(id, 'editing'), startSeconds, endSeconds }), confirmClipCandidate: vi.fn().mockResolvedValue(candidate('candidate-1', 'confirmed')), preflightClipGeneration: vi.fn().mockResolvedValue({ estimatedCandidates: 1, skipped: [] }), generateClipCandidates: vi.fn().mockResolvedValue([candidate('candidate-new')]), ...overrides } as DesktopApi)
-const settle = async (): Promise<void> => { await Promise.resolve(); await Promise.resolve(); await Promise.resolve() }
+import { api, candidate, episodes, settle, statuses, surface } from './original-clip-workspace-test-helpers.js'
 
 describe('bindOriginalClipWorkspaceRuntime', () => {
   it('replaces prototype fixtures with real episode and candidate data', async () => {
@@ -86,12 +67,26 @@ describe('bindOriginalClipWorkspaceRuntime', () => {
     expect(testDocument.querySelector('.r5-note')?.textContent).toContain('重新定位')
     expect(testDocument.querySelector<HTMLButtonElement>('[data-r5-confirm]')?.disabled).toBe(true)
     expect(testDocument.querySelector('video[data-original-clip-preview]')).toBeNull()
+    expect(testDocument.querySelector('.r5-frame')?.classList.contains('clip-media-missing')).toBe(true)
+    expect(testDocument.querySelector('.clip-missing-message')?.textContent).toContain('第 02 集源媒体不可读')
+    expect(testDocument.querySelector('.clip-missing-message')?.textContent).toContain('重新定位源文件')
+  })
+  it('rejects timeline positioning after a selected episode media load fails', async () => {
+    const testDocument = surface(); Object.assign(window, { desktopApi: api() })
+    bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes }); await settle()
+    testDocument.querySelector<HTMLVideoElement>('video[data-original-clip-preview]')?.dispatchEvent(new Event('error'))
+    await settle()
+    const track = testDocument.querySelector<HTMLElement>('.r5-timeline .r5-track')!
+    track.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, clientX: 40 }))
+    expect(testDocument.querySelector('video[data-original-clip-preview]')).toBeNull()
+    expect(testDocument.querySelector('.r5-frame')?.classList.contains('clip-media-missing')).toBe(true)
+    expect(testDocument.querySelector('[data-clip-source-time]')?.textContent).toBe('—')
   })
   it('persists right-side time nudges using the selected candidate id', async () => {
     const updateClipCandidate = vi.fn().mockResolvedValue({ ...candidate(), status: 'editing', startSeconds: 10.1, endSeconds: 25 })
     const testDocument = surface(); Object.assign(window, { desktopApi: api({ updateClipCandidate }) })
     bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes }); await settle()
-    testDocument.querySelectorAll<HTMLButtonElement>('.r5-nudge button')[1]!.click(); await settle()
+    testDocument.querySelectorAll<HTMLButtonElement>('[data-clip-nudge]')[1]!.click(); await settle()
     expect(updateClipCandidate).toHaveBeenCalledWith('candidate-1', 10.1, 25)
   })
   it('keeps the in point fixed when an out-point nudge reaches the minimum duration', async () => {
@@ -99,10 +94,10 @@ describe('bindOriginalClipWorkspaceRuntime', () => {
     const updateClipCandidate = vi.fn().mockResolvedValue(shortCandidate)
     const testDocument = surface(); Object.assign(window, { desktopApi: api({ updateClipCandidate, listClipCandidates: vi.fn().mockResolvedValue([shortCandidate]) }) })
     bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes }); await settle()
-    testDocument.querySelectorAll<HTMLButtonElement>('.r5-nudge button')[2]!.click(); await settle()
+    testDocument.querySelectorAll<HTMLButtonElement>('[data-clip-nudge]')[2]!.click(); await settle()
     expect(updateClipCandidate).toHaveBeenCalledWith('candidate-1', 10, 10.1)
   })
-  it('persists source-timeline clicks and drags as real candidate ranges', async () => {
+  it('uses source-timeline clicks and drags only to seek without changing candidate boundaries', async () => {
     const updateClipCandidate = vi.fn().mockImplementation(async (id, startSeconds, endSeconds) => ({ ...candidate(id, 'editing'), startSeconds, endSeconds }))
     const testDocument = surface(); Object.assign(window, { desktopApi: api({ updateClipCandidate }) })
     bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes }); await settle()
@@ -110,7 +105,8 @@ describe('bindOriginalClipWorkspaceRuntime', () => {
     Object.defineProperty(sourceTrack, 'getBoundingClientRect', { value: () => ({ left: 0, width: 100 }) })
     sourceTrack.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, clientX: 80 }))
     testDocument.dispatchEvent(new MouseEvent('pointermove', { bubbles: true, clientX: 90 }))
-    await vi.waitFor(() => expect(updateClipCandidate).toHaveBeenLastCalledWith('candidate-1', 45, 60))
+    expect(testDocument.querySelector('[data-clip-source-time]')?.textContent).toBe('00:00:54.000')
+    expect(updateClipCandidate).not.toHaveBeenCalled()
   })
   it('confirms the real selected candidate rather than issuing a prototype toast', async () => {
     const confirmClipCandidate = vi.fn().mockResolvedValue(candidate('candidate-1', 'confirmed'))
@@ -130,25 +126,68 @@ describe('bindOriginalClipWorkspaceRuntime', () => {
   it('preflights before generating only the currently selected real episode', async () => {
     const preflightClipGeneration = vi.fn().mockResolvedValue({ estimatedCandidates: 1, skipped: [] })
     const created = candidate('new-candidate')
-    const generateClipCandidates = vi.fn().mockResolvedValue([created])
+    const generateClipCandidates = vi.fn().mockResolvedValue({ taskId: 'generation-1', status: 'running', stage: 'text-semantics', startedAt: '2026-08-12T00:00:00.000Z' })
     const listClipCandidates = vi.fn().mockResolvedValueOnce([candidate()]).mockResolvedValue([candidate(), created])
-    const testDocument = surface(); Object.assign(window, { desktopApi: api({ preflightClipGeneration, generateClipCandidates, listClipCandidates }) })
+    const testDocument = surface(); Object.assign(window, { desktopApi: api({ preflightClipGeneration, generateClipCandidates, listClipCandidates, listTasks: vi.fn().mockResolvedValue([{ id: 'generation-1', status: 'running' }]) }) })
     bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes }); await settle()
     testDocument.querySelector<HTMLButtonElement>('[data-r5-open="generate"]')!.click(); await settle()
     expect(preflightClipGeneration).toHaveBeenCalledWith('d1', expect.objectContaining({ episodeIds: ['e1'] }))
     expect(generateClipCandidates).toHaveBeenCalledWith('d1', expect.objectContaining({ episodeIds: ['e1'] }))
-    await vi.waitFor(() => expect(testDocument.querySelector('.r5-candidate-id')?.textContent).toContain('new-cand'))
+    await vi.waitFor(() => expect(testDocument.querySelector('.r5-note')?.textContent).toContain('正在生成候选'))
+  })
+  it('keeps partial-success blocked evidence visible with exactly one recovery route', async () => {
+    const created = candidate('partial-candidate')
+    const listClipCandidates = vi.fn().mockResolvedValueOnce([candidate()]).mockResolvedValue([candidate(), created])
+    const listTasks = vi.fn().mockResolvedValue([{ id: 'partial-task', type: 'original_clip', status: 'reviewing', checkpointReason: '本次有 1 条候选未纳入：查看素材资产。', episodeIds: ['e1'], updatedAt: '2026-08-12T00:00:00.000Z' }])
+    const onRecoveryNavigate = vi.fn()
+    const testDocument = surface(); Object.assign(window, { desktopApi: api({ generateClipCandidates: vi.fn().mockResolvedValue({ taskId: 'partial-task', status: 'running', stage: 'text-semantics', startedAt: '2026-08-12T00:00:00.000Z' }), listClipCandidates, listTasks }) })
+    bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes, onRecoveryNavigate }); await settle()
+    testDocument.querySelector<HTMLButtonElement>('[data-r5-open="generate"]')!.click()
+    await vi.waitFor(() => expect(testDocument.querySelector('.r5-note')?.textContent).toContain('未纳入'))
+    const recovery = testDocument.querySelectorAll<HTMLButtonElement>('[data-clip-recovery]')
+    expect(recovery).toHaveLength(1); expect(recovery[0]!.dataset.clipRecovery).toBe('assets')
+    recovery[0]!.click(); expect(onRecoveryNavigate).toHaveBeenCalledWith('assets')
+  })
+  it('restores the dedicated deadline decision controls after reopening the workspace', async () => {
+    const decideIntelligentClipDeadline = vi.fn().mockResolvedValue(undefined)
+    const listTasks = vi.fn().mockResolvedValue([{ id: 'decision-task', type: 'original_clip', status: 'paused', checkpointStage: 'awaiting-decision', checkpointReason: '已达到本阶段目标时间；请在有限延期内选择继续或停止。', episodeIds: ['e1'], updatedAt: '2026-08-12T00:00:00.000Z' }])
+    const testDocument = surface(); Object.assign(window, { desktopApi: api({ listTasks, decideIntelligentClipDeadline }) })
+    bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes }); await settle()
+    const continueButton = testDocument.querySelector<HTMLButtonElement>('[data-clip-deadline-continue]')
+    const stopButton = testDocument.querySelector<HTMLButtonElement>('[data-clip-deadline-stop]')
+    expect(continueButton?.dataset.clipDeadlineContinue).toBe('decision-task')
+    expect(stopButton?.dataset.clipDeadlineStop).toBe('decision-task')
+    continueButton?.click(); await settle()
+    expect(decideIntelligentClipDeadline).toHaveBeenCalledWith('decision-task', 'continue')
+  })
+  it.each([
+    ['cancelled', '操作员取消候选生成。'],
+    ['interrupted', '应用关闭或重启，文本语义候选生成已中断。'],
+    ['failed', '文本语义供应商配置已变化，候选未发布。']
+  ])('restores the latest %s generation fact instead of presenting an empty state', async (status, reason) => {
+    const testDocument = surface(); Object.assign(window, { desktopApi: api({ listClipCandidates: vi.fn().mockResolvedValue([]), listTasks: vi.fn().mockResolvedValue([{ id: `${status}-task`, type: 'original_clip', status, checkpointStage: status, checkpointReason: reason, episodeIds: ['e1'], updatedAt: '2026-08-22T00:01:00.000Z' }]) }) })
+    bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes }); await settle()
+    expect(testDocument.querySelector('.r5-note')?.textContent).toContain(reason)
+    expect(testDocument.querySelector('.r5-note')?.textContent).not.toContain('本集还没有真实候选')
+  })
+  it('does not let an older blocked task override a newer successful candidate round', async () => {
+    const testDocument = surface(); Object.assign(window, { desktopApi: api({ listTasks: vi.fn().mockResolvedValue([
+      { id: 'old-blocked', type: 'original_clip', status: 'failed', taskRound: 1, checkpointReason: '字幕证据门禁未纳入候选。', episodeIds: ['e1'], updatedAt: '2026-08-22T00:01:00.000Z' },
+      { id: 'new-reviewing', type: 'original_clip', status: 'reviewing', taskRound: 2, checkpointReason: '已生成 1 条候选，等待人工审阅。', episodeIds: ['e1'], updatedAt: '2026-08-22T00:01:00.000Z' }
+    ]) }) })
+    bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes }); await settle()
+    expect(testDocument.querySelector('.r5-note')?.textContent).toContain('候选待确认')
+    expect(testDocument.querySelector('.r5-note')?.textContent).not.toContain('字幕证据门禁')
   })
   it('switches the workspace to the episode of the first generated candidate', async () => {
     const secondEpisode = { ...episodes[1]!, id: 'e2', sourcePath: 'D:\\episode-02.mp4', durationSeconds: 60, status: 'ready' }
     const created = { ...candidate('new-e2'), episodeId: 'e2' }
     const listClipCandidates = vi.fn().mockResolvedValueOnce([candidate()]).mockResolvedValue([candidate(), created])
-    const testDocument = surface(); Object.assign(window, { desktopApi: api({ generateClipCandidates: vi.fn().mockResolvedValue([created]), listClipCandidates, listClipEpisodeStatuses: vi.fn().mockResolvedValue([{ ...statuses[0]! }, { ...statuses[0]!, episodeId: 'e2', episodeNo: 2 }]) }) })
+    const testDocument = surface(); Object.assign(window, { desktopApi: api({ generateClipCandidates: vi.fn().mockResolvedValue({ taskId: 'generation-2', status: 'running', stage: 'text-semantics', startedAt: '2026-08-12T00:00:00.000Z' }), listClipCandidates, listTasks: vi.fn().mockResolvedValue([{ id: 'generation-2', status: 'running' }]), listClipEpisodeStatuses: vi.fn().mockResolvedValue([{ ...statuses[0]! }, { ...statuses[0]!, episodeId: 'e2', episodeNo: 2 }]) }) })
     bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes: [episodes[0]!, secondEpisode] }); await settle()
     testDocument.querySelector<HTMLButtonElement>('[data-r5-open="generate"]')!.click()
-    await vi.waitFor(() => expect(testDocument.querySelector('.r5-candidate-id')?.textContent).toContain('new-e2'))
-    expect(testDocument.querySelector<HTMLButtonElement>('[data-clip-episode-id="e2"]')?.getAttribute('aria-pressed')).toBe('true')
-    expect(testDocument.querySelector<HTMLVideoElement>('video[data-original-clip-preview]')?.getAttribute('src')).toContain('episode-02.mp4')
+    await vi.waitFor(() => expect(testDocument.querySelector('.r5-note')?.textContent).toContain('正在生成候选'))
+    expect(testDocument.querySelector<HTMLButtonElement>('[data-clip-episode-id="e1"]')?.getAttribute('aria-pressed')).toBe('true')
   })
   it('keeps a newly mounted workspace target pending until its candidate list contains that target', async () => {
     const target = candidate('target-02')
@@ -195,7 +234,7 @@ describe('bindOriginalClipWorkspaceRuntime', () => {
     const updateClipCandidate = vi.fn().mockImplementationOnce(() => firstWrite).mockImplementation(async (id, startSeconds, endSeconds) => ({ ...candidate(id, 'editing'), startSeconds, endSeconds }))
     const testDocument = surface(); Object.assign(window, { desktopApi: api({ updateClipCandidate, listClipCandidates: vi.fn().mockResolvedValue([candidate(), secondCandidate]), listClipEpisodeStatuses: vi.fn().mockResolvedValue([{ ...statuses[0]! }, { ...statuses[0]!, episodeId: 'e2', episodeNo: 2 }]) }) })
     bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes: [episodes[0]!, secondEpisode] }); await settle()
-    const nudges = testDocument.querySelectorAll<HTMLButtonElement>('.r5-nudge button')
+    const nudges = testDocument.querySelectorAll<HTMLButtonElement>('[data-clip-nudge]')
     nudges[1]!.click(); nudges[3]!.click()
     testDocument.querySelectorAll<HTMLButtonElement>('[data-clip-episode-id]')[1]!.click()
     resolveFirst({ ...candidate(), status: 'editing', startSeconds: 10.1 })
@@ -217,5 +256,93 @@ describe('bindOriginalClipWorkspaceRuntime', () => {
     firstEpisodeVideo.dispatchEvent(new Event('error'))
     expect(testDocument.querySelector<HTMLVideoElement>('video[data-original-clip-preview]')).toBe(currentEpisodeVideo)
     expect(testDocument.querySelector<HTMLButtonElement>('[data-r5-confirm]')?.disabled).toBe(false)
+  })
+  it('maps source PTS and candidate-relative time while keeping review modes non-persistent', async () => {
+    const updateClipCandidate = vi.fn()
+    const testDocument = surface(); Object.assign(window, { desktopApi: api({ updateClipCandidate }) })
+    bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes }); await settle()
+    expect(testDocument.querySelector('[data-clip-source-time]')?.textContent).toBe('00:00:10.000')
+    expect(testDocument.querySelector('[data-clip-relative-time]')?.textContent).toBe('00:00:00.000')
+    testDocument.querySelector<HTMLButtonElement>('[data-clip-review="context"]')!.click()
+    expect(testDocument.querySelector('[data-clip-review-description]')?.textContent).toContain('入点前 1 秒')
+    expect(testDocument.querySelector('[data-clip-source-time]')?.textContent).toBe('00:00:09.000')
+    expect(updateClipCandidate).not.toHaveBeenCalled()
+  })
+  it('uses one-second candidate-timeline keyboard seeking without changing candidate boundaries', async () => {
+    const updateClipCandidate = vi.fn()
+    const testDocument = surface(); Object.assign(window, { desktopApi: api({ updateClipCandidate }) })
+    bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes }); await settle()
+    const candidateTrack = testDocument.querySelectorAll<HTMLElement>('.r5-track')[1]!
+    const preview = testDocument.querySelector<HTMLVideoElement>('video[data-original-clip-preview]')!
+    Object.defineProperty(preview, 'pause', { configurable: true, value: vi.fn() })
+    candidateTrack.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }))
+    expect(preview.pause).toHaveBeenCalled()
+    expect(testDocument.querySelector('[data-clip-source-time]')?.textContent).toBe('00:00:10.000')
+    candidateTrack.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }))
+    expect(testDocument.querySelector('[data-clip-source-time]')?.textContent).toBe('00:00:11.000')
+    expect(testDocument.querySelector('[data-clip-relative-time]')?.textContent).toBe('00:00:01.000')
+    expect(updateClipCandidate).not.toHaveBeenCalled()
+  })
+  it('keeps speed, volume, loop and candidate-end playback in the session only', async () => {
+    const updateClipCandidate = vi.fn()
+    const testDocument = surface(); Object.assign(window, { desktopApi: api({ updateClipCandidate }) })
+    bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes }); await settle()
+    const preview = testDocument.querySelector<HTMLVideoElement>('video[data-original-clip-preview]')!
+    Object.defineProperty(preview, 'play', { configurable: true, value: vi.fn().mockResolvedValue(undefined) })
+    expect([...testDocument.querySelectorAll<HTMLButtonElement>('[data-clip-speed]')].map((button) => button.dataset.clipSpeed)).toEqual(['0.5', '1', '1.5', '2'])
+    Object.defineProperty(preview, 'pause', { configurable: true, value: vi.fn() })
+    testDocument.querySelector<HTMLButtonElement>('[data-clip-speed-trigger]')!.click()
+    testDocument.querySelector<HTMLButtonElement>('[data-clip-speed="2"]')!.click()
+    expect(preview.playbackRate).toBe(2)
+    const volume = testDocument.querySelector<HTMLInputElement>('#clipVolumePopover input')!
+    volume.value = '0'; volume.dispatchEvent(new Event('input', { bubbles: true }))
+    expect(preview.muted).toBe(true)
+    testDocument.querySelector<HTMLButtonElement>('[data-clip-play]')!.click()
+    testDocument.querySelector<HTMLButtonElement>('[data-clip-loop]')!.click()
+    preview.currentTime = 25; preview.dispatchEvent(new Event('timeupdate'))
+    expect(preview.currentTime).toBe(10)
+    expect(updateClipCandidate).not.toHaveBeenCalled()
+  })
+  it('starts context review one second before the in point and stops or loops at its exact end', async () => {
+    const testDocument = surface(); Object.assign(window, { desktopApi: api() })
+    bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes }); await settle()
+    const preview = testDocument.querySelector<HTMLVideoElement>('video[data-original-clip-preview]')!
+    Object.defineProperty(preview, 'play', { configurable: true, value: vi.fn().mockResolvedValue(undefined) })
+    Object.defineProperty(preview, 'pause', { configurable: true, value: vi.fn() })
+    testDocument.querySelector<HTMLButtonElement>('[data-clip-review="context"]')!.click()
+    expect(preview.currentTime).toBe(9)
+    testDocument.querySelector<HTMLButtonElement>('[data-clip-play]')!.click()
+    preview.currentTime = 26; preview.dispatchEvent(new Event('timeupdate'))
+    expect(preview.pause).toHaveBeenCalled()
+    expect(testDocument.querySelector('[data-clip-source-time]')?.textContent).toBe('00:00:26.000')
+    testDocument.querySelector<HTMLButtonElement>('[data-clip-loop]')!.click()
+    testDocument.querySelector<HTMLButtonElement>('[data-clip-play]')!.click()
+    preview.currentTime = 26; preview.dispatchEvent(new Event('timeupdate'))
+    expect(preview.currentTime).toBe(9)
+  })
+  it('scopes Space to the workbench and releases the preceding media before changing episodes', async () => {
+    const secondEpisode = { ...episodes[1]!, id: 'e2', sourcePath: 'D:\\episode-02.mp4', durationSeconds: 60, status: 'ready' }
+    const secondCandidate = { ...candidate('candidate-2'), episodeId: 'e2' }
+    const testDocument = surface(); Object.assign(window, { desktopApi: api({ listClipCandidates: vi.fn().mockResolvedValue([candidate(), secondCandidate]), listClipEpisodeStatuses: vi.fn().mockResolvedValue([{ ...statuses[0]! }, { ...statuses[0]!, episodeId: 'e2', episodeNo: 2 }]) }) })
+    bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes: [episodes[0]!, secondEpisode] }); await settle()
+    const first = testDocument.querySelector<HTMLVideoElement>('video[data-original-clip-preview]')!
+    Object.defineProperty(first, 'play', { configurable: true, value: vi.fn().mockResolvedValue(undefined) })
+    Object.defineProperty(first, 'pause', { configurable: true, value: vi.fn() })
+    testDocument.querySelectorAll<HTMLElement>('.r5-track')[1]!.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }))
+    expect(first.play).toHaveBeenCalledTimes(1)
+    const input = testDocument.createElement('input'); testDocument.getElementById('screen-clip')!.append(input)
+    input.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }))
+    expect(first.play).toHaveBeenCalledTimes(1)
+    const button = testDocument.createElement('button'); testDocument.getElementById('screen-clip')!.append(button)
+    button.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }))
+    expect(first.play).toHaveBeenCalledTimes(1)
+    for (const value of ['', 'plaintext-only']) {
+      const editable = testDocument.createElement('div'); editable.setAttribute('contenteditable', value); const child = testDocument.createElement('span'); editable.append(child); testDocument.getElementById('screen-clip')!.append(editable)
+      child.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }))
+      expect(first.play).toHaveBeenCalledTimes(1)
+    }
+    testDocument.querySelectorAll<HTMLButtonElement>('[data-clip-episode-id]')[1]!.click()
+    expect(first.pause).toHaveBeenCalled()
+    expect(testDocument.querySelector<HTMLVideoElement>('video[data-original-clip-preview]')).not.toBe(first)
   })
 })

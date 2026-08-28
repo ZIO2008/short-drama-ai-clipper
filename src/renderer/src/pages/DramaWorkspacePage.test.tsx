@@ -11,14 +11,14 @@ afterEach(cleanup)
 
 describe('DramaWorkspacePage', () => {
   it('renders the drama workspace as main page content instead of a modal dialog', async () => {
-    const { container } = render(<DramaWorkspacePage drama={drama} tags={[]} onClose={vi.fn()} onLoad={vi.fn().mockResolvedValue(detail)} onRename={vi.fn()} onDelete={vi.fn()} onImport={vi.fn()} onImportScript={vi.fn()} onLinkScript={vi.fn()} onLinkSegment={vi.fn()} onRelink={vi.fn()} onAttachTag={vi.fn()} onUpdateEpisode={vi.fn()} onRemoveEpisode={vi.fn()} onCreateCandidate={vi.fn()} onListCandidates={vi.fn()} onConfirmCandidate={vi.fn()} onExportCandidate={vi.fn()} onChooseOutputDirectory={vi.fn()} onListMaterials={vi.fn()} onPreflightMultiTask={vi.fn()} onCreateMultiTask={vi.fn()} onRunTask={vi.fn()} />)
+    const { container } = render(<DramaWorkspacePage drama={drama} tags={[]} onClose={vi.fn()} onLoad={vi.fn().mockResolvedValue(detail)} onRename={vi.fn()} onDelete={vi.fn()} onImport={vi.fn()} onImportScript={vi.fn()} onLinkScript={vi.fn()} onLinkSegment={vi.fn()} onRelink={vi.fn()} onAttachTag={vi.fn()} onUpdateEpisode={vi.fn()} onRemoveEpisode={vi.fn()} onListCandidates={vi.fn()} onConfirmCandidate={vi.fn()} onExportCandidate={vi.fn()} onChooseOutputDirectory={vi.fn()} onListMaterials={vi.fn()} onPreflightMultiTask={vi.fn()} onCreateMultiTask={vi.fn()} onRunTask={vi.fn()} />)
     await waitFor(() => expect(screen.getAllByRole('heading', { name: '测试剧目' }).length).toBeGreaterThan(0))
     expect(screen.getByRole('tablist', { name: '剧目工作区' })).toBeTruthy()
     expect(screen.queryByRole('dialog')).toBeNull()
   })
 
   it('keeps the Version 48 asset context, four-part health strip, and final subtitle tab in the embedded workspace', async () => {
-    render(<DramaWorkspacePage drama={drama} tags={[]} onClose={vi.fn()} onLoad={vi.fn().mockResolvedValue(detail)} onRename={vi.fn()} onDelete={vi.fn()} onImport={vi.fn()} onImportScript={vi.fn()} onLinkScript={vi.fn()} onLinkSegment={vi.fn()} onRelink={vi.fn()} onAttachTag={vi.fn()} onUpdateEpisode={vi.fn()} onRemoveEpisode={vi.fn()} onCreateCandidate={vi.fn()} onListCandidates={vi.fn()} onConfirmCandidate={vi.fn()} onExportCandidate={vi.fn()} onChooseOutputDirectory={vi.fn()} onListMaterials={vi.fn()} onPreflightMultiTask={vi.fn()} onCreateMultiTask={vi.fn()} onRunTask={vi.fn()} />)
+    render(<DramaWorkspacePage drama={drama} tags={[]} onClose={vi.fn()} onLoad={vi.fn().mockResolvedValue(detail)} onRename={vi.fn()} onDelete={vi.fn()} onImport={vi.fn()} onImportScript={vi.fn()} onLinkScript={vi.fn()} onLinkSegment={vi.fn()} onRelink={vi.fn()} onAttachTag={vi.fn()} onUpdateEpisode={vi.fn()} onRemoveEpisode={vi.fn()} onListCandidates={vi.fn()} onConfirmCandidate={vi.fn()} onExportCandidate={vi.fn()} onChooseOutputDirectory={vi.fn()} onListMaterials={vi.fn()} onPreflightMultiTask={vi.fn()} onCreateMultiTask={vi.fn()} onRunTask={vi.fn()} />)
     await screen.findByRole('tablist', { name: '剧目工作区' })
     expect(screen.getByRole('button', { name: '返回剧目库' })).toBeTruthy()
     expect(screen.getByRole('button', { name: '编辑剧目' })).toBeTruthy()
@@ -30,7 +30,7 @@ describe('DramaWorkspacePage', () => {
   it('opens editing as a focus-managed dialog over the current workspace', async () => {
     const onImport = vi.fn().mockResolvedValue(undefined)
     const onImportFolder = vi.fn().mockResolvedValue(undefined)
-    render(<DramaWorkspacePage drama={drama} tags={[]} onClose={vi.fn()} onLoad={vi.fn().mockResolvedValue(detail)} onRename={vi.fn()} onDelete={vi.fn()} onImport={onImport} onImportFolder={onImportFolder} onImportScript={vi.fn()} onLinkScript={vi.fn()} onLinkSegment={vi.fn()} onRelink={vi.fn()} onAttachTag={vi.fn()} onUpdateEpisode={vi.fn()} onRemoveEpisode={vi.fn()} onCreateCandidate={vi.fn()} onListCandidates={vi.fn()} onConfirmCandidate={vi.fn()} onExportCandidate={vi.fn()} onChooseOutputDirectory={vi.fn()} onListMaterials={vi.fn()} onPreflightMultiTask={vi.fn()} onCreateMultiTask={vi.fn()} onRunTask={vi.fn()} />)
+    render(<DramaWorkspacePage drama={drama} tags={[]} onClose={vi.fn()} onLoad={vi.fn().mockResolvedValue(detail)} onRename={vi.fn()} onDelete={vi.fn()} onImport={onImport} onImportFolder={onImportFolder} onImportScript={vi.fn()} onLinkScript={vi.fn()} onLinkSegment={vi.fn()} onRelink={vi.fn()} onAttachTag={vi.fn()} onUpdateEpisode={vi.fn()} onRemoveEpisode={vi.fn()} onListCandidates={vi.fn()} onConfirmCandidate={vi.fn()} onExportCandidate={vi.fn()} onChooseOutputDirectory={vi.fn()} onListMaterials={vi.fn()} onPreflightMultiTask={vi.fn()} onCreateMultiTask={vi.fn()} onRunTask={vi.fn()} />)
     await screen.findByRole('tablist', { name: '剧目工作区' })
     fireEvent.click(screen.getAllByRole('button', { name: '编辑剧目' })[0]!)
     expect(await screen.findByRole('dialog', { name: '编辑剧目' })).toBeTruthy()
@@ -42,7 +42,7 @@ describe('DramaWorkspacePage', () => {
   })
 
   it('renders focused production workspaces without the outer workspace header and tabs', async () => {
-    render(<DramaWorkspacePage drama={drama} tags={[]} onClose={vi.fn()} onLoad={vi.fn().mockResolvedValue(detail)} onRename={vi.fn()} onDelete={vi.fn()} onImport={vi.fn()} onImportScript={vi.fn()} onLinkScript={vi.fn()} onLinkSegment={vi.fn()} onRelink={vi.fn()} onAttachTag={vi.fn()} onUpdateEpisode={vi.fn()} onRemoveEpisode={vi.fn()} onCreateCandidate={vi.fn()} onListCandidates={vi.fn()} onConfirmCandidate={vi.fn()} onExportCandidate={vi.fn()} onChooseOutputDirectory={vi.fn()} onListMaterials={vi.fn()} onPreflightMultiTask={vi.fn()} onCreateMultiTask={vi.fn()} onRunTask={vi.fn()} />)
+    render(<DramaWorkspacePage drama={drama} tags={[]} onClose={vi.fn()} onLoad={vi.fn().mockResolvedValue(detail)} onRename={vi.fn()} onDelete={vi.fn()} onImport={vi.fn()} onImportScript={vi.fn()} onLinkScript={vi.fn()} onLinkSegment={vi.fn()} onRelink={vi.fn()} onAttachTag={vi.fn()} onUpdateEpisode={vi.fn()} onRemoveEpisode={vi.fn()} onListCandidates={vi.fn()} onConfirmCandidate={vi.fn()} onExportCandidate={vi.fn()} onChooseOutputDirectory={vi.fn()} onListMaterials={vi.fn()} onPreflightMultiTask={vi.fn()} onCreateMultiTask={vi.fn()} onRunTask={vi.fn()} />)
     fireEvent.click(await screen.findByRole('tab', { name: '素材生产' }))
     fireEvent.click(await screen.findByRole('button', { name: '创建拼接任务' }))
     expect(await screen.findByRole('heading', { name: '多集拼接工作区' })).toBeTruthy()

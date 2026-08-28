@@ -6,12 +6,13 @@ import { z } from 'zod'
 import type { DramaDetail, DramaSummary, EpisodeAsset, EpisodeImportConflict, EpisodeImportResult } from '../../shared/contracts.js'
 import { sortEpisodeCandidates } from './episode-import-service.js'
 import { probeMedia } from '../media/media-probe.js'
+import { fingerprintMediaSource } from '../media/media-source-fingerprint.js'
 
 const idSchema = z.string().trim().min(1).max(120)
 const nameSchema = z.string().trim().min(1).max(200)
 
 type DramaRow = { id: string; name: string; updated_at: string; episode_count: number; issue_count: number; tag_names: string | null }
-type EpisodeRow = { id: string; episode_no: number | null; sort_order: number; source_path: string; duration_seconds: number | null; fps: number | null; video_width: number | null; video_height: number | null; status: string }
+type EpisodeRow = { id: string; episode_no: number | null; sort_order: number; source_path: string; duration_seconds: number | null; fps: number | null; video_width: number | null; video_height: number | null; duration_alert_dismissed_at: string | null; status: string }
 type ExistingEpisodeRow = { episode_no: number | null; source_path: string }
 
 export class DramaService {
@@ -21,7 +22,7 @@ export class DramaService {
     const rows = this.database.prepare(`
       SELECT d.id, d.name, d.updated_at,
         COUNT(DISTINCT e.id) AS episode_count,
-        SUM(CASE WHEN e.status <> 'ready' THEN 1 ELSE 0 END) AS issue_count,
+        SUM(CASE WHEN e.status <> 'ready' OR (e.duration_seconds > 0 AND e.duration_seconds < 10 AND e.duration_alert_dismissed_at IS NULL) THEN 1 ELSE 0 END) AS issue_count,
         GROUP_CONCAT(DISTINCT t.name) AS tag_names
       FROM dramas d
       LEFT JOIN episodes e ON e.drama_id = d.id
@@ -36,14 +37,14 @@ export class DramaService {
     const id = idSchema.parse(dramaId)
     const row = this.database.prepare(`
       SELECT d.id, d.name, d.updated_at, COUNT(DISTINCT e.id) AS episode_count,
-        SUM(CASE WHEN e.status <> 'ready' THEN 1 ELSE 0 END) AS issue_count,
+        SUM(CASE WHEN e.status <> 'ready' OR (e.duration_seconds > 0 AND e.duration_seconds < 10 AND e.duration_alert_dismissed_at IS NULL) THEN 1 ELSE 0 END) AS issue_count,
         GROUP_CONCAT(DISTINCT t.name) AS tag_names
       FROM dramas d LEFT JOIN episodes e ON e.drama_id = d.id
       LEFT JOIN drama_tags dt ON dt.drama_id = d.id LEFT JOIN tags t ON t.id = dt.tag_id
       WHERE d.id = ? GROUP BY d.id
     `).get(id) as DramaRow | undefined
     if (!row) throw new Error('Drama not found')
-    const episodes = this.database.prepare(`SELECT id, episode_no, sort_order, source_path, duration_seconds, fps, video_width, video_height, status FROM episodes WHERE drama_id = ? ORDER BY CASE WHEN episode_no IS NULL THEN 1 ELSE 0 END, episode_no, source_path, id`).all(id) as EpisodeRow[]
+    const episodes = this.database.prepare(`SELECT id, episode_no, sort_order, source_path, duration_seconds, fps, video_width, video_height, duration_alert_dismissed_at, status FROM episodes WHERE drama_id = ? ORDER BY CASE WHEN episode_no IS NULL THEN 1 ELSE 0 END, episode_no, source_path, id`).all(id) as EpisodeRow[]
     return { ...mapSummary(row), episodes: episodes.map(mapEpisode) }
   }
 
@@ -126,15 +127,15 @@ export class DramaService {
     }
     const now = new Date().toISOString()
     const inspected = await Promise.all(accepted.map(async (candidate) => {
-      if (!isReadable(candidate.path)) return { ...candidate, duration: null, fps: null, width: null, height: null, status: 'missing' }
-      try { const media = await probeMedia(candidate.path); return { ...candidate, duration: media.durationSeconds, fps: media.fps, width: media.width, height: media.height, status: 'ready' } }
-      catch (error) { return { ...candidate, duration: null, fps: null, width: null, height: null, status: error instanceof Error && 'code' in error ? String(error.code).toLowerCase() : 'probe_failed' } }
+      if (!isReadable(candidate.path)) return { ...candidate, fingerprint: null, duration: null, fps: null, width: null, height: null, status: 'missing' }
+      try { const media = await probeMedia(candidate.path); return { ...candidate, fingerprint: fingerprintMediaSource(candidate.path), duration: media.durationSeconds, fps: media.fps, width: media.width, height: media.height, status: 'ready' } }
+      catch (error) { return { ...candidate, fingerprint: null, duration: null, fps: null, width: null, height: null, status: error instanceof Error && 'code' in error ? String(error.code).toLowerCase() : 'probe_failed' } }
     }))
-    const insert = this.database.prepare(`INSERT INTO episodes (id, drama_id, episode_no, sort_order, source_path, duration_seconds, fps, video_width, video_height, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+    const insert = this.database.prepare(`INSERT INTO episodes (id, drama_id, episode_no, sort_order, source_path, source_fingerprint, duration_seconds, fps, video_width, video_height, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
     this.database.transaction(() => {
       for (const candidate of inspected) {
         const status = candidate.episodeNo === null ? 'needs_episode_number' : candidate.status
-        insert.run(randomUUID(), id, candidate.episodeNo, candidate.sortOrder, candidate.path, candidate.duration, candidate.fps, candidate.width, candidate.height, status, now, now)
+        insert.run(randomUUID(), id, candidate.episodeNo, candidate.sortOrder, candidate.path, candidate.fingerprint, candidate.duration, candidate.fps, candidate.width, candidate.height, status, now, now)
       }
       this.rebalanceSortOrder(id)
       if (inspected.length > 0) this.database.prepare('INSERT INTO drama_import_preferences (drama_id, last_import_directory, updated_at) VALUES (?, ?, ?) ON CONFLICT(drama_id) DO UPDATE SET last_import_directory = excluded.last_import_directory, updated_at = excluded.updated_at').run(id, importDirectory(input[0]!), now)
@@ -147,14 +148,27 @@ export class DramaService {
     const drama = idSchema.parse(dramaId); const episode = idSchema.parse(episodeId)
     const value = z.object({ episodeNo: z.number().int().positive().nullable(), sortOrder: z.number().int().nonnegative(), sourcePath: z.string().trim().min(1).max(2000) }).parse(update)
     if (!SUPPORTED_VIDEO_EXTENSIONS.has(extname(value.sourcePath).toLowerCase())) throw new Error('Unsupported video format')
-    const previous = this.database.prepare('SELECT video_width, video_height FROM episodes WHERE id = ? AND drama_id = ?').get(episode, drama) as { video_width: number | null; video_height: number | null } | undefined
+    const previous = this.database.prepare('SELECT video_width, video_height, source_path FROM episodes WHERE id = ? AND drama_id = ?').get(episode, drama) as { video_width: number | null; video_height: number | null; source_path: string } | undefined
     if (!previous) throw new Error('Episode not found')
-    let status = value.episodeNo === null ? 'needs_episode_number' : 'missing'; let duration: number | null = null; let fps: number | null = null; let width: number | null = previous.video_width; let height: number | null = previous.video_height
+    let status = value.episodeNo === null ? 'needs_episode_number' : 'missing'; let fingerprint: string | null = null; let duration: number | null = null; let fps: number | null = null; let width: number | null = previous.video_width; let height: number | null = previous.video_height
     if (value.episodeNo !== null && isReadable(value.sourcePath)) {
-      try { const media = await probeMedia(value.sourcePath); status = 'ready'; duration = media.durationSeconds; fps = media.fps; width = media.width; height = media.height } catch (error) { status = error instanceof Error && 'code' in error ? String(error.code).toLowerCase() : 'probe_failed' }
+      try { const media = await probeMedia(value.sourcePath); fingerprint = fingerprintMediaSource(value.sourcePath); status = 'ready'; duration = media.durationSeconds; fps = media.fps; width = media.width; height = media.height } catch (error) { status = error instanceof Error && 'code' in error ? String(error.code).toLowerCase() : 'probe_failed' }
     }
-    const result = this.database.prepare('UPDATE episodes SET episode_no = ?, sort_order = ?, source_path = ?, duration_seconds = ?, fps = ?, video_width = ?, video_height = ?, status = ?, updated_at = ? WHERE id = ? AND drama_id = ?').run(value.episodeNo, value.sortOrder, value.sourcePath, duration, fps, width, height, status, new Date().toISOString(), episode, drama)
+    const result = this.database.prepare('UPDATE episodes SET episode_no = ?, sort_order = ?, source_path = ?, source_fingerprint = ?, duration_seconds = ?, fps = ?, video_width = ?, video_height = ?, duration_alert_dismissed_at = CASE WHEN source_path <> ? THEN NULL ELSE duration_alert_dismissed_at END, status = ?, updated_at = ? WHERE id = ? AND drama_id = ?').run(value.episodeNo, value.sortOrder, value.sourcePath, fingerprint, duration, fps, width, height, value.sourcePath, status, new Date().toISOString(), episode, drama)
     this.rebalanceSortOrder(drama)
+    return this.get(drama)
+  }
+
+  dismissDurationAlert(dramaId: unknown, episodeId: unknown): DramaDetail {
+    const drama = idSchema.parse(dramaId); const episode = idSchema.parse(episodeId)
+    const target = this.database.prepare('SELECT duration_seconds FROM episodes WHERE id = ? AND drama_id = ?').get(episode, drama) as { duration_seconds: number | null } | undefined
+    if (!target) throw new Error('Episode not found')
+    if (target.duration_seconds === null || target.duration_seconds <= 0 || target.duration_seconds >= 10) throw new Error('仅可忽略时长异常提示。')
+    const now = new Date().toISOString()
+    this.database.transaction(() => {
+      this.database.prepare('UPDATE episodes SET duration_alert_dismissed_at = ?, updated_at = ? WHERE id = ? AND drama_id = ?').run(now, now, episode, drama)
+      this.database.prepare('UPDATE dramas SET updated_at = ? WHERE id = ?').run(now, drama)
+    })()
     return this.get(drama)
   }
 
@@ -257,4 +271,4 @@ const expandVideoPaths = (path: string, visited: Set<string> = new Set<string>()
 }
 
 const mapSummary = (row: DramaRow): DramaSummary => ({ id: row.id, name: row.name, episodeCount: row.episode_count, issueCount: row.issue_count ?? 0, tagNames: row.tag_names ? row.tag_names.split(',').filter(Boolean) : [], updatedAt: row.updated_at })
-const mapEpisode = (row: EpisodeRow): EpisodeAsset => ({ id: row.id, episodeNo: row.episode_no, sortOrder: row.sort_order, sourcePath: row.source_path, durationSeconds: row.duration_seconds, fps: row.fps, videoWidth: row.video_width, videoHeight: row.video_height, status: row.status })
+const mapEpisode = (row: EpisodeRow): EpisodeAsset => ({ id: row.id, episodeNo: row.episode_no, sortOrder: row.sort_order, sourcePath: row.source_path, durationSeconds: row.duration_seconds, fps: row.fps, videoWidth: row.video_width, videoHeight: row.video_height, durationAlertDismissedAt: row.duration_alert_dismissed_at, status: row.status })

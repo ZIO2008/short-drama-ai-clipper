@@ -61,4 +61,24 @@ describe('SubtitleEvidenceService', () => {
       expect(service.getEffectiveOcrRegion('drama', null)).toBeNull()
     } finally { database.close() }
   })
+
+  it('keeps only the newest OCR track active even through the generic track entrypoint', () => {
+    const { database, service } = setup()
+    try {
+      const first = service.createTrack({ dramaId: 'drama', episodeId: 'episode', sourceKind: 'ocr', label: 'OCR 1', cues: [{ index: 1, startSeconds: 1, endSeconds: 2, text: 'first' }] })
+      const second = service.createTrack({ dramaId: 'drama', episodeId: 'episode', sourceKind: 'ocr', label: 'OCR 2', cues: [{ index: 1, startSeconds: 2, endSeconds: 3, text: 'second' }] })
+      expect(service.listTracks('drama', 'episode').filter(({ sourceKind }) => sourceKind === 'ocr')).toEqual([expect.objectContaining({ id: second.id })])
+      expect(database.prepare('SELECT status FROM subtitle_tracks WHERE id = ?').get(first.id)).toEqual({ status: 'archived' })
+    } finally { database.close() }
+  })
+
+  it('keeps only the newest ASR result active while retaining the prior track for audit', () => {
+    const { database, service } = setup()
+    try {
+      const first = service.createTrack({ dramaId: 'drama', episodeId: 'episode', sourceKind: 'asr', label: 'ASR 1', cost: { resultFormat: 3, sentenceMaxLength: 40 }, cues: [{ index: 1, startSeconds: 1, endSeconds: 2, text: 'first' }, { index: 2, startSeconds: 3, endSeconds: 4, text: 'second' }] })
+      const second = service.createTrack({ dramaId: 'drama', episodeId: 'episode', sourceKind: 'asr', label: 'ASR 2', cost: { resultFormat: 3, sentenceMaxLength: 40 }, cues: [{ index: 1, startSeconds: 2, endSeconds: 3, text: 'new' }, { index: 2, startSeconds: 4, endSeconds: 5, text: 'result' }] })
+      expect(service.listTracks('drama', 'episode').filter(({ sourceKind }) => sourceKind === 'asr')).toEqual([expect.objectContaining({ id: second.id, cost: expect.objectContaining({ timeQuality: expect.objectContaining({ status: 'qualified' }) }) })])
+      expect(database.prepare('SELECT status FROM subtitle_tracks WHERE id = ?').get(first.id)).toEqual({ status: 'archived' })
+    } finally { database.close() }
+  })
 })

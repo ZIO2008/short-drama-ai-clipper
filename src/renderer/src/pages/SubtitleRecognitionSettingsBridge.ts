@@ -5,6 +5,7 @@ type Props = { document: Document; dramaId: string }
 type SettingKey = keyof SubtitleRecognitionSettings
 
 const optionValues: Record<SettingKey, string[]> = {
+  recognitionMode: ['asr-only', 'ocr-only', 'asr-ocr'],
   scope: ['all', 'current', 'missing'],
   language: ['zh-CN', 'zh-en', 'auto'],
   asrMode: ['audio-first', 'denoise', 'import-only'],
@@ -14,6 +15,7 @@ const optionValues: Record<SettingKey, string[]> = {
 }
 
 const fieldIds: Record<SettingKey, string> = {
+  recognitionMode: 'subtitleRecognitionMode',
   scope: 'subtitleRecognitionScope',
   language: 'subtitleRecognitionLanguage',
   asrMode: 'subtitleAsrMode',
@@ -21,6 +23,12 @@ const fieldIds: Record<SettingKey, string> = {
   differenceThreshold: 'subtitleDifferenceThreshold',
   importStrategy: 'subtitleImportStrategy'
 }
+
+const prototypeRecognitionModes = {
+  asr: 'asr-only',
+  ocr: 'ocr-only',
+  dual: 'asr-ocr'
+} as const
 
 const announce = (document: Document, message: string): void => {
   const toast = document.getElementById('toast')
@@ -34,7 +42,13 @@ const applySettings = (document: Document, settings: SubtitleRecognitionSettings
   ;(Object.keys(fieldIds) as SettingKey[]).forEach((key) => {
     const select = document.getElementById(fieldIds[key]) as HTMLSelectElement | null
     const index = optionValues[key].indexOf(settings[key])
-    if (select && index >= 0) select.selectedIndex = index
+    if (select && index >= 0) {
+      select.selectedIndex = index
+      select.dispatchEvent(new Event('change', { bubbles: true }))
+    }
+  })
+  document.querySelectorAll<HTMLElement>('[data-subtitle-method]').forEach((button) => {
+    button.setAttribute('aria-pressed', String(prototypeRecognitionModes[button.dataset.subtitleMethod as keyof typeof prototypeRecognitionModes] === settings.recognitionMode))
   })
 }
 
@@ -42,7 +56,10 @@ const readSettings = (document: Document): SubtitleRecognitionSettings | null =>
   const result = {} as SubtitleRecognitionSettings
   for (const key of Object.keys(fieldIds) as SettingKey[]) {
     const select = document.getElementById(fieldIds[key]) as HTMLSelectElement | null
-    const value = select ? optionValues[key][select.selectedIndex] : undefined
+    const selectedMethod = document.querySelector<HTMLElement>('[data-subtitle-method][aria-pressed="true"]')
+    const value = key === 'recognitionMode' && !select
+      ? prototypeRecognitionModes[selectedMethod?.dataset.subtitleMethod as keyof typeof prototypeRecognitionModes]
+      : select ? optionValues[key][select.selectedIndex] : undefined
     if (!value) return null
     result[key] = value as never
   }
@@ -66,6 +83,13 @@ export const bindSubtitleRecognitionSettings = ({ document, dramaId }: Props): v
     setOpen(false)
     lastTrigger?.focus()
   }
+  const exitCalibration = (): boolean => {
+    if (!modal.classList.contains('is-calibrating')) return false
+    modal.classList.remove('is-calibrating')
+    const title = document.getElementById('subtitleRecognitionSettingsTitle')
+    if (title) title.textContent = '字幕识别设置'
+    return true
+  }
   document.addEventListener('click', (event) => {
     const target = event.target
     if (!target || typeof (target as { closest?: unknown }).closest !== 'function') return
@@ -74,6 +98,10 @@ export const bindSubtitleRecognitionSettings = ({ document, dramaId }: Props): v
       event.preventDefault()
       event.stopImmediatePropagation()
       lastTrigger = element.closest<HTMLButtonElement>('button')
+      document.dispatchEvent(new CustomEvent('subtitle-recognition-settings:opened', {
+        detail: { episodeId: lastTrigger?.dataset.subtitleEpisodeId ?? null }
+      }))
+      exitCalibration()
       setOpen(true)
       settingsLoaded = false
       const openSession = ++settingsSession
@@ -86,7 +114,12 @@ export const bindSubtitleRecognitionSettings = ({ document, dramaId }: Props): v
       })
       return
     }
-    if (element.closest('[data-subtitle-close-settings]')) { event.preventDefault(); event.stopImmediatePropagation(); close(); return }
+    if (element.closest('[data-subtitle-close-settings]')) {
+      event.preventDefault()
+      event.stopImmediatePropagation()
+      if (!exitCalibration()) close()
+      return
+    }
     if (!element.closest('[data-subtitle-save-settings]')) return
     event.preventDefault()
     event.stopImmediatePropagation()

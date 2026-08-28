@@ -1,9 +1,15 @@
 import { useLayoutEffect, useMemo, useRef, useState, type ReactElement } from 'react'
 import prototypeHtml from '../../../../design/open-design/v2026-07-30-open-design-final/short-drama-material-studio.html?raw'
+import clipMonitorReviewPrototypeHtml from '../../../../design/open-design/v2026-08-11-v49-clip-monitor-review/short-drama-material-studio-v49-clip-review.html?raw'
+import textAnalysisConnectivityPrototypeHtml from '../../../../design/open-design/v2026-08-05-model-studio-connectivity/short-drama-material-studio.html?raw'
+import asrDefaultConfigurationPrototypeHtml from '../../../../design/open-design/v2026-08-05-asr-default-configuration/short-drama-material-studio.html?raw'
+import subtitleRegionCalibrationPrototypeHtml from '../../../../design/open-design/v2026-08-06-subtitle-region-calibration/short-drama-material-studio.html?raw'
 
 export type StaticPrototypeScreen = 'clip' | 'clip-pool' | 'clip-report' | 'subtitles' | 'settings' | 'provider-asr' | 'provider-text-analysis' | 'provider-multimodal-review'
 type Screen = StaticPrototypeScreen
-type Props = { screen: Screen; onBack: () => void; onOpenResults?: () => void; onNavigate?: (target: string) => void; onReady?: (document: Document) => void | (() => void); onPrepared?: (screen: Screen) => void }
+export type StaticPrototypeSurfaceMode = 'runtime' | 'static-fixture'
+export type ClipStaticFixtureState = 'default' | 'context-speed' | 'missing'
+type Props = { screen: Screen; mode?: StaticPrototypeSurfaceMode; fixtureState?: ClipStaticFixtureState; onBack: () => void; onOpenResults?: () => void; onNavigate?: (target: string) => void; onReady?: (document: Document) => void | (() => void); onPrepared?: (screen: Screen) => void }
 
 const screenIds: Record<Screen, string> = {
   clip: 'screen-clip',
@@ -29,6 +35,14 @@ export const preparePrototypeHead = (sourceHead: string, screen: Screen): string
   screen === 'subtitles' ? sourceHead : remapClipHeightMediaQueries(sourceHead)
 )
 
+export const prototypeSourceForScreen = (screen: Screen): string => (
+  screen === 'clip' ? clipMonitorReviewPrototypeHtml
+    : screen === 'subtitles' ? subtitleRegionCalibrationPrototypeHtml
+    : screen === 'provider-asr' ? asrDefaultConfigurationPrototypeHtml
+    : screen === 'provider-text-analysis' || screen === 'provider-multimodal-review' ? textAnalysisConnectivityPrototypeHtml
+      : prototypeHtml
+)
+
 const titles: Record<Screen, string> = {
   clip: '原剧切片工作区',
   'clip-pool': '原剧切片候选池',
@@ -42,13 +56,52 @@ const titles: Record<Screen, string> = {
 
 type IsolationState = 'ready' | 'missing' | 'rewritten'
 
-export const isolatePrototypeScreen = (document: Document, screen: Screen): IsolationState => {
-  if (document.body.dataset.staticPrototypeIsolated === 'true') return 'ready'
+const applyClipFixtureState = (document: Document, state: ClipStaticFixtureState): boolean => {
+  if (state === 'default') return true
+  if (state === 'context-speed') {
+    const context = document.querySelector<HTMLButtonElement>('[data-clip-review="context"]')
+    const speed = document.querySelector<HTMLButtonElement>('[data-clip-speed-trigger]')
+    if (!context || !speed) return false
+    context.click()
+    speed.click()
+    return context.getAttribute('aria-pressed') === 'true' && document.getElementById('clipSpeedPopover')?.classList.contains('is-open') === true
+  }
+  const missingEpisode = document.querySelectorAll<HTMLButtonElement>('#screen-clip .r5-episode')[5]
+  if (!missingEpisode) return false
+  missingEpisode.click()
+  return document.querySelector('.clip-media-missing') !== null
+}
+
+export const isolatePrototypeScreen = (document: Document, screen: Screen, mode: StaticPrototypeSurfaceMode = 'runtime', fixtureState: ClipStaticFixtureState = 'default'): IsolationState => {
+  if (screen === 'clip') {
+    const target = document.getElementById(screenIds[screen])
+    if (!target || !document.querySelector('[data-od-id="clip-monitor-media"]') || !document.querySelector('[data-od-id="clip-monitor-transport"]') || !document.querySelector('[data-od-id="clip-review-range"]') || !document.querySelector('[data-od-id="clip-boundary-nudges"]')) return 'missing'
+    document.querySelectorAll<HTMLElement>('.screen').forEach((item) => {
+      const active = item === target
+      item.classList.toggle('active', active)
+      item.setAttribute('aria-hidden', String(!active))
+    })
+    document.body.dataset.staticPrototypeIsolated = 'true'
+    if (mode === 'static-fixture') {
+      document.body.dataset.staticPrototypeFixture = 'v49-screen-clip'
+      return applyClipFixtureState(document, fixtureState) ? 'ready' : 'missing'
+    }
+    document.body.dataset.staticPrototypeRuntime = 'v49-screen-clip'
+    return 'ready'
+  }
+  if (document.body.dataset.staticPrototypeIsolated === 'true') {
+    const subtitleModal = document.getElementById('subtitleAssetModal')
+    if (screen === 'subtitles' && (!subtitleModal || !document.querySelector('[data-subtitle-region-setting]'))) return 'missing'
+    return 'ready'
+  }
   // The prototype creates pool/report screens and their `clip-r5-style` stylesheet
   // in separate inline-script turns. Extracting the screen first leaves it with
   // browser default controls, so wait until its original stylesheet exists.
   const requiresClipRuntimeStyle = screen === 'clip-pool' || screen === 'clip-report'
   if (requiresClipRuntimeStyle && !document.getElementById('clip-r5-style')) return 'missing'
+  if (screen === 'subtitles') {
+    if (document.querySelectorAll('[data-subtitle-method]').length !== 3 || !document.querySelector('[data-subtitle-region-setting]')) return 'missing'
+  }
   const isProviderScreen = screen === 'provider-asr' || screen === 'provider-text-analysis' || screen === 'provider-multimodal-review'
   const ids = screen === 'subtitles'
     ? [screenIds[screen], 'subtitleAssetModal', 'subtitleRecognitionSettingsModal', 'toast']
@@ -57,7 +110,11 @@ export const isolatePrototypeScreen = (document: Document, screen: Screen): Isol
       : clipScreenIds
   const targets = ids.map((id) => document.getElementById(id)).filter((target): target is HTMLElement => target !== null)
   const target = targets.find((item) => item.id === screenIds[screen])
-  if (!target || (screen === 'subtitles' && !document.getElementById('subtitleRecognitionSettingsModal')) || ((screen === 'settings' || isProviderScreen) && !document.getElementById('settings-providers'))) return 'missing'
+  const subtitleModalReady = screen !== 'subtitles' || (
+    document.getElementById('subtitleRecognitionSettingsModal') !== null &&
+    document.getElementById('subtitleAssetModal') !== null
+  )
+  if (!target || !subtitleModalReady || ((screen === 'settings' || isProviderScreen) && !document.getElementById('settings-providers'))) return 'missing'
   targets.forEach((item) => {
     if (!item.classList.contains('screen')) return
     const active = item === target
@@ -76,6 +133,12 @@ export const isolatePrototypeScreen = (document: Document, screen: Screen): Isol
   // Shift all prototype height media queries into that coordinate system so the
   // original <=760px layout begins at the same outer-window height (<=704px).
   const head = preparePrototypeHead(sourceHead, screen)
+  // Extracting a provider screen replaces its document and discards the
+  // source listeners. Keep the ASR prototype's own initializer so its
+  // credential state is rebound before the runtime Bridge pre-fills values.
+  const providerRuntimeScript = screen === 'provider-asr'
+    ? ['tencent-asr-credentials-runtime', 'tencent-asr-connectivity-runtime', 'asr-default-configuration-runtime'].map((id) => document.getElementById(id)?.outerHTML ?? '').join('')
+    : ''
   // The original prototype calculates the three clip canvases from the full app
   // viewport, including its 56px top bar. Inside our isolated iframe that bar is
   // outside the document, so its `100dvh` is 56px shorter and leaves a false
@@ -83,17 +146,38 @@ export const isolatePrototypeScreen = (document: Document, screen: Screen): Isol
   // restore that omitted shell height at the isolation boundary.
   const isolationLayout = screen === 'subtitles'
     ? '<style id="static-prototype-subtitles-isolation-layout">html,body,#content{height:100%;min-height:0;overflow:hidden}#content>.screen.active{animation:none!important}</style>'
-    : isProviderScreen || screen === 'settings'
+    : screen === 'provider-text-analysis'
+      ? '<style id="static-prototype-provider-isolation-layout">html,body,#content{height:100%;min-height:0;overflow:hidden}#content>.supplier-screen.active{display:grid;height:100%;min-height:0;grid-template-rows:auto minmax(0,1fr);overflow:hidden}#content>.supplier-screen.active>.supplier-layout{min-height:0;overflow:hidden}#content>.supplier-screen.active .supplier-main{min-height:0}#toast{pointer-events:none}</style>'
+    : isProviderScreen
+      ? '<style id="static-prototype-provider-isolation-layout">html,body,#content{height:100%;min-height:0;overflow:hidden}#content>.screen.active{animation:none!important}</style>'
+      : screen === 'settings'
       ? '<style id="static-prototype-settings-isolation-layout">html,body,#content{height:100%;min-height:0;overflow:auto}#content>.screen.active{animation:none!important}</style>'
       : '<style id="static-prototype-clip-isolation-layout">html,body,#content{height:100%;min-height:0;overflow:hidden}#content>.screen.active{height:100%;min-height:0;overflow:hidden;animation:none!important}#screen-clip .r5-shell{height:calc(100dvh - 216px)}#screen-clip .r5-monitor>.r5-frame{height:min(100%,calc(100dvh - 364px))}#screen-clip-pool .clip-module-board{height:calc(100dvh - 192px)}#screen-clip-report .clip-report-board{height:calc(100dvh - 258px)}@media(max-height:704px){#screen-clip .r5-shell{height:calc(100dvh - 196px)}#screen-clip .r5-monitor>.r5-frame{height:min(100%,calc(100dvh - 354px))}}@media(max-width:680px){#screen-clip-pool .clip-module-board{height:calc(100dvh - 156px)}} </style>'
+  if (screen === 'subtitles') {
+    const content = document.createElement('main')
+    content.className = 'content'
+    content.id = 'content'
+    const subtitleModal = document.getElementById('subtitleAssetModal')
+    const settingsModal = document.getElementById('subtitleRecognitionSettingsModal')
+    targets.filter((item) => item !== subtitleModal && item !== settingsModal).forEach((item) => content.append(item))
+
+    document.body.replaceChildren(content, ...(subtitleModal ? [subtitleModal] : []), ...(settingsModal ? [settingsModal] : []))
+    document.body.dataset.staticPrototypeIsolated = 'true'
+    const isolationDocument = new DOMParser().parseFromString(isolationLayout, 'text/html')
+    isolationDocument.head.querySelectorAll('style').forEach((style) => document.head.append(document.importNode(style, true)))
+    return 'rewritten'
+  }
+  const isolatedTargets = targets.map((item) => item.outerHTML).join('')
   document.open()
-  document.write(`<!doctype html><html lang="zh-CN"><head>${head}${isolationLayout}</head><body data-static-prototype-isolated="true"><main class="content" id="content">${targets.map((item) => item.outerHTML).join('')}</main></body></html>`)
+  document.write(`<!doctype html><html lang="zh-CN"><head>${head}${isolationLayout}</head><body data-static-prototype-isolated="true"><main class="content" id="content">${isolatedTargets}${providerRuntimeScript}</main></body></html>`)
   document.close()
   return 'rewritten'
 }
 
-export const StaticPrototypeSurface = ({ screen, onBack, onOpenResults, onNavigate, onReady, onPrepared }: Props): ReactElement => {
-  const sourceDocument = useMemo(() => prototypeHtml, [])
+export const StaticPrototypeSurface = ({ screen, mode = 'runtime', fixtureState = 'default', onBack, onOpenResults, onNavigate, onReady, onPrepared }: Props): ReactElement => {
+  // Each provider-screen source is isolated so a provider-specific prototype
+  // change cannot alter the other settings surfaces.
+  const sourceDocument = useMemo(() => prototypeSourceForScreen(screen), [screen])
   const runtimeCleanup = useRef<(() => void) | null>(null)
   const currentFrame = useRef<HTMLIFrameElement | null>(null)
   const preparationTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null)
@@ -121,10 +205,26 @@ export const StaticPrototypeSurface = ({ screen, onBack, onOpenResults, onNaviga
       runtimeCleanup.current?.()
       runtimeCleanup.current = null
     }
-  }, [screen, loadAttempt])
+  }, [screen, mode, fixtureState, loadAttempt])
   const wireSurface = (document: Document): void => {
     if (document.body.dataset.staticPrototypeWired === 'true') return
     document.body.dataset.staticPrototypeWired = 'true'
+    document.addEventListener('click', (click) => {
+      const trigger = (click.target as Element).closest<HTMLElement>('[data-subtitle-open-static]')
+      if (!trigger) return
+      const modal = document.getElementById('subtitleAssetModal')
+      if (!modal) return
+      click.preventDefault()
+      click.stopImmediatePropagation()
+      const kind = trigger.dataset.subtitleOpenStatic === 'view' ? 'view' : 'status'
+      document.getElementById('subtitleDetailAsset')?.toggleAttribute('hidden', kind !== 'view')
+      document.getElementById('subtitleDetailEmpty')?.toggleAttribute('hidden', kind === 'view')
+      modal.classList.add('open')
+      modal.setAttribute('aria-hidden', 'false')
+      document.dispatchEvent(new CustomEvent('subtitle-static-detail:opened', {
+        detail: { episodeId: trigger.dataset.subtitleStaticEpisodeId ?? '', kind }
+      }))
+    }, true)
     document.addEventListener('click', (click) => {
       const trigger = (click.target as Element).closest<HTMLElement>('[data-open], [data-r5-open]')
       if (!trigger) return
@@ -134,9 +234,9 @@ export const StaticPrototypeSurface = ({ screen, onBack, onOpenResults, onNaviga
       if (target === 'results' && onOpenResults) { click.preventDefault(); onOpenResults(); return }
       if (onNavigate) { click.preventDefault(); onNavigate(target); return }
       if (target === 'production' || target === 'library') { click.preventDefault(); onBack() }
-    })
+    }, true)
     runtimeCleanup.current?.()
-    runtimeCleanup.current = onReady?.(document) ?? null
+    runtimeCleanup.current = mode === 'runtime' ? onReady?.(document) ?? null : null
   }
   if (loadFailed) return <section className="static-prototype-surface-error" role="alert" aria-live="assertive">
     <div>
@@ -147,8 +247,9 @@ export const StaticPrototypeSurface = ({ screen, onBack, onOpenResults, onNaviga
   </section>
 
   return <iframe
-    key={`${screen}:${loadAttempt}`}
+    key={`${screen}:${mode}:${fixtureState}:${loadAttempt}`}
     className="static-prototype-surface"
+    data-v49-runtime-shell={screen === 'clip' && mode === 'runtime' ? 'true' : undefined}
     data-prototype-ready="false"
     title={titles[screen]}
     srcDoc={sourceDocument}
@@ -166,7 +267,7 @@ export const StaticPrototypeSurface = ({ screen, onBack, onOpenResults, onNaviga
         if (activeScreen.current !== screen || preparationGeneration.current !== generation || currentFrame.current !== frame) return
         const document = frame.contentDocument
         if (!document) return
-        const state = isolatePrototypeScreen(document, screen)
+        const state = isolatePrototypeScreen(document, screen, mode, fixtureState)
         if (state === 'ready') {
           if (activeScreen.current !== screen || preparationGeneration.current !== generation || currentFrame.current !== frame) return
           wireSurface(document)

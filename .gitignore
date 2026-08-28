@@ -1,6 +1,7 @@
 node_modules/
 out/
 release/
+.tmp/
 coverage/
 .env
 *.log
@@ -9,11 +10,17 @@ coverage/
 *.sqlite-wal
 test-results/
 playwright-report/
+tools/local-ocr/.venv/
+tools/local-ocr/model-cache/
+tools/local-ocr/runtime/
+tools/local-ocr/__pycache__/
+docs/research/__pycache__/
+docs/ocr-acceptance/**/paddlex-cache/
+docs/ocr-acceptance/**/diagnostic-cache*/
+docs/ocr-acceptance/**/func_ret/
+docs/ocr-acceptance/**/locks/
+docs/ocr-acceptance/**/temp/
+/--no-sandbox
 
-# Historical packages and superseded design snapshots stay local for traceability.
+# Historical release packages stay local for traceability.
 release-v*/
-design/open-design/v2026-07-27/
-design/open-design/v2026-07-29/
-design/open-design/v2026-07-29-r2/
-design/open-design/v2026-07-29-r3/
-design/open-design/v2026-07-29-r5-merged/

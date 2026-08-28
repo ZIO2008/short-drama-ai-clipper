@@ -13,6 +13,17 @@ afterEach(() => { for (const database of databases.splice(0)) database.close() }
 const setup = (): DramaService => { const database = new Database(':memory:'); database.pragma('foreign_keys = ON'); databases.push(database); migrateDatabase(database); return new DramaService(database) }
 
 describe('DramaService', () => {
+  it('flags an ultra-short episode without blocking it and persists a user dismissal', () => {
+    const service = setup(); const database = (service as unknown as { database: Database.Database }).database
+    const drama = service.create('时长异常')
+    const now = new Date().toISOString()
+    database.prepare('INSERT INTO episodes (id, drama_id, episode_no, sort_order, source_path, duration_seconds, fps, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run('episode-short', drama.id, 48, 0, '48.mp4', 1.4, 25, 'ready', now, now)
+    expect(service.get(drama.id)).toMatchObject({ issueCount: 1, episodes: [expect.objectContaining({ id: 'episode-short', durationAlertDismissedAt: null, status: 'ready' })] })
+    const dismissed = service.dismissDurationAlert(drama.id, 'episode-short')
+    expect(dismissed).toMatchObject({ issueCount: 0, episodes: [expect.objectContaining({ id: 'episode-short', durationAlertDismissedAt: expect.any(String), status: 'ready' })] })
+    expect(database.prepare('SELECT source_path AS sourcePath, duration_seconds AS durationSeconds FROM episodes WHERE id = ?').get('episode-short')).toEqual({ sourcePath: '48.mp4', durationSeconds: 1.4 })
+  })
+
   it('creates and imports source references in natural order', async () => {
     const service = setup()
     const created = service.create('  Demo drama  ')

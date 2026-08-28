@@ -2,11 +2,14 @@ import { randomUUID } from 'node:crypto'
 import type Database from 'better-sqlite3'
 import { z } from 'zod'
 import { compareSubtitleCues, formatSrt, formatVtt, type SubtitleCue } from './subtitle-service.js'
+import { analyzeSubtitleTimeQuality, type SubtitleTimeQuality } from './subtitle-time-quality.js'
 import type { SubtitleEvidenceComparison } from '../../shared/contracts.js'
 
 export type SubtitleTrackSource = 'import' | 'asr' | 'ocr' | 'resolved'
 export type PersistedSubtitleCue = SubtitleCue & { id: string; confidence: number | null }
-export type SubtitleTrack = { id: string; dramaId: string; episodeId: string | null; assetId: string | null; baseTrackId: string | null; sourceKind: SubtitleTrackSource; label: string; language: string; status: 'active' | 'archived'; cueCount: number; cost: Record<string, unknown> }
+export type SubtitleEvidenceAcquisition = 'imported' | 'generated' | 'manual'
+export type SubtitleEvidenceNature = 'reference_unknown' | 'visual_aligned' | 'audio_aligned' | 'manual_resolved'
+export type SubtitleTrack = { id: string; dramaId: string; episodeId: string | null; assetId: string | null; baseTrackId: string | null; sourceKind: SubtitleTrackSource; acquisition: SubtitleEvidenceAcquisition; evidenceNature: SubtitleEvidenceNature; label: string; language: string; status: 'active' | 'archived'; cueCount: number; cost: Record<string, unknown> }
 export type OcrRegion = { id: string; dramaId: string; episodeId: string | null; scope: 'drama_default' | 'episode_override'; x: number; y: number; width: number; height: number }
 export type SubtitleConflict = { id: string; dramaId: string; episodeId: string | null; asrCueId: string; ocrCueId: string; timeOverlapSeconds: number; textSimilarity: number; asrConfidence: number | null; ocrConfidence: number | null; status: 'open' | 'resolved_asr' | 'resolved_ocr' | 'resolved_manual' | 'reviewed'; resolvedText: string | null; resolvedStartSeconds: number | null; resolvedEndSeconds: number | null }
 export type SubtitleQualityReport = { evaluationCount: number; referenceCharacters: number; differingCharacters: number; conflictCount: number; evaluatedCueCount: number; elapsedMs: number; estimatedCost: number; actualCost: number; characterErrorRate: number | null; conflictRate: number | null }
@@ -20,10 +23,37 @@ export class SubtitleEvidenceService {
   constructor(private readonly database: Database.Database) {}
 
   createTrack(input: unknown): SubtitleTrack {
-    const value = trackInputSchema.parse(input); this.assertDramaAndEpisode(value.dramaId, value.episodeId)
+    const value = trackInputSchema.parse(input)
+    if (value.sourceKind === 'ocr') return this.replaceOcrTrack(value)
+    if (value.sourceKind === 'asr') return this.replaceAsrTrack(value)
+    this.assertDramaAndEpisode(value.dramaId, value.episodeId)
+    const cost = this.costWithTimeQuality(value.sourceKind, value.dramaId, value.episodeId, value.cues, value.cost)
     const now = new Date().toISOString(); const trackId = randomUUID()
     this.database.transaction(() => {
-      this.database.prepare('INSERT INTO subtitle_tracks (id, drama_id, episode_id, asset_id, base_track_id, source_kind, label, language, status, cue_count, cost_json, created_at, updated_at) VALUES (?, ?, ?, NULL, NULL, ?, ?, ?, ?, ?, ?, ?, ?)').run(trackId, value.dramaId, value.episodeId, value.sourceKind, value.label, value.language, 'active', value.cues.length, JSON.stringify(value.cost), now, now)
+      this.database.prepare('INSERT INTO subtitle_tracks (id, drama_id, episode_id, asset_id, base_track_id, source_kind, acquisition, evidence_nature, label, language, status, cue_count, cost_json, created_at, updated_at) VALUES (?, ?, ?, NULL, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(trackId, value.dramaId, value.episodeId, value.sourceKind, 'generated', evidenceNatureForSource(value.sourceKind), value.label, value.language, 'active', value.cues.length, JSON.stringify(cost), now, now)
+      this.insertCues(trackId, value.cues, now)
+    })()
+    return this.getTrack(trackId)
+  }
+
+  replaceOcrTrack(input: unknown): SubtitleTrack {
+    const value = trackInputSchema.parse(input)
+    return this.replaceGeneratedTrack(value, 'ocr')
+  }
+
+  private replaceAsrTrack(input: unknown): SubtitleTrack {
+    const value = trackInputSchema.parse(input)
+    return this.replaceGeneratedTrack(value, 'asr')
+  }
+
+  private replaceGeneratedTrack(value: z.infer<typeof trackInputSchema>, sourceKind: 'asr' | 'ocr'): SubtitleTrack {
+    if (value.sourceKind !== sourceKind) throw new Error(`Only ${sourceKind} tracks can replace a previous ${sourceKind} result`)
+    this.assertDramaAndEpisode(value.dramaId, value.episodeId)
+    const cost = this.costWithTimeQuality(value.sourceKind, value.dramaId, value.episodeId, value.cues, value.cost)
+    const now = new Date().toISOString(); const trackId = randomUUID()
+    this.database.transaction(() => {
+      this.database.prepare("UPDATE subtitle_tracks SET status = 'archived', updated_at = ? WHERE drama_id = ? AND episode_id IS ? AND source_kind = ? AND status = 'active'").run(now, value.dramaId, value.episodeId, sourceKind)
+      this.database.prepare('INSERT INTO subtitle_tracks (id, drama_id, episode_id, asset_id, base_track_id, source_kind, acquisition, evidence_nature, label, language, status, cue_count, cost_json, created_at, updated_at) VALUES (?, ?, ?, NULL, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(trackId, value.dramaId, value.episodeId, value.sourceKind, 'generated', evidenceNatureForSource(value.sourceKind), value.label, value.language, 'active', value.cues.length, JSON.stringify(cost), now, now)
       this.insertCues(trackId, value.cues, now)
     })()
     return this.getTrack(trackId)
@@ -32,8 +62,8 @@ export class SubtitleEvidenceService {
   listTracks(dramaIdInput: unknown, episodeIdInput: unknown = undefined): SubtitleTrack[] {
     const dramaId = z.string().trim().min(1).parse(dramaIdInput); const episodeId = episodeIdInput === undefined ? undefined : z.string().trim().min(1).nullable().parse(episodeIdInput)
     const rows = episodeId === undefined
-      ? this.database.prepare('SELECT id, drama_id AS dramaId, episode_id AS episodeId, asset_id AS assetId, base_track_id AS baseTrackId, source_kind AS sourceKind, label, language, status, cue_count AS cueCount, cost_json AS costJson FROM subtitle_tracks WHERE drama_id = ? AND status = ? ORDER BY created_at DESC').all(dramaId, 'active')
-      : this.database.prepare('SELECT id, drama_id AS dramaId, episode_id AS episodeId, asset_id AS assetId, base_track_id AS baseTrackId, source_kind AS sourceKind, label, language, status, cue_count AS cueCount, cost_json AS costJson FROM subtitle_tracks WHERE drama_id = ? AND episode_id IS ? AND status = ? ORDER BY created_at DESC').all(dramaId, episodeId, 'active')
+      ? this.database.prepare('SELECT id, drama_id AS dramaId, episode_id AS episodeId, asset_id AS assetId, base_track_id AS baseTrackId, source_kind AS sourceKind, acquisition, evidence_nature AS evidenceNature, label, language, status, cue_count AS cueCount, cost_json AS costJson FROM subtitle_tracks WHERE drama_id = ? AND status = ? ORDER BY created_at DESC').all(dramaId, 'active')
+      : this.database.prepare('SELECT id, drama_id AS dramaId, episode_id AS episodeId, asset_id AS assetId, base_track_id AS baseTrackId, source_kind AS sourceKind, acquisition, evidence_nature AS evidenceNature, label, language, status, cue_count AS cueCount, cost_json AS costJson FROM subtitle_tracks WHERE drama_id = ? AND episode_id IS ? AND status = ? ORDER BY created_at DESC').all(dramaId, episodeId, 'active')
     return (rows as Array<SubtitleTrack & { costJson: string }>).map((row) => this.mapTrack(row))
   }
 
@@ -156,7 +186,7 @@ export class SubtitleEvidenceService {
   }
 
   getTrack(idInput: unknown): SubtitleTrack {
-    const id = z.string().trim().min(1).parse(idInput); const row = this.database.prepare('SELECT id, drama_id AS dramaId, episode_id AS episodeId, asset_id AS assetId, base_track_id AS baseTrackId, source_kind AS sourceKind, label, language, status, cue_count AS cueCount, cost_json AS costJson FROM subtitle_tracks WHERE id = ?').get(id) as (SubtitleTrack & { costJson: string }) | undefined
+    const id = z.string().trim().min(1).parse(idInput); const row = this.database.prepare('SELECT id, drama_id AS dramaId, episode_id AS episodeId, asset_id AS assetId, base_track_id AS baseTrackId, source_kind AS sourceKind, acquisition, evidence_nature AS evidenceNature, label, language, status, cue_count AS cueCount, cost_json AS costJson FROM subtitle_tracks WHERE id = ?').get(id) as (SubtitleTrack & { costJson: string }) | undefined
     if (!row) throw new Error('Subtitle track not found')
     return this.mapTrack(row)
   }
@@ -166,6 +196,12 @@ export class SubtitleEvidenceService {
     try { const parsed = JSON.parse(row.costJson); if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) cost = parsed as Record<string, unknown> } catch { /* Legacy rows retain an empty cost record. */ }
     const { costJson: _costJson, ...track } = row
     return { ...track, cost }
+  }
+
+  private costWithTimeQuality(sourceKind: Exclude<SubtitleTrackSource, 'import'>, dramaId: string, episodeId: string | null, cues: Array<z.infer<typeof cueSchema>>, cost: Record<string, unknown>): Record<string, unknown> {
+    const duration = episodeId ? (this.database.prepare('SELECT duration_seconds AS durationSeconds FROM episodes WHERE id = ? AND drama_id = ?').get(episodeId, dramaId) as { durationSeconds: number | null } | undefined)?.durationSeconds ?? null : null
+    const quality: SubtitleTimeQuality = analyzeSubtitleTimeQuality({ sourceKind, cues, durationSeconds: duration, cost })
+    return { ...cost, timeQuality: quality }
   }
 
   private insertCues(trackId: string, cues: Array<z.infer<typeof cueSchema>>, now: string): void {
@@ -178,7 +214,7 @@ export class SubtitleEvidenceService {
     if (row) return this.getTrack(row.id)
     const now = new Date().toISOString(); const trackId = randomUUID(); const sourceCues = this.listCues(baseTrack.id)
     this.database.transaction(() => {
-      this.database.prepare("INSERT INTO subtitle_tracks (id, drama_id, episode_id, asset_id, base_track_id, source_kind, label, language, status, cue_count, cost_json, created_at, updated_at) VALUES (?, ?, ?, NULL, ?, 'resolved', ?, ?, 'active', ?, '{}', ?, ?)").run(trackId, baseTrack.dramaId, baseTrack.episodeId, baseTrack.id, label, baseTrack.language, sourceCues.length, now, now)
+      this.database.prepare("INSERT INTO subtitle_tracks (id, drama_id, episode_id, asset_id, base_track_id, source_kind, acquisition, evidence_nature, label, language, status, cue_count, cost_json, created_at, updated_at) VALUES (?, ?, ?, NULL, ?, 'resolved', 'manual', 'manual_resolved', ?, ?, 'active', ?, '{}', ?, ?)").run(trackId, baseTrack.dramaId, baseTrack.episodeId, baseTrack.id, label, baseTrack.language, sourceCues.length, now, now)
       this.insertCues(trackId, sourceCues, now)
     })()
     return this.getTrack(trackId)
@@ -196,3 +232,5 @@ export class SubtitleEvidenceService {
     if (episodeId && !this.database.prepare('SELECT 1 FROM episodes WHERE id = ? AND drama_id = ?').get(episodeId, dramaId)) throw new Error('Episode does not belong to drama')
   }
 }
+
+const evidenceNatureForSource = (sourceKind: Exclude<SubtitleTrackSource, 'import'>): SubtitleEvidenceNature => sourceKind === 'ocr' ? 'visual_aligned' : sourceKind === 'asr' ? 'audio_aligned' : 'manual_resolved'

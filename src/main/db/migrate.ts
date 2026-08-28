@@ -1,10 +1,11 @@
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 import Database from 'better-sqlite3'
-import { INITIAL_SCHEMA } from './schema.js'
 import { createClipSubtitleVariantTable as createSharedClipSubtitleVariantTable, createProjectLibraryGuards as createSharedProjectLibraryGuards } from './project-library-guards.js'
 import { createP1Tables as createSharedP1Tables } from './p1-schema.js'
 import { addSubtitleEvidenceColumns, createSubtitleEvidenceTables, normalizeProviderCapabilities } from './subtitle-evidence-schema.js'
+import { addColumnIfPresent } from './migration-helpers.js'
+import { addColumnIfMissing, addSubtitleRecognitionMode, addSubtitleRecognitionRuntimeIdentity, applySchema, createClipCandidatePublishMembersTable, createClipExportBatchesTable, createClipIntelligenceTables, createModelStudioProvisionalSecretsTable, createSubtitleAssetIdempotencyIndexes, createSubtitleEvidenceGuards, createSubtitleRecognitionRunTables, createSubtitleRecognitionSettingsTable, hasMigration, reconcileLegacySubtitleAssetEpisodes, recordMigration, tableExists, upgradeClipExportBatchesTable, upgradeModelStudioProvisionalCapabilityConstraint, upgradeSubtitleConflictReviewStatus, upgradeSubtitleRecognitionSettings } from './migration-helpers.js'
 
 export const openDatabase = (databasePath: string): Database.Database => {
   mkdirSync(dirname(databasePath), { recursive: true })
@@ -130,17 +131,113 @@ export const migrateDatabase = (database: Database.Database): void => {
       createSubtitleAssetIdempotencyIndexes(database)
       recordMigration(database, 25)
     }
+    if (!hasMigration(database, 27)) {
+      addSubtitleRecognitionMode(database)
+      recordMigration(database, 27)
+    }
+    if (!hasMigration(database, 26)) {
+      reconcileLegacySubtitleAssetEpisodes(database)
+      recordMigration(database, 26)
+    }
+    if (!hasMigration(database, 28)) {
+      createSubtitleRecognitionRunTables(database)
+      recordMigration(database, 28)
+    }
+    if (!hasMigration(database, 29)) {
+      addSubtitleRecognitionRuntimeIdentity(database)
+      recordMigration(database, 29)
+    }
+    if (!hasMigration(database, 30)) {
+      if (tableExists(database, 'episodes')) addColumnIfMissing(database, 'episodes', 'duration_alert_dismissed_at', 'TEXT')
+      recordMigration(database, 30)
+    }
+    if (!hasMigration(database, 31)) {
+      createSubtitleEvidenceTables(database)
+      recordMigration(database, 31)
+    }
+    if (!hasMigration(database, 32)) {
+      createSubtitleEvidenceTables(database)
+      recordMigration(database, 32)
+    }
+    if (!hasMigration(database, 33)) {
+      createSubtitleEvidenceTables(database)
+      recordMigration(database, 33)
+    }
+    if (!hasMigration(database, 34)) {
+      if (tableExists(database, 'episodes')) addColumnIfMissing(database, 'episodes', 'source_fingerprint', 'TEXT')
+      recordMigration(database, 34)
+    }
+    if (!hasMigration(database, 35)) {
+      createClipIntelligenceTables(database)
+      recordMigration(database, 35)
+    }
+    if (!hasMigration(database, 36)) {
+      addColumnIfMissing(database, 'clip_candidate_snapshots', 'task_id', 'TEXT REFERENCES production_tasks(id) ON DELETE SET NULL')
+      addColumnIfMissing(database, 'clip_candidate_snapshots', 'task_round', 'INTEGER NOT NULL DEFAULT 0')
+      addColumnIfMissing(database, 'clip_candidate_publish_pointers', 'task_id', 'TEXT REFERENCES production_tasks(id) ON DELETE SET NULL')
+      addColumnIfMissing(database, 'clip_candidate_publish_pointers', 'task_round', 'INTEGER NOT NULL DEFAULT 0')
+      recordMigration(database, 36)
+    }
+    if (!hasMigration(database, 37)) {
+      database.exec('CREATE TABLE IF NOT EXISTS clip_generation_rounds (drama_id TEXT PRIMARY KEY REFERENCES dramas(id) ON DELETE CASCADE, next_round INTEGER NOT NULL CHECK (next_round > 0), updated_at TEXT NOT NULL)')
+      recordMigration(database, 37)
+    }
+    if (!hasMigration(database, 38)) {
+      createClipCandidatePublishMembersTable(database)
+      recordMigration(database, 38)
+    }
+    if (!hasMigration(database, 39)) {
+      addColumnIfMissing(database, 'clip_evidence_units', 'coverage_json', "TEXT NOT NULL DEFAULT '{}'")
+      addColumnIfMissing(database, 'clip_evidence_units', 'source_version', 'TEXT')
+      recordMigration(database, 39)
+    }
+    if (!hasMigration(database, 40)) {
+      database.exec(`CREATE TABLE IF NOT EXISTS clip_narrative_events (
+        id TEXT PRIMARY KEY, package_id TEXT NOT NULL REFERENCES clip_evidence_packages(id) ON DELETE CASCADE,
+        event_key TEXT NOT NULL, window_key TEXT NOT NULL, source_evidence_ids_json TEXT NOT NULL,
+        core_evidence_ids_json TEXT NOT NULL, context_before_ids_json TEXT NOT NULL, context_after_ids_json TEXT NOT NULL,
+        start_seconds REAL NOT NULL CHECK (start_seconds >= 0), end_seconds REAL NOT NULL CHECK (end_seconds > start_seconds),
+        state TEXT NOT NULL, characters_json TEXT NOT NULL, relationship TEXT NOT NULL, conflict TEXT NOT NULL,
+        continuity TEXT NOT NULL CHECK (continuity IN ('continuous', 'limited', 'unclear')),
+        seam_status TEXT NOT NULL CHECK (seam_status IN ('closed', 'expanded-closed', 'unclear')),
+        provider TEXT, model TEXT, rule_version TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
+        UNIQUE (package_id, event_key)
+      ); CREATE INDEX IF NOT EXISTS idx_clip_narrative_events_package ON clip_narrative_events (package_id, start_seconds);`)
+      recordMigration(database, 40)
+    }
+    if (!hasMigration(database, 41)) {
+      createModelStudioProvisionalSecretsTable(database)
+      recordMigration(database, 41)
+    }
+    if (!hasMigration(database, 42)) {
+      addColumnIfPresent(database, 'model_studio_provisional_secrets', 'capability', 'TEXT')
+      addColumnIfPresent(database, 'model_studio_provisional_secrets', 'owner_id', 'TEXT')
+      recordMigration(database, 42)
+    }
+    if (!hasMigration(database, 43)) {
+      addColumnIfPresent(database, 'provider_profiles', 'model_selection_source', 'TEXT')
+      recordMigration(database, 43)
+    }
+    if (!hasMigration(database, 44)) {
+      upgradeModelStudioProvisionalCapabilityConstraint(database)
+      recordMigration(database, 44)
+    }
   })
 
   apply()
   // Repair databases from interrupted or pre-release migrations where version 9 was
   // recorded but its table was not persisted. This is idempotent on healthy databases.
   database.exec('CREATE TABLE IF NOT EXISTS drama_import_preferences (drama_id TEXT PRIMARY KEY REFERENCES dramas(id) ON DELETE CASCADE, last_import_directory TEXT NOT NULL, updated_at TEXT NOT NULL)')
+  createModelStudioProvisionalSecretsTable(database)
+  addColumnIfPresent(database, 'model_studio_provisional_secrets', 'capability', 'TEXT')
+  addColumnIfPresent(database, 'model_studio_provisional_secrets', 'owner_id', 'TEXT')
+  addColumnIfPresent(database, 'provider_profiles', 'model_selection_source', 'TEXT')
   // Repair pre-release databases that recorded the migration but lost the table.
   database.exec("CREATE TABLE IF NOT EXISTS drama_covers (drama_id TEXT PRIMARY KEY REFERENCES dramas(id) ON DELETE CASCADE, source_kind TEXT NOT NULL CHECK (source_kind IN ('uploaded', 'auto_frame')), path TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)")
   // P1 may have been partially installed by pre-release builds. Repair each table
   // independently so an interrupted migration cannot strand an existing P0 database.
   createSharedP1Tables(database)
+  upgradeModelStudioProvisionalCapabilityConstraint(database)
   if (tableExists(database, 'generated_materials')) addColumnIfMissing(database, 'generated_materials', 'draft_id', 'TEXT REFERENCES ai_drafts(id) ON DELETE SET NULL')
   createSharedProjectLibraryGuards(database)
   normalizeProviderCapabilities(database)
@@ -150,164 +247,36 @@ export const migrateDatabase = (database: Database.Database): void => {
   createSharedClipSubtitleVariantTable(database)
   createSubtitleRecognitionSettingsTable(database)
   upgradeSubtitleRecognitionSettings(database)
+  addSubtitleRecognitionMode(database)
+  createSubtitleRecognitionRunTables(database)
+  addSubtitleRecognitionRuntimeIdentity(database)
   createSubtitleAssetIdempotencyIndexes(database)
+  reconcileLegacySubtitleAssetEpisodes(database)
   createClipExportBatchesTable(database)
+  createClipIntelligenceTables(database)
+  createClipCandidatePublishMembersTable(database)
+  database.exec('CREATE TABLE IF NOT EXISTS clip_generation_rounds (drama_id TEXT PRIMARY KEY REFERENCES dramas(id) ON DELETE CASCADE, next_round INTEGER NOT NULL CHECK (next_round > 0), updated_at TEXT NOT NULL)')
+  addColumnIfMissing(database, 'clip_candidate_snapshots', 'task_id', 'TEXT REFERENCES production_tasks(id) ON DELETE SET NULL')
+  addColumnIfMissing(database, 'clip_candidate_snapshots', 'task_round', 'INTEGER NOT NULL DEFAULT 0')
+  addColumnIfMissing(database, 'clip_candidate_publish_pointers', 'task_id', 'TEXT REFERENCES production_tasks(id) ON DELETE SET NULL')
+  addColumnIfMissing(database, 'clip_candidate_publish_pointers', 'task_round', 'INTEGER NOT NULL DEFAULT 0')
+  addColumnIfMissing(database, 'clip_evidence_units', 'coverage_json', "TEXT NOT NULL DEFAULT '{}'")
+  addColumnIfMissing(database, 'clip_evidence_units', 'source_version', 'TEXT')
+  database.exec(`CREATE TABLE IF NOT EXISTS clip_narrative_events (
+    id TEXT PRIMARY KEY, package_id TEXT NOT NULL REFERENCES clip_evidence_packages(id) ON DELETE CASCADE,
+    event_key TEXT NOT NULL, window_key TEXT NOT NULL, source_evidence_ids_json TEXT NOT NULL,
+    core_evidence_ids_json TEXT NOT NULL, context_before_ids_json TEXT NOT NULL, context_after_ids_json TEXT NOT NULL,
+    start_seconds REAL NOT NULL CHECK (start_seconds >= 0), end_seconds REAL NOT NULL CHECK (end_seconds > start_seconds),
+    state TEXT NOT NULL, characters_json TEXT NOT NULL, relationship TEXT NOT NULL, conflict TEXT NOT NULL,
+    continuity TEXT NOT NULL CHECK (continuity IN ('continuous', 'limited', 'unclear')),
+    seam_status TEXT NOT NULL CHECK (seam_status IN ('closed', 'expanded-closed', 'unclear')),
+    provider TEXT, model TEXT, rule_version TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL,
+    UNIQUE (package_id, event_key)
+  ); CREATE INDEX IF NOT EXISTS idx_clip_narrative_events_package ON clip_narrative_events (package_id, start_seconds);`)
   if (tableExists(database, 'episodes')) {
+    addColumnIfMissing(database, 'episodes', 'source_fingerprint', 'TEXT')
     addColumnIfMissing(database, 'episodes', 'video_width', 'INTEGER')
     addColumnIfMissing(database, 'episodes', 'video_height', 'INTEGER')
+    addColumnIfMissing(database, 'episodes', 'duration_alert_dismissed_at', 'TEXT')
   }
-}
-
-const createSubtitleRecognitionSettingsTable = (database: Database.Database): void => {
-  database.exec("CREATE TABLE IF NOT EXISTS subtitle_recognition_settings (drama_id TEXT PRIMARY KEY REFERENCES dramas(id) ON DELETE CASCADE, scope TEXT NOT NULL CHECK (scope IN ('all', 'current', 'missing')), language TEXT NOT NULL CHECK (language IN ('zh-CN', 'zh-en', 'auto')), asr_mode TEXT NOT NULL CHECK (asr_mode IN ('audio-first', 'denoise', 'import-only')), ocr_mode TEXT NOT NULL CHECK (ocr_mode IN ('auto-region', 'fixed-bottom', 'episode-manual')), difference_threshold TEXT NOT NULL CHECK (difference_threshold IN ('standard', 'strict', 'loose')), import_strategy TEXT NOT NULL CHECK (import_strategy IN ('parallel', 'review-only')), updated_at TEXT NOT NULL)")
-}
-
-const createSubtitleAssetIdempotencyIndexes = (database: Database.Database): void => {
-  if (!tableExists(database, 'subtitle_assets')) return
-  database.exec('CREATE UNIQUE INDEX IF NOT EXISTS ux_subtitle_assets_drama_global_source ON subtitle_assets (drama_id, source_path) WHERE episode_id IS NULL')
-  database.exec('CREATE UNIQUE INDEX IF NOT EXISTS ux_subtitle_assets_drama_episode_source ON subtitle_assets (drama_id, episode_id, source_path) WHERE episode_id IS NOT NULL')
-}
-
-const upgradeSubtitleRecognitionSettings = (database: Database.Database): void => {
-  if (!tableExists(database, 'subtitle_recognition_settings')) { createSubtitleRecognitionSettingsTable(database); return }
-  const definition = database.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'subtitle_recognition_settings'").get() as { sql?: string } | undefined
-  if (!definition?.sql?.includes("'display-only'")) return
-  database.exec(`
-    CREATE TABLE subtitle_recognition_settings_v24 (
-      drama_id TEXT PRIMARY KEY REFERENCES dramas(id) ON DELETE CASCADE,
-      scope TEXT NOT NULL CHECK (scope IN ('all', 'current', 'missing')),
-      language TEXT NOT NULL CHECK (language IN ('zh-CN', 'zh-en', 'auto')),
-      asr_mode TEXT NOT NULL CHECK (asr_mode IN ('audio-first', 'denoise', 'import-only')),
-      ocr_mode TEXT NOT NULL CHECK (ocr_mode IN ('auto-region', 'fixed-bottom', 'episode-manual')),
-      difference_threshold TEXT NOT NULL CHECK (difference_threshold IN ('standard', 'strict', 'loose')),
-      import_strategy TEXT NOT NULL CHECK (import_strategy IN ('parallel', 'review-only')),
-      updated_at TEXT NOT NULL
-    );
-    INSERT INTO subtitle_recognition_settings_v24 (drama_id, scope, language, asr_mode, ocr_mode, difference_threshold, import_strategy, updated_at)
-    SELECT drama_id, scope, language, asr_mode, ocr_mode, difference_threshold, CASE WHEN import_strategy = 'display-only' THEN 'review-only' ELSE import_strategy END, updated_at
-    FROM subtitle_recognition_settings;
-    DROP TABLE subtitle_recognition_settings;
-    ALTER TABLE subtitle_recognition_settings_v24 RENAME TO subtitle_recognition_settings;
-  `)
-}
-
-const createClipExportBatchesTable = (database: Database.Database): void => {
-  database.exec("CREATE TABLE IF NOT EXISTS clip_export_batches (id TEXT PRIMARY KEY, drama_id TEXT NOT NULL REFERENCES dramas(id) ON DELETE CASCADE, candidate_ids_json TEXT NOT NULL, status TEXT NOT NULL CHECK (status IN ('running', 'completed', 'cancelled', 'failed')), reason TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)")
-  database.exec('CREATE INDEX IF NOT EXISTS ix_clip_export_batches_drama_updated ON clip_export_batches (drama_id, updated_at DESC)')
-}
-
-const upgradeSubtitleConflictReviewStatus = (database: Database.Database): void => {
-  if (!tableExists(database, 'subtitle_conflicts')) return
-  const definition = database.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'subtitle_conflicts'").get() as { sql?: string } | undefined
-  if (definition?.sql?.includes("'reviewed'")) return
-  database.exec(`
-    DROP INDEX IF EXISTS idx_subtitle_conflicts_drama_episode;
-    CREATE TABLE subtitle_conflicts_v23 (
-      id TEXT PRIMARY KEY, drama_id TEXT NOT NULL REFERENCES dramas(id) ON DELETE CASCADE, episode_id TEXT REFERENCES episodes(id) ON DELETE SET NULL,
-      asr_cue_id TEXT NOT NULL REFERENCES subtitle_cues(id) ON DELETE CASCADE, ocr_cue_id TEXT NOT NULL REFERENCES subtitle_cues(id) ON DELETE CASCADE,
-      time_overlap_seconds REAL NOT NULL CHECK (time_overlap_seconds > 0), text_similarity REAL NOT NULL CHECK (text_similarity >= 0 AND text_similarity <= 1),
-      asr_confidence REAL, ocr_confidence REAL, status TEXT NOT NULL CHECK (status IN ('open', 'resolved_asr', 'resolved_ocr', 'resolved_manual', 'reviewed')) DEFAULT 'open',
-      resolved_text TEXT, resolved_start_seconds REAL, resolved_end_seconds REAL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL
-    );
-    INSERT INTO subtitle_conflicts_v23 (id, drama_id, episode_id, asr_cue_id, ocr_cue_id, time_overlap_seconds, text_similarity, asr_confidence, ocr_confidence, status, resolved_text, resolved_start_seconds, resolved_end_seconds, created_at, updated_at)
-    SELECT id, drama_id, episode_id, asr_cue_id, ocr_cue_id, time_overlap_seconds, text_similarity, asr_confidence, ocr_confidence, status, resolved_text, resolved_start_seconds, resolved_end_seconds, created_at, updated_at FROM subtitle_conflicts;
-    DROP TABLE subtitle_conflicts;
-    ALTER TABLE subtitle_conflicts_v23 RENAME TO subtitle_conflicts;
-    CREATE INDEX IF NOT EXISTS idx_subtitle_conflicts_drama_episode ON subtitle_conflicts (drama_id, episode_id, status, created_at DESC);
-  `)
-}
-
-const upgradeClipExportBatchesTable = (database: Database.Database): void => {
-  if (!tableExists(database, 'clip_export_batches')) { createClipExportBatchesTable(database); return }
-  const columns = database.prepare('PRAGMA table_info(clip_export_batches)').all() as Array<{ name: string }>
-  if (columns.some((column) => column.name === 'reason')) { database.exec('CREATE INDEX IF NOT EXISTS ix_clip_export_batches_drama_updated ON clip_export_batches (drama_id, updated_at DESC)'); return }
-  const reasonValue = columns.some((column) => column.name === 'reason') ? 'reason' : 'NULL'
-  database.exec(`
-    DROP INDEX IF EXISTS ix_clip_export_batches_drama_updated;
-    CREATE TABLE clip_export_batches_v21 (
-      id TEXT PRIMARY KEY,
-      drama_id TEXT NOT NULL REFERENCES dramas(id) ON DELETE CASCADE,
-      candidate_ids_json TEXT NOT NULL,
-      status TEXT NOT NULL CHECK (status IN ('running', 'completed', 'cancelled', 'failed')),
-      reason TEXT,
-      created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
-    );
-    INSERT INTO clip_export_batches_v21 (id, drama_id, candidate_ids_json, status, reason, created_at, updated_at)
-    SELECT id, drama_id, candidate_ids_json, status, ${reasonValue}, created_at, updated_at FROM clip_export_batches;
-    DROP TABLE clip_export_batches;
-    ALTER TABLE clip_export_batches_v21 RENAME TO clip_export_batches;
-  `)
-  database.exec('CREATE INDEX IF NOT EXISTS ix_clip_export_batches_drama_updated ON clip_export_batches (drama_id, updated_at DESC)')
-}
-
-const createSubtitleEvidenceGuards = (database: Database.Database): void => {
-  if (['subtitle_tracks', 'subtitle_cues', 'subtitle_conflicts', 'subtitle_ocr_regions', 'subtitle_quality_evaluations'].some((table) => !tableExists(database, table))) return
-  database.exec('DROP TRIGGER IF EXISTS trg_subtitle_tracks_same_drama_insert; DROP TRIGGER IF EXISTS trg_subtitle_tracks_same_drama_update; DROP TRIGGER IF EXISTS trg_subtitle_regions_same_drama_insert; DROP TRIGGER IF EXISTS trg_subtitle_regions_same_drama_update; DROP TRIGGER IF EXISTS trg_subtitle_conflicts_same_drama_insert; DROP TRIGGER IF EXISTS trg_subtitle_conflicts_same_drama_update;')
-  database.exec(`
-    CREATE TRIGGER IF NOT EXISTS trg_subtitle_tracks_same_drama_insert BEFORE INSERT ON subtitle_tracks
-    WHEN (NEW.episode_id IS NOT NULL AND (SELECT drama_id FROM episodes WHERE id = NEW.episode_id) <> NEW.drama_id) OR (NEW.asset_id IS NOT NULL AND (SELECT drama_id FROM subtitle_assets WHERE id = NEW.asset_id) <> NEW.drama_id) OR (NEW.base_track_id IS NOT NULL AND (SELECT drama_id FROM subtitle_tracks WHERE id = NEW.base_track_id) <> NEW.drama_id)
-    BEGIN SELECT RAISE(ABORT, 'CROSS_PROJECT_SUBTITLE_TRACK'); END;
-    CREATE TRIGGER IF NOT EXISTS trg_subtitle_tracks_same_drama_update BEFORE UPDATE OF drama_id, episode_id, asset_id, base_track_id ON subtitle_tracks
-    WHEN (NEW.episode_id IS NOT NULL AND (SELECT drama_id FROM episodes WHERE id = NEW.episode_id) <> NEW.drama_id) OR (NEW.asset_id IS NOT NULL AND (SELECT drama_id FROM subtitle_assets WHERE id = NEW.asset_id) <> NEW.drama_id) OR (NEW.base_track_id IS NOT NULL AND (SELECT drama_id FROM subtitle_tracks WHERE id = NEW.base_track_id) <> NEW.drama_id)
-    BEGIN SELECT RAISE(ABORT, 'CROSS_PROJECT_SUBTITLE_TRACK'); END;
-    CREATE TRIGGER IF NOT EXISTS trg_subtitle_regions_same_drama_insert BEFORE INSERT ON subtitle_ocr_regions
-    WHEN (NEW.scope = 'drama_default' AND NEW.episode_id IS NOT NULL) OR (NEW.scope = 'episode_override' AND (NEW.episode_id IS NULL OR (SELECT drama_id FROM episodes WHERE id = NEW.episode_id) <> NEW.drama_id))
-    BEGIN SELECT RAISE(ABORT, 'INVALID_SUBTITLE_OCR_REGION'); END;
-    CREATE TRIGGER IF NOT EXISTS trg_subtitle_regions_same_drama_update BEFORE UPDATE OF drama_id, episode_id, scope ON subtitle_ocr_regions
-    WHEN (NEW.scope = 'drama_default' AND NEW.episode_id IS NOT NULL) OR (NEW.scope = 'episode_override' AND (NEW.episode_id IS NULL OR (SELECT drama_id FROM episodes WHERE id = NEW.episode_id) <> NEW.drama_id))
-    BEGIN SELECT RAISE(ABORT, 'INVALID_SUBTITLE_OCR_REGION'); END;
-    CREATE TRIGGER IF NOT EXISTS trg_subtitle_conflicts_same_drama_insert BEFORE INSERT ON subtitle_conflicts
-    WHEN (SELECT drama_id FROM subtitle_tracks t JOIN subtitle_cues c ON c.track_id = t.id WHERE c.id = NEW.asr_cue_id) <> NEW.drama_id
-      OR (SELECT source_kind FROM subtitle_tracks t JOIN subtitle_cues c ON c.track_id = t.id WHERE c.id = NEW.asr_cue_id) <> 'asr'
-      OR (SELECT drama_id FROM subtitle_tracks t JOIN subtitle_cues c ON c.track_id = t.id WHERE c.id = NEW.ocr_cue_id) <> NEW.drama_id
-      OR (SELECT source_kind FROM subtitle_tracks t JOIN subtitle_cues c ON c.track_id = t.id WHERE c.id = NEW.ocr_cue_id) <> 'ocr'
-    BEGIN SELECT RAISE(ABORT, 'INVALID_SUBTITLE_CONFLICT'); END;
-    CREATE TRIGGER IF NOT EXISTS trg_subtitle_conflicts_same_drama_update BEFORE UPDATE OF drama_id, episode_id, asr_cue_id, ocr_cue_id ON subtitle_conflicts
-    WHEN (SELECT drama_id FROM subtitle_tracks t JOIN subtitle_cues c ON c.track_id = t.id WHERE c.id = NEW.asr_cue_id) <> NEW.drama_id
-      OR (SELECT source_kind FROM subtitle_tracks t JOIN subtitle_cues c ON c.track_id = t.id WHERE c.id = NEW.asr_cue_id) <> 'asr'
-      OR (SELECT drama_id FROM subtitle_tracks t JOIN subtitle_cues c ON c.track_id = t.id WHERE c.id = NEW.ocr_cue_id) <> NEW.drama_id
-      OR (SELECT source_kind FROM subtitle_tracks t JOIN subtitle_cues c ON c.track_id = t.id WHERE c.id = NEW.ocr_cue_id) <> 'ocr'
-    BEGIN SELECT RAISE(ABORT, 'INVALID_SUBTITLE_CONFLICT'); END;
-  `)
-}
-
-
-const hasMigration = (database: Database.Database, version: number): boolean => {
-  return database.prepare('SELECT 1 FROM schema_migrations WHERE version = ?').get(version) !== undefined
-}
-
-const tableExists = (database: Database.Database, table: string): boolean => {
-  return database.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?").get(table) !== undefined
-}
-
-const applySchema = (database: Database.Database, skipNotificationEventIndex = false): void => {
-  for (const statement of INITIAL_SCHEMA) {
-    if (skipNotificationEventIndex && statement.includes('ux_notifications_event_key')) {
-      continue
-    }
-    database.exec(statement)
-  }
-}
-
-const recordMigration = (database: Database.Database, version: number): void => {
-  database.prepare('INSERT INTO schema_migrations (version, applied_at) VALUES (?, ?)').run(version, new Date().toISOString())
-}
-
-const addColumnIfMissing = (
-  database: Database.Database,
-  table: 'production_tasks' | 'notifications' | 'generated_materials' | 'episodes' | 'task_items',
-  column: 'cost_json' | 'event_key' | 'occurred_at' | 'draft_id' | 'video_width' | 'video_height' | 'export_batch_id',
-  definition: string
-): void => {
-  const columns = database.prepare(`PRAGMA table_info(${table})`).all() as Array<{ name: string }>
-  if (!columns.some(({ name }) => name === column)) {
-    database.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`)
-  }
-}
-
-const addColumnIfPresent = (database: Database.Database, table: string, column: string, definition: string): void => {
-  if (!tableExists(database, table)) return
-  const columns = database.prepare(`PRAGMA table_info(${table})`).all() as Array<{ name: string }>
-  if (!columns.some(({ name }) => name === column)) database.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`)
 }

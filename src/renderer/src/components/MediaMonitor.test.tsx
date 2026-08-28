@@ -4,12 +4,13 @@ import { describe, expect, it, vi } from 'vitest'
 import { MediaMonitor, toMediaUrl } from './MediaMonitor.js'
 
 describe('toMediaUrl', () => {
-  it('converts Windows and UNC paths into playable file URLs', () => {
-    expect(toMediaUrl('C:\\media files\\episode 01.mp4')).toBe('file:///C:/media%20files/episode%2001.mp4')
-    expect(toMediaUrl('\\\\server\\share\\episode #1% 你好.mp4')).toBe('file://server/share/episode%20%231%25%20%E4%BD%A0%E5%A5%BD.mp4')
-    expect(toMediaUrl('C:\\media#1\\100%\\片段.mp4')).toBe('file:///C:/media%231/100%25/%E7%89%87%E6%AE%B5.mp4')
-    expect(toMediaUrl('file:///C:/episode.mp4')).toBe('file:///C:/episode.mp4')
-    expect(toMediaUrl('file:///C:/media#1/100%/片段.mp4')).toBe('file:///C:/media%231/100%25/%E7%89%87%E6%AE%B5.mp4')
+  it('routes local paths through the privileged local media protocol', () => {
+    const local = (path: string): string => `shortdrama-media://local/${encodeURIComponent(path)}`
+    expect(toMediaUrl('C:\\media files\\episode 01.mp4')).toBe(local('C:\\media files\\episode 01.mp4'))
+    expect(toMediaUrl('\\\\server\\share\\episode #1% 你好.mp4')).toBe(local('\\\\server\\share\\episode #1% 你好.mp4'))
+    expect(toMediaUrl('C:\\media#1\\100%\\片段.mp4')).toBe(local('C:\\media#1\\100%\\片段.mp4'))
+    expect(toMediaUrl('file:///C:/episode.mp4')).toBe(local('C:/episode.mp4'))
+    expect(toMediaUrl('file:///C:/media#1/100%/片段.mp4')).toBe(local('C:/media#1/100%/片段.mp4'))
     expect(toMediaUrl('https://example.com/video.mp4')).toBe('about:blank')
   })
 

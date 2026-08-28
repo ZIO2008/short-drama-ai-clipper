@@ -45,6 +45,24 @@ describe('AiRemixWorkspacePage', () => {
     expect(screen.getByText(/当前版本缺少能力状态读取能力/)).toBeTruthy()
   })
 
+  it('shows model-required capability guidance instead of implying that the saved provider is usable', async () => {
+    window.desktopApi = { listAiCapabilityStatus: vi.fn().mockResolvedValue([{ capability: 'multimodal-review', mode: 'controlled', reason: 'model-required' }]) } as unknown as DesktopApi
+    render(<AiRemixWorkspacePage drama={drama} onBack={vi.fn()} onOpenReview={vi.fn()} />)
+
+    expect(await screen.findByText('受控本地验证模式')).toBeTruthy()
+    expect(screen.getByText(/已选择方案但尚未填写实际模型/)).toBeTruthy()
+    expect(screen.queryByText(/即使本机已保存供应商配置/)).toBeNull()
+  })
+
+  it('explains an unreadable Windows-protected secret without reporting it as missing', async () => {
+    window.desktopApi = { listAiCapabilityStatus: vi.fn().mockResolvedValue([{ capability: 'multimodal-review', mode: 'controlled', reason: 'unreadable-secret' }]) } as unknown as DesktopApi
+    render(<AiRemixWorkspacePage drama={drama} onBack={vi.fn()} onOpenReview={vi.fn()} />)
+
+    expect(await screen.findByText('受控本地验证模式')).toBeTruthy()
+    expect(screen.getByText(/已保存密钥但当前 Windows 安全存储无法读取/)).toBeTruthy()
+    expect(screen.queryByText(/缺少密钥/)).toBeNull()
+  })
+
   it('keeps the newest capability result when an earlier read finishes late', async () => {
     let releaseFirst: (() => void) | undefined
     const firstRead = new Promise<void>((resolve) => { releaseFirst = resolve })
@@ -89,6 +107,27 @@ describe('AiRemixWorkspacePage', () => {
     expect(screen.getByLabelText('任务费用、区域与上传披露').textContent).toContain('预计费用：¥0.00')
     expect(screen.getByLabelText('任务费用、区域与上传披露').textContent).toContain('实际费用：¥0.00')
     expect(screen.getByLabelText('任务费用、区域与上传披露').textContent).toContain('本次上传：无')
+  })
+
+  it('uses all episodes by default and keeps a custom continuous range valid without enumerating ranges', async () => {
+    const createAiRemixTask = vi.fn().mockResolvedValue({ taskId: 'task-1' })
+    window.desktopApi = { listAiCapabilityStatus: vi.fn().mockResolvedValue([]), createAiRemixTask, runAiRemixTask: vi.fn().mockResolvedValue(task), listAiRemixEvidence: vi.fn().mockResolvedValue([]) } as unknown as DesktopApi
+    render(<AiRemixWorkspacePage drama={drama} onBack={vi.fn()} onOpenReview={vi.fn()} />)
+
+    expect(screen.getByRole('button', { name: '全部 2 集' }).getAttribute('aria-pressed')).toBe('true')
+    expect(screen.getByText('第 1–2 集 · 共 2 集')).toBeTruthy()
+    expect(screen.queryByRole('combobox', { name: '剧集范围' })).toBeNull()
+    expect(screen.queryByLabelText('起始集')).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: '自定义范围' }))
+    fireEvent.change(screen.getByLabelText('起始集'), { target: { value: '2' } })
+    expect(screen.getByText('第 2–2 集 · 共 1 集')).toBeTruthy()
+    fireEvent.change(screen.getByLabelText('结束集'), { target: { value: '1' } })
+    expect(screen.getByText('第 1–1 集 · 共 1 集')).toBeTruthy()
+    fireEvent.change(screen.getByLabelText('结束集'), { target: { value: '2' } })
+    fireEvent.click(screen.getByRole('button', { name: '开始分析剧情' }))
+
+    await waitFor(() => expect(createAiRemixTask).toHaveBeenCalledWith(expect.objectContaining({ episodeStart: 1, episodeEnd: 2 })))
   })
 
   it('shows no recommendation and its reason while retaining evidence when analysis has no credible draft', async () => {

@@ -74,4 +74,12 @@ describe('DramaAssetsPage', () => {
     expect(view.queryByText('01.mp4')).toBeNull()
     expect(view.getByText('02.mp4')).toBeTruthy()
   })
+
+  it('shows an ultra-short duration alert in the existing status cell and lets the user dismiss only that alert', async () => {
+    const onDismissDurationAlert = vi.fn().mockResolvedValue(undefined)
+    render(<DramaAssetsPage drama={{ ...drama, issueCount: 1, episodes: [{ ...drama.episodes[0]!, episodeNo: 48, durationSeconds: 1.4 }] }} scripts={[]} onImport={vi.fn().mockResolvedValue(undefined)} onImportScript={vi.fn().mockResolvedValue([])} onLinkScript={vi.fn().mockResolvedValue(undefined)} onLinkSegment={vi.fn().mockResolvedValue(undefined)} onRelink={vi.fn().mockResolvedValue(undefined)} onDismissDurationAlert={onDismissDurationAlert} onEdit={vi.fn()} />)
+    expect(screen.getByText('时长异常 · 1.40 秒')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: '忽略时长异常提示' }))
+    await waitFor(() => expect(onDismissDurationAlert).toHaveBeenCalledWith('e1'))
+  })
 })

@@ -17,18 +17,19 @@ export class TaskCenterService {
         task.progress_current AS progressCurrent,
         task.progress_total AS progressTotal,
         task.checkpoint,
+        task.config_snapshot AS configSnapshot,
         task.cost_json AS costJson,
         task.created_at AS createdAt,
         task.updated_at AS updatedAt
       FROM production_tasks task
       JOIN dramas drama ON drama.id = task.drama_id
       WHERE task.type IN ('original_clip', 'multi_episode', 'ai_remix')
-      ORDER BY task.updated_at DESC
+      ORDER BY task.updated_at DESC, task.id DESC
     `).all().map((row) => {
       const task = row as TaskSummaryRow
-      let checkpointStage: string | undefined; let checkpointReason: string | null = null; let startedAt: string | null = null; let elapsedMs: number | undefined; let activeSince: string | null = null; let decisionDeadlineAt: string | null = null
+      let checkpointStage: string | undefined; let checkpointReason: string | null = null; let startedAt: string | null = null; let elapsedMs: number | undefined; let activeSince: string | null = null; let decisionDeadlineAt: string | null = null; let episodeIds: string[] | undefined; let taskRound: number | undefined
       try {
-        const checkpoint = JSON.parse(task.checkpoint ?? '{}') as { stage?: unknown; reason?: unknown; startedAt?: unknown; decisionDeadlineAt?: unknown; executor?: { stage?: unknown; reason?: unknown; startedAt?: unknown; decisionDeadlineAt?: unknown } }
+        const checkpoint = JSON.parse(task.checkpoint ?? '{}') as { stage?: unknown; reason?: unknown; taskRound?: unknown; startedAt?: unknown; decisionDeadlineAt?: unknown; executor?: { stage?: unknown; reason?: unknown; startedAt?: unknown; decisionDeadlineAt?: unknown } }
         const active = checkpoint.executor ?? checkpoint
         const stage = active.stage
         checkpointStage = typeof stage === 'string' ? stage : undefined
@@ -38,7 +39,13 @@ export class TaskCenterService {
         elapsedMs = typeof (checkpoint as { elapsedMs?: unknown }).elapsedMs === 'number' ? (checkpoint as { elapsedMs: number }).elapsedMs : undefined
         activeSince = typeof (checkpoint as { activeSince?: unknown }).activeSince === 'string' ? (checkpoint as { activeSince: string }).activeSince : null
         decisionDeadlineAt = typeof active.decisionDeadlineAt === 'string' ? active.decisionDeadlineAt : null
+        taskRound = typeof checkpoint.taskRound === 'number' && Number.isInteger(checkpoint.taskRound) && checkpoint.taskRound > 0 ? checkpoint.taskRound : undefined
       } catch { checkpointStage = undefined }
+      try {
+        const config = JSON.parse((task as TaskSummaryRow & { configSnapshot?: string }).configSnapshot ?? '{}') as { generation?: { episodeIds?: unknown }; taskRound?: unknown }
+        if (Array.isArray(config.generation?.episodeIds) && config.generation.episodeIds.every((id) => typeof id === 'string')) episodeIds = [...new Set(config.generation.episodeIds)]
+        if (typeof config.taskRound === 'number' && Number.isInteger(config.taskRound) && config.taskRound > 0) taskRound = config.taskRound
+      } catch { /* Historical task snapshots remain readable without episode scope. */ }
       // The renderer's legacy elapsed formatter receives a start timestamp only.
       // Convert the persisted active-time ledger into an equivalent timestamp so
       // paused intervals never inflate the visible duration.
@@ -54,15 +61,17 @@ export class TaskCenterService {
         actualCost = typeof cost.actual === 'number' ? cost.actual : 0
         processingRegion = typeof cost.region === 'string' ? cost.region : null
       } catch { /* Invalid historical cost snapshots are shown as zero, never as a crash. */ }
-      const { checkpoint: _checkpoint, costJson: _costJson, ...summary } = task
+      const { checkpoint: _checkpoint, costJson: _costJson, configSnapshot: _configSnapshot, ...summary } = task as TaskSummaryRow & { configSnapshot?: string }
       return {
         ...summary,
+        ...(taskRound !== undefined ? { taskRound } : {}),
         ...(checkpointStage ? { checkpointStage } : {}),
         ...(checkpointReason ? { checkpointReason } : {}),
         ...(startedAt ? { startedAt } : {}),
         ...(elapsedMs !== undefined ? { elapsedMs } : {}),
         ...(activeSince ? { activeSince } : {}),
         ...(decisionDeadlineAt ? { decisionDeadlineAt } : {}),
+        ...(episodeIds ? { episodeIds } : {}),
         ...(estimatedCost ? { estimatedCost } : {}),
         ...(actualCost ? { actualCost } : {}),
         ...(processingRegion ? { processingRegion } : {})

@@ -228,7 +228,6 @@ const AppRuntime = (): ReactElement => {
           throw error
         }
       }}
-      onCreateCandidate={(dramaId, episodeId, start, end) => window.desktopApi.createClipCandidate(dramaId, episodeId, start, end)}
       onListCandidates={(dramaId) => window.desktopApi.listClipCandidates(dramaId)}
       onConfirmCandidate={(id) => window.desktopApi.confirmClipCandidate(id)}
       onExportCandidate={(id, directory) => window.desktopApi.exportClipCandidate(id, directory)}
@@ -240,7 +239,7 @@ const AppRuntime = (): ReactElement => {
       onCreateTag={async (name) => { await window.desktopApi.createTag(name); loadTags() }}
       onRenameTag={async (id, name) => { await window.desktopApi.renameTag(id, name); loadTags(); loadDramas() }}
       onDeleteTag={async (tag) => { await window.desktopApi.deleteTag(tag.id); loadTags(); loadDramas() }}
-      onSaveSecret={async (value, secretRef) => { await window.desktopApi.saveSecret(value, secretRef) }}
+      onSaveSecret={async (credential, secretRef) => { await window.desktopApi.saveProviderCredential(credential, secretRef) }}
     />
   )
 }

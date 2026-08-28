@@ -9,6 +9,9 @@ import { bindOriginalClipPoolReportRuntime } from './OriginalClipPoolReportRunti
 import { bindSubtitleImport } from './SubtitleImportBridge.js'
 import { bindSubtitleAssetRuntime } from './SubtitleAssetRuntimeBridge.js'
 import { bindSubtitleRecognitionSettings } from './SubtitleRecognitionSettingsBridge.js'
+import { bindSubtitleOcrRegionCalibration } from './SubtitleOcrRegionCalibrationBridge.js'
+import { bindSubtitleStaticDetailReadOnly } from './SubtitleStaticDetailReadOnlyBridge.js'
+import { bindSubtitleStaticDetailPreview } from './SubtitleStaticDetailPreviewBridge.js'
 import { ProductionPage } from './ProductionPage.js'
 import { AiRemixWorkspacePage } from './AiRemixWorkspacePage.js'
 import { AiReviewTimelinePage } from './AiReviewTimelinePage.js'
@@ -16,8 +19,8 @@ import { ModalDialog } from '../components/ModalDialog.js'
 
 type Props = {
   drama: DramaSummary; tags: TagSummary[]; initialMode?: 'workspace' | 'edit'; initialDetail?: DramaDetail; onClose: () => void; onLoad: () => Promise<DramaDetail>
-  onRename: (name: string) => Promise<void>; onDelete: (deleteTempFiles: boolean) => Promise<void>; onImport: () => Promise<void>; onImportFolder?: () => Promise<void>; onImportScript: () => Promise<ScriptPreviewSegment[]>; onLinkScript: (id: string, episodeId: string | null) => Promise<void>; onLinkSegment: (id: string, episodeId: string | null) => Promise<void>; onRelink: () => Promise<void>; onAttachTag: (id: string) => Promise<void>; onUpdateEpisode: (id: string, update: EpisodeUpdate) => Promise<DramaDetail>; onRemoveEpisode: (id: string) => Promise<DramaDetail>
-  onCreateCandidate: (episodeId: string, start: number, end: number) => Promise<ClipCandidate>; onListCandidates: () => Promise<ClipCandidate[]>; onConfirmCandidate: (id: string) => Promise<ClipCandidate>; onExportCandidate: (id: string, directory: string) => Promise<{ candidate: ClipCandidate; outputPath: string }>; onChooseOutputDirectory: () => Promise<string | null>; onListMaterials: () => Promise<MaterialSummary[]>; onPreflightMultiTask: (dramaId: string, config: MultiEpisodeConfigInput) => Promise<MultiEpisodePreflight>; onCreateMultiTask: (dramaId: string, config: MultiEpisodeConfig) => Promise<MultiEpisodeTaskPlan>; onRunTask: (taskId: string) => Promise<unknown>
+  onRename: (name: string) => Promise<void>; onDelete: (deleteTempFiles: boolean) => Promise<void>; onImport: () => Promise<void>; onImportFolder?: () => Promise<void>; onImportScript: () => Promise<ScriptPreviewSegment[]>; onLinkScript: (id: string, episodeId: string | null) => Promise<void>; onLinkSegment: (id: string, episodeId: string | null) => Promise<void>; onRelink: () => Promise<void>; onAttachTag: (id: string) => Promise<void>; onUpdateEpisode: (id: string, update: EpisodeUpdate) => Promise<DramaDetail>; onRemoveEpisode: (id: string) => Promise<DramaDetail>; onDismissDurationAlert?: (id: string) => Promise<DramaDetail>
+  onListCandidates: () => Promise<ClipCandidate[]>; onConfirmCandidate: (id: string) => Promise<ClipCandidate>; onExportCandidate: (id: string, directory: string) => Promise<{ candidate: ClipCandidate; outputPath: string }>; onChooseOutputDirectory: () => Promise<string | null>; onListMaterials: () => Promise<MaterialSummary[]>; onPreflightMultiTask: (dramaId: string, config: MultiEpisodeConfigInput) => Promise<MultiEpisodePreflight>; onCreateMultiTask: (dramaId: string, config: MultiEpisodeConfig) => Promise<MultiEpisodeTaskPlan>; onRunTask: (taskId: string) => Promise<unknown>
 }
 type Tab = 'assets' | 'production' | 'subtitles' | 'results'
 
@@ -116,7 +119,7 @@ export const DramaWorkspacePage = (props: Props): ReactElement => {
   const disconnectedEpisodes = (health?.missing.length ?? 0) + (health?.unreadable.length ?? 0)
   const linkedScripts = scripts.filter((script) => script.episodeId !== null).length
   const body = tab === 'assets'
-    ? <DramaAssetsPage embedded drama={detail} scripts={scripts} onImport={async () => { await props.onImport(); await reload() }} onImportFolder={async () => { await (props.onImportFolder ?? props.onImport)(); await reload() }} onImportScript={importScript} onLinkScript={async (scriptId, episodeId) => { await props.onLinkScript(scriptId, episodeId); await reload() }} onLinkSegment={async (segmentId, episodeId) => { await props.onLinkSegment(segmentId, episodeId); await reload() }} onRelink={async () => { await props.onRelink(); await reload() }} onRemoveEpisode={async (episodeId) => { await props.onRemoveEpisode(episodeId); await reload() }} onEdit={() => setEditorOpen(true)} />
+    ? <DramaAssetsPage embedded drama={detail} scripts={scripts} onImport={async () => { await props.onImport(); await reload() }} onImportFolder={async () => { await (props.onImportFolder ?? props.onImport)(); await reload() }} onImportScript={importScript} onLinkScript={async (scriptId, episodeId) => { await props.onLinkScript(scriptId, episodeId); await reload() }} onLinkSegment={async (segmentId, episodeId) => { await props.onLinkSegment(segmentId, episodeId); await reload() }} onRelink={async () => { await props.onRelink(); await reload() }} onRemoveEpisode={async (episodeId) => { await props.onRemoveEpisode(episodeId); await reload() }} onDismissDurationAlert={async (episodeId) => { await (props.onDismissDurationAlert ?? ((id) => window.desktopApi.dismissEpisodeDurationAlert(props.drama.id, id)))(episodeId); await reload() }} onEdit={() => setEditorOpen(true)} />
     : tab === 'subtitles'
       ? null
     : tab === 'production' && workspace === 'production'
@@ -147,8 +150,15 @@ export const DramaWorkspacePage = (props: Props): ReactElement => {
       if (target === 'assets') { setTab('assets'); setWorkspace('production'); return }
       if (target === 'production') { setTab('production'); setWorkspace('production'); return }
       if (target === 'results') { setTab('results'); setWorkspace('production') }
-    }} onReady={(document) => { bindSubtitleRecognitionSettings({ document, dramaId: props.drama.id }); bindSubtitleImport({ document, dramaId: props.drama.id }); bindSubtitleAssetRuntime({ document, dramaId: props.drama.id, episodes: detail.episodes }) }} />}</div>
-    <div className={`static-prototype-slot${activeStaticScreen === 'clip' ? ' active' : ''}`} aria-hidden={activeStaticScreen !== 'clip'} inert={activeStaticScreen !== 'clip'}>{activeStaticScreen === 'clip' && <StaticPrototypeSurface screen="clip" onBack={() => setWorkspace('production')} onReady={(document) => { setClipSurfaceDocument({ dataKey: staticSurfaceDataKey, document }); bindOriginalClipWorkspaceRuntime({ document, dramaId: props.drama.id, episodes: detail.episodes, initialCandidate: clipSelection?.dataKey === staticSurfaceDataKey ? clipSelection.candidate : null }) }} onNavigate={(target) => {
+    }} onReady={(document) => {
+      bindSubtitleImport({ document, dramaId: props.drama.id })
+      bindSubtitleAssetRuntime({ document, dramaId: props.drama.id, episodes: detail.episodes, detailActionsEnabled: false, staticDetailActionsEnabled: true })
+      bindSubtitleRecognitionSettings({ document, dramaId: props.drama.id })
+      bindSubtitleOcrRegionCalibration({ document, dramaId: props.drama.id, episodes: detail.episodes })
+      bindSubtitleStaticDetailReadOnly({ document, dramaId: props.drama.id, episodes: detail.episodes })
+      bindSubtitleStaticDetailPreview({ document, episodes: detail.episodes })
+    }} />}</div>
+    <div className={`static-prototype-slot${activeStaticScreen === 'clip' ? ' active' : ''}`} aria-hidden={activeStaticScreen !== 'clip'} inert={activeStaticScreen !== 'clip'}>{activeStaticScreen === 'clip' && <StaticPrototypeSurface screen="clip" onBack={() => setWorkspace('production')} onReady={(document) => { setClipSurfaceDocument({ dataKey: staticSurfaceDataKey, document }); bindOriginalClipWorkspaceRuntime({ document, dramaId: props.drama.id, episodes: detail.episodes, initialCandidate: clipSelection?.dataKey === staticSurfaceDataKey ? clipSelection.candidate : null, onRecoveryNavigate: (target) => { setTab(target); setWorkspace('production') } }) }} onNavigate={(target) => {
       if (target === 'clip-pool' || target === 'pool') { requestStaticScreen('clip-pool'); return }
       if (target === 'clip-report') { requestStaticScreen('clip-report'); return }
       if (target === 'production') setWorkspace('production')

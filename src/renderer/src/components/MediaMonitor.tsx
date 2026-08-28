@@ -41,26 +41,21 @@ export const MediaMonitor = ({ sourcePath, startSeconds, endSeconds, state = 're
 }
 
 export const toMediaUrl = (sourcePath: string): string => {
-  if (/^file:\/\//i.test(sourcePath)) return encodeFileUrl(sourcePath)
+  if (/^shortdrama-media:\/\//i.test(sourcePath)) return sourcePath
+  if (/^file:\/\//i.test(sourcePath)) return `shortdrama-media://local/${encodeURIComponent(toLocalMediaPath(sourcePath))}`
   if (/^[a-z][a-z\d+.-]*:\/\//i.test(sourcePath)) return 'about:blank'
-  const normalized = sourcePath.replace(/\\/g, '/')
-  if (/^[A-Za-z]:\//.test(normalized)) return `file:///${encodeFilePath(normalized)}`
-  if (normalized.startsWith('//')) {
-    const [host, ...segments] = normalized.slice(2).split('/')
-    return `file://${encodePathSegment(host ?? '')}/${segments.map(encodePathSegment).join('/')}`
-  }
-  return encodeFilePath(normalized)
+  return `shortdrama-media://local/${encodeURIComponent(toLocalMediaPath(sourcePath))}`
 }
 
-const encodeFilePath = (path: string): string => path.split('/').map(encodePathSegment).join('/')
-const encodePathSegment = (segment: string): string => encodeURIComponent(segment).replace(/%3A/gi, ':')
-const encodeFileUrl = (value: string): string => {
+const toLocalMediaPath = (value: string): string => {
+  if (!/^file:\/\//i.test(value)) return value
   const match = /^file:\/\/([^/]*)(\/.*)?$/i.exec(value)
   if (!match) return value
   const host = match[1] ?? ''
   const path = match[2] ?? ''
-  const encodedPath = path.split('/').map((segment) => {
-    try { return encodePathSegment(decodeURIComponent(segment)) } catch { return encodePathSegment(segment) }
+  const decodedPath = path.split('/').map((segment) => {
+    try { return decodeURIComponent(segment) } catch { return segment }
   }).join('/')
-  return `file://${host}${encodedPath}`
+  if (host) return `//${host}${decodedPath}`
+  return decodedPath.replace(/^\//, '')
 }

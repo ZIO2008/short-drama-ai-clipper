@@ -9,6 +9,31 @@ const readySubtitleDocument = (): Document => {
   const surface = document.implementation.createHTMLDocument('subtitle-surface')
   surface.head.innerHTML = '<style>#screen-subtitles{display:flex}</style>'
   surface.body.innerHTML = '<section id="screen-subtitles" class="screen active">字幕资产</section><section id="subtitleRecognitionSettingsModal"></section><div id="toast"></div>'
+  surface.body.append(
+    ...Array.from({ length: 3 }, (_, index) => {
+      const method = surface.createElement('button')
+      method.dataset.subtitleMethod = `test-${index}`
+      return method
+    })
+  )
+  const regionSetting = surface.createElement('div')
+  regionSetting.dataset.subtitleRegionSetting = 'true'
+  surface.body.append(regionSetting)
+  const subtitleAssetModal = surface.createElement('div')
+  subtitleAssetModal.id = 'subtitleAssetModal'
+  surface.body.append(subtitleAssetModal)
+  surface.body.dataset.staticPrototypeIsolated = 'true'
+  return surface
+}
+
+const readyClipFixtureDocument = (): Document => {
+  const surface = document.implementation.createHTMLDocument('clip-fixture')
+  surface.body.innerHTML = [
+    '<div class="app"><aside class="sidebar">V49 壳</aside><main class="workspace"><div id="content">',
+    '<section id="screen-library" class="screen active">剧目库</section>',
+    '<section id="screen-clip" class="screen"><div data-od-id="clip-monitor-media"></div><section data-od-id="clip-monitor-transport"></section><section data-od-id="clip-review-range"></section><section data-od-id="clip-boundary-nudges"></section></section>',
+    '</div></main></div>'
+  ].join('')
   return surface
 }
 
@@ -17,6 +42,42 @@ const setFrameDocument = (frame: HTMLIFrameElement, contentDocument: Document): 
 }
 
 describe('StaticPrototypeSurface loading guard', () => {
+  it('keeps the V49 clip fixture isolated from the runtime bridge', async () => {
+    const onReady = vi.fn()
+    const onPrepared = vi.fn()
+    const { container } = render(<StaticPrototypeSurface screen="clip" mode="static-fixture" onBack={vi.fn()} onReady={onReady} onPrepared={onPrepared} />)
+    const frame = container.querySelector<HTMLIFrameElement>('iframe.static-prototype-surface')!
+    const fixture = readyClipFixtureDocument()
+
+    setFrameDocument(frame, fixture)
+    fireEvent.load(frame)
+    await act(async () => { await Promise.resolve() })
+
+    expect(frame.dataset.prototypeReady).toBe('true')
+    expect(fixture.body.dataset.staticPrototypeFixture).toBe('v49-screen-clip')
+    expect(fixture.querySelector('.app .sidebar')?.textContent).toBe('V49 壳')
+    expect(fixture.getElementById('screen-clip')?.classList.contains('active')).toBe(true)
+    expect(fixture.getElementById('screen-library')?.classList.contains('active')).toBe(false)
+    expect(onReady).not.toHaveBeenCalled()
+    expect(onPrepared).toHaveBeenCalledWith('clip')
+  })
+
+  it('marks the V49 clip runtime as a full-shell surface and exposes it to the bridge', async () => {
+    const onReady = vi.fn()
+    const { container } = render(<StaticPrototypeSurface screen="clip" mode="runtime" onBack={vi.fn()} onReady={onReady} />)
+    const frame = container.querySelector<HTMLIFrameElement>('iframe.static-prototype-surface')!
+    const runtimeDocument = readyClipFixtureDocument()
+
+    setFrameDocument(frame, runtimeDocument)
+    fireEvent.load(frame)
+    await act(async () => { await Promise.resolve() })
+
+    expect(frame.dataset.v49RuntimeShell).toBe('true')
+    expect(runtimeDocument.body.dataset.staticPrototypeRuntime).toBe('v49-screen-clip')
+    expect(runtimeDocument.querySelector('.app .sidebar')?.textContent).toBe('V49 壳')
+    expect(onReady).toHaveBeenCalledWith(runtimeDocument)
+  })
+
   it('keeps the iframe marked not-ready and provides a retry action when isolation times out', async () => {
     vi.useFakeTimers()
     const { container } = render(<StaticPrototypeSurface screen="clip" onBack={vi.fn()} />)

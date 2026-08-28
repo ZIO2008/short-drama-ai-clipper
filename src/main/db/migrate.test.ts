@@ -9,7 +9,6 @@ afterEach(() => {
     database.close()
   }
 })
-
 describe('migrateDatabase', () => {
   it('creates the P0 schema once and supports repeat startup', () => {
     const database = new Database(':memory:')
@@ -19,12 +18,35 @@ describe('migrateDatabase', () => {
     migrateDatabase(database)
 
     const tables = database.prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").all() as Array<{ name: string }>
-    expect(tables.map(({ name }) => name)).toEqual(expect.arrayContaining(['ai_drafts', 'ai_evidence', 'app_logs', 'clip_export_batches', 'clip_subtitle_variants', 'drama_covers', 'drama_import_preferences', 'dramas', 'episodes', 'evaluation_runs', 'notifications', 'production_tasks', 'schema_migrations', 'secret_records', 'subtitle_conflicts', 'subtitle_cues', 'subtitle_ocr_regions', 'subtitle_quality_evaluations', 'subtitle_recognition_settings', 'subtitle_tracks', 'timeline_projects']))
-    expect(database.prepare('SELECT COUNT(*) AS count FROM schema_migrations').get()).toEqual({ count: 25 })
+    expect(tables.map(({ name }) => name)).toEqual(expect.arrayContaining(['ai_drafts', 'ai_evidence', 'app_logs', 'clip_candidate_scene_anchors', 'clip_export_batches', 'clip_subtitle_variants', 'drama_covers', 'drama_import_preferences', 'dramas', 'episodes', 'evaluation_runs', 'model_studio_provisional_secrets', 'notifications', 'production_tasks', 'schema_migrations', 'secret_records', 'subtitle_conflicts', 'subtitle_cues', 'subtitle_ocr_regions', 'subtitle_quality_evaluations', 'subtitle_recognition_settings', 'subtitle_recognition_runs', 'subtitle_recognition_run_items', 'subtitle_tracks', 'timeline_projects']))
+    expect(database.prepare('SELECT COUNT(*) AS count FROM schema_migrations').get()).toEqual({ count: 44 })
+    expect(database.prepare('PRAGMA table_info(model_studio_provisional_secrets)').all()).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'capability' }), expect.objectContaining({ name: 'owner_id' })]))
+    expect(database.prepare('PRAGMA table_info(provider_profiles)').all()).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'model_selection_source' })]))
     expect(database.prepare('PRAGMA table_info(clip_export_batches)').all()).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'reason' })]))
     expect(database.prepare('PRAGMA table_info(task_items)').all()).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'export_batch_id' })]))
     expect(database.prepare('PRAGMA table_info(generated_materials)').all()).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'draft_id' })]))
-    expect(database.prepare('PRAGMA table_info(episodes)').all()).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'video_width' }), expect.objectContaining({ name: 'video_height' })]))
+    expect(database.prepare('PRAGMA table_info(episodes)').all()).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'source_fingerprint' }), expect.objectContaining({ name: 'video_width' }), expect.objectContaining({ name: 'video_height' }), expect.objectContaining({ name: 'duration_alert_dismissed_at' })]))
+    expect(database.prepare('PRAGMA table_info(clip_candidate_snapshots)').all()).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'task_id' }), expect.objectContaining({ name: 'task_round' })]))
+    expect(database.prepare('PRAGMA table_info(clip_candidate_publish_pointers)').all()).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'task_id' }), expect.objectContaining({ name: 'task_round' })]))
+    expect(database.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'clip_generation_rounds'").get()).toEqual({ name: 'clip_generation_rounds' })
+    expect(database.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'clip_candidate_publish_members'").get()).toEqual({ name: 'clip_candidate_publish_members' })
+    expect(database.prepare('PRAGMA table_info(clip_evidence_units)').all()).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'coverage_json' }), expect.objectContaining({ name: 'source_version' })]))
+    expect(database.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'clip_narrative_events'").get()).toEqual({ name: 'clip_narrative_events' })
+  })
+
+  it('adds the nullable source fingerprint to an existing episode table without changing episode rows', () => {
+    const database = new Database(':memory:')
+    databases.push(database)
+    migrateDatabase(database)
+    const now = new Date().toISOString()
+    database.prepare('INSERT INTO dramas (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)').run('legacy-fingerprint-drama', '旧媒体指纹剧目', now, now)
+    database.prepare('INSERT INTO episodes (id, drama_id, episode_no, sort_order, source_path, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run('legacy-fingerprint-episode', 'legacy-fingerprint-drama', 1, 0, 'D:\\media\\01.mp4', 'ready', now, now)
+    database.exec('ALTER TABLE episodes DROP COLUMN source_fingerprint')
+    database.prepare('DELETE FROM schema_migrations WHERE version = 35').run()
+
+    migrateDatabase(database)
+
+    expect(database.prepare('SELECT id, source_path AS sourcePath, source_fingerprint AS sourceFingerprint FROM episodes WHERE id = ?').get('legacy-fingerprint-episode')).toEqual({ id: 'legacy-fingerprint-episode', sourcePath: 'D:\\media\\01.mp4', sourceFingerprint: null })
   })
 
   it('upgrades an export-batch table from migration 20 without losing its batch rows', () => {
@@ -186,64 +208,30 @@ describe('migrateDatabase', () => {
     expect(() => database.prepare("INSERT INTO provider_profiles VALUES ('duplicate', 'asr', 'local', '重复', NULL, NULL, NULL, NULL, 60000, '2026-07-19', '2026-07-19')").run()).toThrow()
   })
 
-  it('maps legacy semantic capability names without losing the newest secret reference', () => {
+  it('maps legacy semantic capability names without dropping the only legacy secret reference', () => {
     const database = new Database(':memory:')
     databases.push(database)
     migrateDatabase(database)
     database.exec('DROP INDEX ux_provider_profiles_capability')
-    database.prepare("INSERT INTO provider_profiles VALUES (?, ?, ?, ?, NULL, NULL, ?, NULL, 60000, ?, ?)").run('legacy', 'text_semantics', 'global', '旧语义方案', 'legacy-secret-ref', '2026-07-20', '2026-07-20')
-    database.prepare("INSERT INTO provider_profiles VALUES (?, ?, ?, ?, NULL, NULL, ?, NULL, 60000, ?, ?)").run('canonical', 'text-analysis', 'global', '新语义方案', 'canonical-secret-ref', '2026-07-21', '2026-07-21')
+    database.prepare("INSERT INTO provider_profiles (id, capability, region, provider, endpoint, model, model_selection_source, secret_ref, pricing_json, timeout_ms, created_at, updated_at) VALUES (?, ?, ?, ?, NULL, NULL, NULL, ?, NULL, 60000, ?, ?)").run('legacy', 'text_semantics', 'global', '旧语义方案', 'legacy-secret-ref', '2026-07-20', '2026-07-20')
+    database.prepare("INSERT INTO provider_profiles (id, capability, region, provider, endpoint, model, model_selection_source, secret_ref, pricing_json, timeout_ms, created_at, updated_at) VALUES (?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, 60000, ?, ?)").run('canonical', 'text-analysis', 'global', '新语义方案', '2026-07-21', '2026-07-21')
     database.prepare('DELETE FROM schema_migrations WHERE version = 14').run()
     migrateDatabase(database)
-    expect(database.prepare('SELECT capability, provider, secret_ref FROM provider_profiles').all()).toEqual([{ capability: 'text-analysis', provider: '新语义方案', secret_ref: 'canonical-secret-ref' }])
+    expect(database.prepare('SELECT id, capability, provider, secret_ref AS secretRef FROM provider_profiles').all()).toEqual([{ id: 'canonical', capability: 'text-analysis', provider: '新语义方案', secretRef: 'legacy-secret-ref' }])
   })
 
-  it('upgrades a migration-15 subtitle evidence database with the new audit columns intact', () => {
+  it('keeps legacy unscoped Model Studio provisional records ineligible after adding their scope columns', () => {
     const database = new Database(':memory:')
     databases.push(database)
-    database.exec(`
-      CREATE TABLE schema_migrations (version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL);
-      WITH RECURSIVE versions(version) AS (SELECT 1 UNION ALL SELECT version + 1 FROM versions WHERE version < 15)
-      INSERT INTO schema_migrations (version, applied_at) SELECT version, '2026-07-29T00:00:00.000Z' FROM versions;
-      CREATE TABLE dramas (id TEXT PRIMARY KEY, name TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
-      CREATE TABLE episodes (id TEXT PRIMARY KEY, drama_id TEXT NOT NULL, episode_no INTEGER, sort_order INTEGER NOT NULL, source_path TEXT NOT NULL, status TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
-      CREATE TABLE subtitle_assets (id TEXT PRIMARY KEY, drama_id TEXT NOT NULL, episode_id TEXT, source_path TEXT NOT NULL, format TEXT NOT NULL, cue_count INTEGER NOT NULL DEFAULT 0, status TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
-      CREATE TABLE subtitle_tracks (id TEXT PRIMARY KEY, drama_id TEXT NOT NULL, episode_id TEXT, asset_id TEXT, source_kind TEXT NOT NULL, label TEXT NOT NULL, language TEXT NOT NULL, status TEXT NOT NULL, cue_count INTEGER NOT NULL, cost_json TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
-      CREATE TABLE subtitle_cues (id TEXT PRIMARY KEY, track_id TEXT NOT NULL, cue_index INTEGER NOT NULL, start_seconds REAL NOT NULL, end_seconds REAL NOT NULL, text TEXT NOT NULL, confidence REAL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
-      CREATE TABLE subtitle_ocr_regions (id TEXT PRIMARY KEY, drama_id TEXT NOT NULL, episode_id TEXT, scope TEXT NOT NULL, x REAL NOT NULL, y REAL NOT NULL, width REAL NOT NULL, height REAL NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
-      CREATE TABLE subtitle_conflicts (id TEXT PRIMARY KEY, drama_id TEXT NOT NULL, episode_id TEXT, asr_cue_id TEXT NOT NULL, ocr_cue_id TEXT NOT NULL, time_overlap_seconds REAL NOT NULL, text_similarity REAL NOT NULL, status TEXT NOT NULL, resolved_text TEXT, resolved_start_seconds REAL, resolved_end_seconds REAL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
-      CREATE TABLE subtitle_quality_evaluations (id TEXT PRIMARY KEY, drama_id TEXT NOT NULL, episode_id TEXT, source_kind TEXT NOT NULL, sample_label TEXT NOT NULL, reference_characters INTEGER NOT NULL, differing_characters INTEGER NOT NULL, conflict_count INTEGER NOT NULL, estimated_cost REAL NOT NULL, actual_cost REAL NOT NULL, notes TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
-    `)
     migrateDatabase(database)
-    expect(database.prepare('SELECT version FROM schema_migrations WHERE version = 16').get()).toEqual({ version: 16 })
-    expect(database.prepare('PRAGMA table_info(subtitle_tracks)').all()).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'base_track_id' })]))
-    expect(database.prepare('PRAGMA table_info(subtitle_conflicts)').all()).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'asr_confidence' }), expect.objectContaining({ name: 'ocr_confidence' })]))
-    expect(database.prepare('PRAGMA table_info(subtitle_quality_evaluations)').all()).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'evaluated_cue_count' }), expect.objectContaining({ name: 'elapsed_ms' })]))
-  })
+    const secretRef = 'd2719c5e-4a18-4f2a-9f8d-6d9877a4b321'
+    database.prepare('INSERT INTO secret_records (id, encrypted_value, created_at, updated_at) VALUES (?, ?, ?, ?)').run(secretRef, Buffer.from('fixture'), '2026-08-14T00:00:00.000Z', '2026-08-14T00:00:00.000Z')
+    database.prepare('INSERT INTO model_studio_provisional_secrets (secret_ref, capability, owner_id, expires_at, created_at) VALUES (?, ?, ?, ?, ?)').run(secretRef, 'text-analysis', 'window-1', '2099-08-14T00:00:00.000Z', '2026-08-14T00:00:00.000Z')
+    database.exec('ALTER TABLE model_studio_provisional_secrets DROP COLUMN capability; ALTER TABLE model_studio_provisional_secrets DROP COLUMN owner_id')
+    database.prepare('DELETE FROM schema_migrations WHERE version = 42').run()
 
-  it('guards new project records against duplicate names and cross-project material links', () => {
-    const database = new Database(':memory:')
-    database.pragma('foreign_keys = ON')
-    databases.push(database)
     migrateDatabase(database)
-    const now = new Date().toISOString()
-    database.prepare('INSERT INTO dramas (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)').run('d1', '同名剧目', now, now)
-    expect(() => database.prepare('INSERT INTO dramas (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)').run('d2', ' 同名剧目 ', now, now)).toThrow('DUPLICATE_DRAMA_NAME')
-    database.prepare('INSERT INTO dramas (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)').run('d3', '另一部', now, now)
-    database.prepare('INSERT INTO episodes (id, drama_id, episode_no, sort_order, source_path, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run('episode-1', 'd1', 1, 0, 'episode.mp4', 'ready', now, now)
-    database.prepare('INSERT INTO episodes (id, drama_id, episode_no, sort_order, source_path, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run('episode-2', 'd3', 1, 0, 'other.mp4', 'ready', now, now)
-    database.prepare('INSERT INTO production_tasks (id, drama_id, type, config_snapshot, status, progress_current, progress_total, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run('task-1', 'd1', 'original_clip', '{}', 'completed', 0, 0, now, now)
-    database.prepare('INSERT INTO production_tasks (id, drama_id, type, config_snapshot, status, progress_current, progress_total, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run('task-2', 'd3', 'original_clip', '{}', 'completed', 0, 0, now, now)
-    database.prepare('INSERT INTO task_items (id, task_id, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?)').run('item-1', 'task-1', 'completed', now, now)
-    database.prepare('INSERT INTO task_items (id, task_id, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?)').run('item-2', 'task-2', 'completed', now, now)
-    expect(() => database.prepare('INSERT INTO generated_materials (id, drama_id, task_id, path, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)').run('material-1', 'd3', 'task-1', 'wrong.mp4', now, now)).toThrow('CROSS_PROJECT_MATERIAL')
-    database.prepare('INSERT INTO generated_materials (id, drama_id, task_id, task_item_id, path, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)').run('material-2', 'd1', 'task-1', 'item-1', 'right.mp4', now, now)
-    expect(() => database.prepare('UPDATE generated_materials SET task_item_id = ? WHERE id = ?').run('item-2', 'material-2')).toThrow('CROSS_PROJECT_MATERIAL')
-    expect(() => database.prepare('INSERT INTO subtitle_assets (id, drama_id, episode_id, source_path, format, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run('subtitle-1', 'd1', 'episode-2', 'wrong.srt', 'srt', 'ready', now, now)).toThrow('CROSS_PROJECT_SUBTITLE')
-    expect(() => database.prepare('UPDATE episodes SET drama_id = ? WHERE id = ?').run('d3', 'episode-1')).toThrow('IMMUTABLE_PROJECT_OWNERSHIP')
-    expect(() => database.prepare('UPDATE production_tasks SET drama_id = ? WHERE id = ?').run('d3', 'task-1')).toThrow('IMMUTABLE_PROJECT_OWNERSHIP')
-    database.prepare('INSERT INTO ai_evidence (id, drama_id, episode_id, source_type, summary, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)').run('evidence-1', 'd1', 'episode-1', 'scene', '证据', now, now)
-    expect(() => database.prepare('UPDATE ai_evidence SET drama_id = ? WHERE id = ?').run('d3', 'evidence-1')).toThrow('CROSS_PROJECT_EVIDENCE')
-  })
 
+    expect(database.prepare('SELECT capability, owner_id AS ownerId FROM model_studio_provisional_secrets WHERE secret_ref = ?').get(secretRef)).toEqual({ capability: null, ownerId: null })
+  })
 })

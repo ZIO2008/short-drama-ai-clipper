@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactElement, type ReactNode } from 'react'
 import type { AppHealth } from '../../../shared/contracts.js'
+import type { ProviderCredentialPackage } from '../../../shared/provider-auth-schema.js'
 import type { ProviderCapability } from '../../../shared/provider-catalog.js'
 import { StaticPrototypeSurface, type StaticPrototypeScreen } from './StaticPrototypeSurface.js'
 import { bindProviderSettingsPrototype } from './ProviderSettingsPrototypeBridge.js'
@@ -15,7 +16,7 @@ const providerScreens: Record<Capability, StaticPrototypeScreen> = {
 const readPreference = (key: string): string => { try { return window.localStorage.getItem(key) ?? '' } catch { return '' } }
 const writePreference = (key: string, value: string): void => { try { window.localStorage.setItem(key, value) } catch { /* local defaults are optional when storage is unavailable */ } }
 
-export const SettingsPage = ({ onSaveSecret }: { onSaveSecret: (value: string, secretRef: string) => Promise<void> }): ReactElement => {
+export const SettingsPage = ({ onSaveSecret }: { onSaveSecret: (credential: ProviderCredentialPackage, secretRef: string) => Promise<void> }): ReactElement => {
   const [section, setSection] = useState<Section>('providers')
   const [editingProvider, setEditingProvider] = useState<Capability | null>(null)
   const [loading, setLoading] = useState(true); const [busy, setBusy] = useState<'logs' | 'diagnostics' | null>(null)

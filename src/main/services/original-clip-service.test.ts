@@ -59,20 +59,89 @@ describe('OriginalClipService', () => {
     expect(() => new OriginalClipService(db).createCandidates('d', [{ episodeId: 'e', startSeconds: 0, endSeconds: 1 }, { episodeId: 'e', startSeconds: 1, endSeconds: 4 }])).toThrow('exceeds')
     expect(db.prepare("SELECT COUNT(*) AS count FROM production_tasks WHERE type = 'original_clip'").get()).toEqual({ count: 0 }); expect(db.prepare('SELECT COUNT(*) AS count FROM task_items').get()).toEqual({ count: 0 }); db.close()
   })
-  it('generates independent low-overlap candidates and aggregates source episode status', () => {
+  it('permanently closes the legacy anchor-only generation entry without writing candidates', () => {
     const db = new Database(':memory:'); migrateDatabase(db); const now = new Date().toISOString(); db.prepare('INSERT INTO dramas VALUES (?, ?, ?, ?)').run('d', 'Demo', now, now)
     db.prepare('INSERT INTO episodes (id, drama_id, episode_no, sort_order, source_path, duration_seconds, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run('e', 'd', 1, 0, 'episode.mp4', 80, 'ready', now, now)
-    const service = new OriginalClipService(db); const candidates = service.generateCandidates('d', { episodeIds: ['e'], candidatesPerEpisode: 3, targetDurationSeconds: 10, maxOverlapRatio: 0.25, allowRepeat: false })
-    expect(candidates).toHaveLength(3); expect(candidates.every((candidate) => candidate.episodeId === 'e')).toBe(true); expect(service.listEpisodeStatuses('d')).toEqual([expect.objectContaining({ episodeId: 'e', candidateCount: 3, productionStatus: 'pending_confirmation' })]); db.close()
+    const service = new OriginalClipService(db); const input = { episodeIds: ['e'], candidatesPerEpisode: 3, targetDurationSeconds: 10, maxOverlapRatio: 0.25, allowRepeat: false }
+    expect(service.preflightGeneration('d', input)).toMatchObject({ eligibleEpisodeIds: [], estimatedCandidates: 0 })
+    expect(() => service.generateCandidates('d', input)).toThrow('入口已关闭')
+    expect(service.listCandidates('d')).toEqual([]); expect(db.prepare("SELECT COUNT(*) AS count FROM production_tasks WHERE type = 'original_clip'").get()).toEqual({ count: 0 }); db.close()
   })
 
   it('preflights multiple episodes and reports media that must be skipped without creating candidates', () => {
     const db = new Database(':memory:'); migrateDatabase(db); const now = new Date().toISOString(); db.prepare('INSERT INTO dramas VALUES (?, ?, ?, ?)').run('d', 'Demo', now, now)
     db.prepare('INSERT INTO episodes (id, drama_id, episode_no, sort_order, source_path, duration_seconds, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run('ready', 'd', 1, 0, 'ready.mp4', 80, 'ready', now, now)
     db.prepare('INSERT INTO episodes (id, drama_id, episode_no, sort_order, source_path, duration_seconds, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run('missing', 'd', 2, 1, 'missing.mp4', null, 'missing', now, now)
-    const service = new OriginalClipService(db); const preflight = service.preflightGeneration('d', { episodeIds: ['ready', 'missing'], candidatesPerEpisode: 5, targetDurationSeconds: 15, maxOverlapRatio: 0.25, allowRepeat: false })
-    expect(preflight).toMatchObject({ eligibleEpisodeIds: ['ready'], requestedCandidates: 10, estimatedCandidates: 5, skipped: [{ episodeId: 'missing', reason: '媒体未就绪，已跳过。' }] }); expect(service.listCandidates('d')).toEqual([]); db.close()
+    const service = new OriginalClipService(db, undefined, { profiles: { list: () => [{ id: 'text', capability: 'text-analysis' as const, region: 'local' as const, provider: 'fixture', endpoint: 'http://127.0.0.1:3000', model: 'fixture', secretRef: null, timeoutMs: 1000, pricing: null }] }, hasValidSecret: () => false, adapter: { select: async () => ({ narrativeEvents: [], selections: [] }) } }); const preflight = service.preflightGeneration('d', { episodeIds: ['ready', 'missing'], candidatesPerEpisode: 5, targetDurationSeconds: 15, maxOverlapRatio: 0.25, allowRepeat: false })
+    expect(preflight).toMatchObject({ eligibleEpisodeIds: [], requestedCandidates: 10, estimatedCandidates: 0, skipped: expect.arrayContaining([{ episodeId: 'ready', reason: expect.stringContaining('没有导入、OCR 或已验证 ASR') }, { episodeId: 'missing', reason: '媒体未就绪，已跳过。' }]) }); expect(service.listCandidates('d')).toEqual([]); db.close()
   })
+
+  it('blocks an unavailable text semantic capability before task creation and preserves existing candidates', () => {
+    const db = new Database(':memory:'); migrateDatabase(db)
+    const now = new Date().toISOString()
+    db.prepare('INSERT INTO dramas VALUES (?, ?, ?, ?)').run('d', 'Demo', now, now)
+    db.prepare('INSERT INTO episodes (id, drama_id, episode_no, sort_order, source_path, duration_seconds, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run('e', 'd', 1, 0, 'episode.mp4', 80, 'ready', now, now)
+    const adapter = { select: vi.fn(async () => ({ narrativeEvents: [], selections: [] })) }
+    const service = new OriginalClipService(db, undefined, { profiles: { list: () => [] }, hasValidSecret: () => false, adapter })
+    const anchorReadiness = vi.spyOn(service as unknown as { anchorReadiness: () => unknown }, 'anchorReadiness')
+    const existing = service.createCandidate('d', 'e', { startSeconds: 10, endSeconds: 20 })
+    const beforeTasks = db.prepare("SELECT COUNT(*) AS count FROM production_tasks WHERE type = 'original_clip' AND json_extract(config_snapshot, '$.generation') IS NOT NULL").get() as { count: number }
+    const input = { episodeIds: ['e'], candidatesPerEpisode: 1, targetDurationSeconds: 10, maxOverlapRatio: 0.25, allowRepeat: false }
+
+    expect(service.preflightGeneration('d', input)).toMatchObject({ eligibleEpisodeIds: [], estimatedCandidates: 0, skipped: [{ episodeId: 'e', reason: expect.stringContaining('未配置文本语义分析能力') }] })
+    expect(() => service.startIntelligentGeneration('d', input)).toThrow('未配置文本语义分析能力')
+    expect(anchorReadiness).not.toHaveBeenCalled(); expect(adapter.select).not.toHaveBeenCalled()
+    expect(service.listCandidates('d').map((candidate) => candidate.id)).toEqual([existing.id])
+    expect(db.prepare("SELECT COUNT(*) AS count FROM production_tasks WHERE type = 'original_clip' AND json_extract(config_snapshot, '$.generation') IS NOT NULL").get()).toEqual(beforeTasks)
+    db.close()
+  })
+
+  it('blocks an uninitialized text semantic capability before anchor preflight and preserves existing candidates', () => {
+    const db = new Database(':memory:'); migrateDatabase(db)
+    const now = new Date().toISOString()
+    db.prepare('INSERT INTO dramas VALUES (?, ?, ?, ?)').run('d', 'Demo', now, now)
+    db.prepare('INSERT INTO episodes (id, drama_id, episode_no, sort_order, source_path, duration_seconds, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run('e', 'd', 1, 0, 'episode.mp4', 80, 'ready', now, now)
+    const service = new OriginalClipService(db)
+    const anchorReadiness = vi.spyOn(service as unknown as { anchorReadiness: () => unknown }, 'anchorReadiness')
+    const existing = service.createCandidate('d', 'e', { startSeconds: 10, endSeconds: 20 })
+    const beforeTasks = db.prepare("SELECT COUNT(*) AS count FROM production_tasks WHERE type = 'original_clip' AND json_extract(config_snapshot, '$.generation') IS NOT NULL").get() as { count: number }
+    const input = { episodeIds: ['e'], candidatesPerEpisode: 1, targetDurationSeconds: 10, maxOverlapRatio: 0.25, allowRepeat: false }
+
+    expect(service.preflightGeneration('d', input)).toMatchObject({ eligibleEpisodeIds: [], estimatedCandidates: 0, skipped: [{ episodeId: 'e', reason: expect.stringContaining('未初始化') }] })
+    expect(() => service.startIntelligentGeneration('d', input)).toThrow('未初始化')
+    expect(anchorReadiness).not.toHaveBeenCalled()
+    expect(service.listCandidates('d').map((candidate) => candidate.id)).toEqual([existing.id])
+    expect(db.prepare("SELECT COUNT(*) AS count FROM production_tasks WHERE type = 'original_clip' AND json_extract(config_snapshot, '$.generation') IS NOT NULL").get()).toEqual(beforeTasks)
+    db.close()
+  })
+
+  it('blocks invalid semantic credentials or endpoint before task creation and preserves existing candidates', () => {
+    const cases = [
+      { name: 'remote profile without a secret reference', profile: { id: 'text', capability: 'text-analysis' as const, region: 'cn' as const, provider: 'fixture', endpoint: 'https://example.invalid', model: 'fixture', secretRef: null, timeoutMs: 1000, pricing: null }, hasValidSecret: () => false, expected: '缺少可用密钥' },
+      { name: 'remote profile with an invalid secret reference', profile: { id: 'text', capability: 'text-analysis' as const, region: 'cn' as const, provider: 'fixture', endpoint: 'https://example.invalid', model: 'fixture', secretRef: 'missing-secret', timeoutMs: 1000, pricing: null }, hasValidSecret: () => false, expected: '缺少可用密钥' },
+      { name: 'local profile without an endpoint', profile: { id: 'text', capability: 'text-analysis' as const, region: 'local' as const, provider: 'fixture', endpoint: '', model: 'fixture', secretRef: null, timeoutMs: 1000, pricing: null }, hasValidSecret: () => false, expected: '缺少可调用地址' },
+    ]
+    for (const scenario of cases) {
+      const db = new Database(':memory:'); migrateDatabase(db)
+      const now = new Date().toISOString()
+      db.prepare('INSERT INTO dramas VALUES (?, ?, ?, ?)').run('d', 'Demo', now, now)
+      db.prepare('INSERT INTO episodes (id, drama_id, episode_no, sort_order, source_path, duration_seconds, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run('e', 'd', 1, 0, 'episode.mp4', 80, 'ready', now, now)
+      const adapter = { select: vi.fn(async () => ({ narrativeEvents: [], selections: [] })) }
+      const service = new OriginalClipService(db, undefined, { profiles: { list: () => [scenario.profile] }, hasValidSecret: scenario.hasValidSecret, adapter })
+      const anchorReadiness = vi.spyOn(service as unknown as { anchorReadiness: () => unknown }, 'anchorReadiness')
+      const existing = service.createCandidate('d', 'e', { startSeconds: 10, endSeconds: 20 })
+      const beforeTasks = db.prepare("SELECT COUNT(*) AS count FROM production_tasks WHERE type = 'original_clip' AND json_extract(config_snapshot, '$.generation') IS NOT NULL").get() as { count: number }
+      const input = { episodeIds: ['e'], candidatesPerEpisode: 1, targetDurationSeconds: 10, maxOverlapRatio: 0.25, allowRepeat: false }
+
+      expect(service.preflightGeneration('d', input), scenario.name).toMatchObject({ eligibleEpisodeIds: [], estimatedCandidates: 0, skipped: [{ episodeId: 'e', reason: expect.stringContaining(scenario.expected) }] })
+      expect(() => service.startIntelligentGeneration('d', input), scenario.name).toThrow(scenario.expected)
+      expect(anchorReadiness, scenario.name).not.toHaveBeenCalled(); expect(adapter.select, scenario.name).not.toHaveBeenCalled()
+      expect(service.listCandidates('d').map((candidate) => candidate.id), scenario.name).toEqual([existing.id])
+      expect(db.prepare("SELECT COUNT(*) AS count FROM production_tasks WHERE type = 'original_clip' AND json_extract(config_snapshot, '$.generation') IS NOT NULL").get(), scenario.name).toEqual(beforeTasks)
+      db.close()
+    }
+  })
+
   it('requires confirmation and source-backed subtitle variants during export preflight', () => {
     const db = new Database(':memory:'); migrateDatabase(db); const now = new Date().toISOString(); db.prepare('INSERT INTO dramas VALUES (?, ?, ?, ?)').run('d', 'Demo', now, now); db.prepare('INSERT INTO episodes (id, drama_id, episode_no, sort_order, source_path, duration_seconds, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run('e', 'd', 1, 0, 'episode.mp4', 30, 'ready', now, now)
     const service = new OriginalClipService(db); const candidate = service.createCandidate('d', 'e', { startSeconds: 1, endSeconds: 4 }); const baseConfig = { candidateIds: [candidate.id], outputDirectory: 'D:\\out', namingPattern: 'E{episode}_C{candidate}', encoding: 'copy' as const, outputSize: 'source' as const, subtitleStrategy: 'none' as const, conflictStrategy: 'append' as const }
@@ -107,7 +176,7 @@ describe('OriginalClipService', () => {
     db.prepare('INSERT INTO clip_export_batches (id, drama_id, candidate_ids_json, status, reason, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)').run('completed', 'd', '["candidate-completed"]', 'completed', null, '2026-07-31T00:00:00.000Z', '2026-07-31T00:01:00.000Z')
     db.prepare('INSERT INTO clip_export_batches (id, drama_id, candidate_ids_json, status, reason, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)').run('failed', 'd', '["candidate-failed"]', 'failed', 'FFmpeg 不可用', '2026-07-31T00:02:00.000Z', '2026-07-31T00:03:00.000Z')
     db.prepare('INSERT INTO clip_export_batches (id, drama_id, candidate_ids_json, status, reason, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)').run('cancelled', 'd', '["candidate-cancelled"]', 'cancelled', '用户取消', '2026-07-31T00:04:00.000Z', '2026-07-31T00:05:00.000Z')
-    expect(new OriginalClipService(db).getLatestExportBatch('d')).toMatchObject({ id: 'completed', candidateIds: ['candidate-completed'], status: 'completed' })
+    expect(new OriginalClipService(db).getLatestExportBatch('d')).toMatchObject({ id: 'cancelled', candidateIds: ['candidate-cancelled'], status: 'cancelled' })
     db.close()
   })
   it('cancels interrupted batches on service restart and releases only candidates that batch still owns', () => {
@@ -154,6 +223,7 @@ describe('OriginalClipService', () => {
       expect(db.prepare('SELECT status, progress_current AS progressCurrent, progress_total AS progressTotal FROM production_tasks').get()).toEqual({ status: 'failed', progressCurrent: 1, progressTotal: 1 })
       expect(db.prepare('SELECT status, reason FROM task_items WHERE id = ?').get(candidate.id)).toEqual(expect.objectContaining({ status: 'failed', reason: expect.any(String) }))
       expect(db.prepare('SELECT status, reason FROM clip_export_batches').get()).toEqual(expect.objectContaining({ status: 'failed', reason: expect.any(String) }))
+      expect(db.prepare('SELECT COUNT(*) AS count FROM generated_materials').get()).toEqual({ count: 0 })
     } finally {
       if (previous === undefined) delete process.env.SHORTDRAMA_FFMPEG_PATH; else process.env.SHORTDRAMA_FFMPEG_PATH = previous
       db.close(); await rm(output, { recursive: true, force: true })
@@ -185,8 +255,9 @@ describe('OriginalClipService', () => {
     })
     await expect(service.retryFailedCandidate(candidate.id, 'D:\\retry-output')).resolves.toMatchObject({ outputPath: 'D:\\retry-output\\quality.mp4' })
     expect(runner).toHaveBeenCalledWith(candidate.id, 'D:\\retry-output', expect.any(String), undefined, expect.objectContaining({ candidateIds: [candidate.id], outputDirectory: 'D:\\retry-output', namingPattern: 'quality_E{episode}_{candidate}', encoding: 'h264-quality', outputSize: '1080x1920', subtitleStrategy: 'burn', conflictStrategy: 'append' }))
-    expect(readClipExportConfig(db, task.taskId)).toEqual({ outputDirectory: 'D:\\retry-output', namingPattern: 'quality_E{episode}_{candidate}', encoding: 'h264-quality', outputSize: '1080x1920', subtitleStrategy: 'burn', conflictStrategy: 'append' })
-    expect(db.prepare('SELECT candidate_ids_json AS candidateIdsJson, status, reason FROM clip_export_batches ORDER BY created_at DESC LIMIT 1').get()).toEqual({ candidateIdsJson: JSON.stringify([candidate.id]), status: 'completed', reason: null })
+    expect(readClipExportConfig(db, task.taskId)).toEqual({ outputDirectory: 'D:\\retry-output', namingPattern: 'quality_E{episode}_{candidate}', encoding: 'h264-quality', precisionMode: 'final', outputSize: '1080x1920', subtitleStrategy: 'burn', conflictStrategy: 'append' })
+    const batch = db.prepare('SELECT candidate_ids_json AS candidateIdsJson, status, reason FROM clip_export_batches ORDER BY created_at DESC LIMIT 1').get() as { candidateIdsJson: string; status: string; reason: string | null }
+    expect(JSON.parse(batch.candidateIdsJson)).toMatchObject({ candidateIds: [candidate.id], items: [expect.objectContaining({ status: 'exported' })] }); expect(batch.status).toBe('completed'); expect(batch.reason).toBeNull()
     db.close()
   })
 
@@ -209,7 +280,7 @@ describe('OriginalClipService', () => {
       const sourcePath = join(media, 'episode.mp4'); await runMediaProcess(ffmpegPath, ['-hide_banner', '-loglevel', 'error', '-f', 'lavfi', '-i', 'color=c=red:s=320x180:d=1', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-y', sourcePath])
       const db = new Database(':memory:'); db.pragma('foreign_keys = ON'); migrateDatabase(db); const now = new Date().toISOString(); db.prepare('INSERT INTO dramas VALUES (?, ?, ?, ?)').run('d', 'Demo', now, now); db.prepare('INSERT INTO episodes (id, drama_id, episode_no, sort_order, source_path, duration_seconds, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run('e', 'd', 1, 0, sourcePath, 1, 'ready', now, now)
       process.env.SHORTDRAMA_RUNTIME_ROOT = runtime; process.env.PATH = 'C:\\Windows\\System32'; delete process.env.SHORTDRAMA_FFMPEG_PATH; delete process.env.SHORTDRAMA_FFPROBE_PATH
-      const service = new OriginalClipService(db); const candidate = service.createCandidate('d', 'e', { startSeconds: 0, endSeconds: 0.8 }); service.confirmCandidate(candidate.id); const result = await service.exportCandidate(candidate.id, output); expect(await stat(result.outputPath)).toMatchObject({ isFile: expect.any(Function) }); expect((await stat(result.outputPath)).size).toBeGreaterThan(0); expect(db.prepare('SELECT candidate_ids_json AS candidateIdsJson, status, reason FROM clip_export_batches').get()).toEqual({ candidateIdsJson: JSON.stringify([candidate.id]), status: 'completed', reason: null }); db.close()
+      const service = new OriginalClipService(db); const candidate = service.createCandidate('d', 'e', { startSeconds: 0, endSeconds: 0.8 }); service.confirmCandidate(candidate.id); const result = await service.exportCandidate(candidate.id, output); expect(await stat(result.outputPath)).toMatchObject({ isFile: expect.any(Function) }); expect((await stat(result.outputPath)).size).toBeGreaterThan(0); const batch = db.prepare('SELECT candidate_ids_json AS candidateIdsJson, status, reason FROM clip_export_batches').get() as { candidateIdsJson: string; status: string; reason: string | null }; expect(JSON.parse(batch.candidateIdsJson)).toMatchObject({ candidateIds: [candidate.id], items: [expect.objectContaining({ status: 'exported' })] }); expect(batch.status).toBe('completed'); expect(batch.reason).toBeNull(); db.close()
     } finally { if (previousRoot === undefined) delete process.env.SHORTDRAMA_RUNTIME_ROOT; else process.env.SHORTDRAMA_RUNTIME_ROOT = previousRoot; if (previousPath === undefined) delete process.env.PATH; else process.env.PATH = previousPath; if (previousFfmpeg === undefined) delete process.env.SHORTDRAMA_FFMPEG_PATH; else process.env.SHORTDRAMA_FFMPEG_PATH = previousFfmpeg; if (previousFfprobe === undefined) delete process.env.SHORTDRAMA_FFPROBE_PATH; else process.env.SHORTDRAMA_FFPROBE_PATH = previousFfprobe; await rm(runtime, { recursive: true, force: true }); await rm(media, { recursive: true, force: true }); await rm(output, { recursive: true, force: true }) }
   }, 30_000)
 })

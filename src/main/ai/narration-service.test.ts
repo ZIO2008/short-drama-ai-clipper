@@ -85,7 +85,7 @@ describe('NarrationService', () => {
 
   it('snapshots configured TTS pricing and blocks a request above its limit', async () => {
     const { database, service } = await setup(); const now = new Date().toISOString()
-    database.prepare('INSERT INTO provider_profiles VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run('tts', 'tts', 'cn', 'provider', 'https://example.com', 'general-mandarin', 'd2719c5e-4a18-4f2a-9f8d-6d9877a4b321', '{"perRequest":1.2}', 30000, now, now)
+    database.prepare('INSERT INTO provider_profiles (id, capability, region, provider, endpoint, model, secret_ref, pricing_json, timeout_ms, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run('tts', 'tts', 'cn', 'provider', 'https://example.com', 'general-mandarin', 'd2719c5e-4a18-4f2a-9f8d-6d9877a4b321', '{"perRequest":1.2}', 30000, now, now)
     expect(() => service.create({ dramaId: 'drama', episodeStart: 1, episodeEnd: 2, mode: 'standard', durationMinSeconds: 30, durationMaxSeconds: 60, maxDrafts: 1, costLimit: 1 })).toThrow('超过本次上限')
     const taskId = service.create({ dramaId: 'drama', episodeStart: 1, episodeEnd: 2, mode: 'standard', durationMinSeconds: 30, durationMaxSeconds: 60, maxDrafts: 1, costLimit: 2 }).taskId
     expect((database.prepare('SELECT cost_json AS costJson FROM production_tasks WHERE id = ?').get(taskId) as { costJson: string }).costJson).toContain('provider')

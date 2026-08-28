@@ -26,7 +26,7 @@ describe('P1/P2 AI safety and cost integration', () => {
 
   it('rejects non-generic voice identifiers and blocks a cost-limit request before any task exists', () => {
     const { database, service } = setup(); const now = new Date().toISOString()
-    database.prepare('INSERT INTO provider_profiles VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run('tts', 'tts', 'cn', 'provider', 'https://example.com', 'general-mandarin', 'd2719c5e-4a18-4f2a-9f8d-6d9877a4b321', '{"perRequest":5}', 30_000, now, now)
+    database.prepare('INSERT INTO provider_profiles (id, capability, region, provider, endpoint, model, secret_ref, pricing_json, timeout_ms, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run('tts', 'tts', 'cn', 'provider', 'https://example.com', 'general-mandarin', 'd2719c5e-4a18-4f2a-9f8d-6d9877a4b321', '{"perRequest":5}', 30_000, now, now)
     expect(() => service.create({ dramaId: 'drama', episodeStart: 1, episodeEnd: 1, mode: 'standard', durationMinSeconds: 30, durationMaxSeconds: 60, maxDrafts: 1, voice: 'celebrity-clone', costLimit: 10 })).toThrow()
     expect(() => service.create({ dramaId: 'drama', episodeStart: 1, episodeEnd: 1, mode: 'standard', durationMinSeconds: 30, durationMaxSeconds: 60, maxDrafts: 1, costLimit: 1 })).toThrow('超过本次上限')
     expect(database.prepare('SELECT COUNT(*) AS count FROM production_tasks').get()).toEqual({ count: 0 })

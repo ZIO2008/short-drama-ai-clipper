@@ -25,6 +25,15 @@ button:disabled { cursor: not-allowed; opacity: .62; }
 .content:has(.static-prototype-surface) { overflow: hidden; }
 .content:has(.static-prototype-surface) .screen.active { display: flex; height: 100%; min-height: 0; padding: 0; }
 .content:has(.static-prototype-surface) .static-prototype-surface { flex: 1; }
+.app:has(.static-prototype-surface[data-v49-runtime-shell="true"]) { display: block; }
+.app:has(.static-prototype-surface[data-v49-runtime-shell="true"]) > .sidebar,
+.app:has(.static-prototype-surface[data-v49-runtime-shell="true"]) > .workspace > .topbar { display: none; }
+.app:has(.static-prototype-surface[data-v49-runtime-shell="true"]) > .workspace,
+.app:has(.static-prototype-surface[data-v49-runtime-shell="true"]) > .workspace > .content { display: block; height: 100%; min-height: 0; }
+.app:has(.static-prototype-surface[data-v49-runtime-shell="true"]) > .workspace > .content { overflow: hidden; scrollbar-gutter: auto; }
+.app:has(.static-prototype-surface[data-v49-runtime-shell="true"]) .static-prototype-stage,
+.app:has(.static-prototype-surface[data-v49-runtime-shell="true"]) .static-prototype-slot,
+.app:has(.static-prototype-surface[data-v49-runtime-shell="true"]) .static-prototype-surface { width: 100%; height: 100%; }
 h1, h2, p { margin: 0; }
 h1, h2 { font-family: var(--font-display); text-wrap: balance; }
 h1 { font-size: 22px; line-height: 1.2; letter-spacing: -.02em; }
@@ -213,6 +222,7 @@ table { width: 100%; border-collapse: collapse; } th, td { padding: 9px; border-
 .content:has(.clip-report) .screen.active > .clip-report { display: flex; min-height: 0; flex: 1; flex-direction: column; }
 .content:has(.clip-report) .clip-report-board { min-height: 0; max-height: none; flex: 1; }
 .asset-row-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+.asset-duration-alert { margin-left: 6px; }
 .asset-row-actions .btn-danger { display: inline-grid; width: 36px; min-width: 36px; min-height: 36px; padding: 0; place-items: center; font-size: 0; }
 .asset-row-actions .btn-danger .ui-icon { width: 16px; height: 16px; }
 .asset-success { border-color: var(--success); color: var(--success); }

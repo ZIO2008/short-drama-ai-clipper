@@ -1,0 +1,9 @@
+export type ClipCandidateStatus = 'pending_review' | 'editing' | 'confirmed' | 'exporting' | 'exported' | 'failed'
+export type ClipCandidateQualification = 'qualified' | 'qualified_with_limit'
+export type ClipCandidateBeat = 'setup' | 'entry' | 'escalation' | 'reversal' | 'climax' | 'reaction' | 'aftermath'
+export type ClipCandidatePurpose = 'hook' | 'conflict' | 'reveal' | 'emotion' | 'transition'
+export type ClipCandidateContext = 'standalone' | 'limited'
+export type ClipCandidateReviewStatus = 'not-required' | 'supported' | 'failed'
+export type ClipCandidateClaim = { kind: 'start-boundary' | 'end-boundary' | 'core-event' | 'narrative-closure' | 'visual-fact'; evidenceCount: number; reason: string }
+export type ClipCandidateEvidence = { beat: ClipCandidateBeat; purpose: ClipCandidatePurpose; context: ClipCandidateContext; narrativeState: 'entry' | 'escalation' | 'reversal' | 'completion' | 'reaction'; seamStatus: 'closed' | 'expanded-closed'; claims: ClipCandidateClaim[]; reviewStatus: ClipCandidateReviewStatus; reviewReason: string | null; durationDeviationSeconds: number | null; durationDeviationReason: string | null }
+export type ClipCandidate = { id: string; episodeId: string; startSeconds: number; endSeconds: number; semanticEventIds?: string[]; sceneAnchorIds?: string[]; evidence?: ClipCandidateEvidence; status: ClipCandidateStatus; reason: string | null; qualification?: ClipCandidateQualification; qualificationReason?: string | null; createdAt?: string }

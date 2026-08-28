@@ -62,6 +62,12 @@ describe('TaskCenterService', () => {
     expect(service.report('p2-task-1')).toEqual([])
   })
 
+  it('exposes the frozen original-clip task round as the authoritative generation order', () => {
+    const { database, service } = setup(); const now = new Date().toISOString()
+    database.prepare('INSERT INTO production_tasks (id, drama_id, type, config_snapshot, status, progress_current, progress_total, checkpoint, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 0, 0, ?, ?, ?)').run('clip-round-7', 'drama-1', 'original_clip', JSON.stringify({ generation: { episodeIds: ['episode-1'] }, taskRound: 7 }), 'failed', JSON.stringify({ taskRound: 6, reason: 'fixture' }), now, now)
+    expect(service.list().find((task) => task.id === 'clip-round-7')).toMatchObject({ taskRound: 7, episodeIds: ['episode-1'] })
+  })
+
   it('resets only failed items and preserves completed progress', () => {
     const { database, service } = setup()
     expect(service.retryFailedItems('task-1')[0]?.status).toBe('pending')

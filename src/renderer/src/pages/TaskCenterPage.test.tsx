@@ -58,15 +58,15 @@ describe('TaskCenterPage', () => {
     expect(openPath).toHaveBeenCalledWith('D:\\output\\result.mp4')
   })
 
-  it('exposes running-task controls, recovery and report errors', async () => {
+  it('keeps original-clip recovery behind its workspace while exposing other task controls', async () => {
     getTaskReport.mockRejectedValue(new Error('报告读取失败'))
     const reload = vi.fn()
     const pendingTask: TaskSummary = { id: 'task-pending-9', dramaName: '丙剧', type: 'multi_episode', status: 'pending', progressCurrent: 0, progressTotal: 1 }
     render(<TaskCenterPage tasks={[...tasks, pendingTask]} loading={false} error={null} onReload={reload} onRetry={vi.fn()} />)
     fireEvent.click(screen.getByLabelText('查看乙剧原剧切片详情'))
-    fireEvent.click(screen.getByRole('button', { name: '暂停' }))
-    await waitFor(() => expect(pauseProductionTask).toHaveBeenCalledWith('task-clip-5678'))
-    expect(screen.getByRole('button', { name: '继续任务' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: '暂停' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: '取消' }))
+    await waitFor(() => expect(cancelProductionTask).toHaveBeenCalledWith('task-clip-5678'))
     fireEvent.click(screen.getByRole('button', { name: '关闭' }))
     fireEvent.click(screen.getByLabelText('查看丙剧多集拼接详情'))
     fireEvent.click(screen.getByRole('button', { name: '继续任务' }))

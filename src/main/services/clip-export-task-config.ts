@@ -8,6 +8,7 @@ const storedConfigSchema = z.object({
   outputDirectory: z.string().trim().min(1),
   namingPattern: z.string().trim().min(1).max(160),
   encoding: z.enum(['copy', 'h264-balanced', 'h264-quality']),
+  precisionMode: z.enum(['final', 'preview-copy']).default('final'),
   outputSize: z.enum(['source', '1080x1920', '1920x1080']),
   subtitleStrategy: z.enum(['none', 'soft', 'burn']),
   conflictStrategy: z.literal('append'),
@@ -30,7 +31,7 @@ export const persistClipExportConfig = (database: Database.Database, config: Cli
     JOIN task_items item ON item.task_id = task.id
     WHERE task.type = 'original_clip' AND item.id IN (${config.candidateIds.map(() => '?').join(', ')})
   `).all(...config.candidateIds) as Array<{ id: string; configSnapshot: string }>
-  const storedConfig: StoredClipExportConfig = { outputDirectory: config.outputDirectory, namingPattern: config.namingPattern, encoding: config.encoding, outputSize: config.outputSize, subtitleStrategy: config.subtitleStrategy, conflictStrategy: config.conflictStrategy, qualityMode: config.qualityMode, bitrateKbps: config.bitrateKbps, targetSizeMb: config.targetSizeMb, fps: config.fps, packagingEnabled: config.packagingEnabled, packaging: config.packaging }
+  const storedConfig: StoredClipExportConfig = { outputDirectory: config.outputDirectory, namingPattern: config.namingPattern, encoding: config.encoding, precisionMode: config.precisionMode ?? 'final', outputSize: config.outputSize, subtitleStrategy: config.subtitleStrategy, conflictStrategy: config.conflictStrategy, qualityMode: config.qualityMode, bitrateKbps: config.bitrateKbps, targetSizeMb: config.targetSizeMb, fps: config.fps, packagingEnabled: config.packagingEnabled, packaging: config.packaging }
   const update = database.prepare('UPDATE production_tasks SET config_snapshot = ?, updated_at = ? WHERE id = ?')
   database.transaction(() => taskRows.forEach((task) => {
     let snapshot: Record<string, unknown> = {}
