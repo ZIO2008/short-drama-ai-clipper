@@ -1,0 +1,7 @@
+{
+  "domain": "test",
+  "currentId": "test-playwright-config-current",
+  "registry": "docs/baseline-registry.json",
+  "sha256": "E5ABA518D39A7ADA81A60C3DB87A6A684823119BA857114CB531DA9B3C5696BB",
+  "policy": "Current test discovery is tracked separately from compatibility and legacy suites. Directory migration is a later batch."
+}

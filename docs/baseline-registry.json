@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "registryVersion": 1,
+  "generatedAt": "2026-08-19T00:00:00+08:00",
+  "immutability": "Entries are append-only identities. A snapshot path must never be overwritten; a new content identity gets a new id.",
+  "baselines": [
+    {
+      "id": "design-v49-clip-monitor-review",
+      "snapshotId": "v2026-08-11-v49-clip-monitor-review",
+      "domain": "design",
+      "path": "design/open-design/v2026-08-11-v49-clip-monitor-review/short-drama-material-studio-v49-clip-review.html",
+      "sha256": "C95820F2FCE372E9BBA3A2A1062495D418951025C1A7C65A73429F5C0FFD563D",
+      "status": "current",
+      "supersedes": null,
+      "createdAt": "2026-08-11",
+      "allowedUse": ["design-reference", "visual-acceptance"]
+    },
+    {
+      "id": "runtime-package-0.1.92-working-tree",
+      "snapshotId": "package-json-0.1.92",
+      "domain": "runtime",
+      "path": "package.json",
+      "sha256": "D5C34CC32598BEC2E415C09EFDBD4BE11EC2CE15F5B6D3279B083CDFFFAC22B2",
+      "status": "current",
+      "supersedes": null,
+      "createdAt": "2026-08-19",
+      "allowedUse": ["tooling-context"]
+    },
+    {
+      "id": "test-playwright-config-current",
+      "snapshotId": "playwright-config-current",
+      "domain": "test",
+      "path": "playwright.config.ts",
+      "sha256": "E5ABA518D39A7ADA81A60C3DB87A6A684823119BA857114CB531DA9B3C5696BB",
+      "status": "current",
+      "supersedes": null,
+      "createdAt": "2026-08-19",
+      "allowedUse": ["test-discovery-context"]
+    },
+    {
+      "id": "release-candidate-0.1.32-p1-internal-trial",
+      "snapshotId": "v0.1.32-p1-internal-trial",
+      "domain": "release",
+      "path": "docs/release-evidence/v0.1.32-p1-internal-trial.json",
+      "sha256": "CBC74B81C11DF9992947A4D3EF066CDEDC684F75C7B10E8FF1E48CFA11CDAF7F",
+      "status": "candidate",
+      "supersedes": null,
+      "createdAt": "2026-07-30",
+      "allowedUse": ["candidate-traceability", "internal-trial"]
+    },
+    {
+      "id": "evidence-verification-0.1.88-p1-visual-unverified",
+      "snapshotId": "v0.1.88-p1-internal-trial-visual-unverified",
+      "domain": "evidence",
+      "path": "docs/release-evidence/v0.1.88-p1-internal-trial-visual-unverified.json",
+      "sha256": "35BA19B05F18A68A8A49A8C962126BB1DFEAD15A7B8F91A2CC2B17EF83C9B148",
+      "status": "legacy",
+      "supersedes": null,
+      "createdAt": "2026-08-14",
+      "allowedUse": ["historical-diagnosis"]
+    },
+    {
+      "id": "evidence-verification-0.1.92-p1-visual-unverified",
+      "snapshotId": "v0.1.92-p1-internal-trial-visual-unverified",
+      "domain": "evidence",
+      "path": "docs/release-evidence/v0.1.92-p1-internal-trial-visual-unverified.json",
+      "sha256": "194689A5EDF4D8C8B41318540B3CE62D31D9BBE0CAADDBDCFDC3FCC1DBE3850C",
+      "status": "current",
+      "supersedes": "evidence-verification-0.1.88-p1-visual-unverified",
+      "createdAt": "2026-08-25",
+      "allowedUse": ["verification-only", "package-smoke", "privacy-audit"]
+    },
+    {
+      "id": "design-v48-contract-legacy",
+      "snapshotId": "design-contract-v48",
+      "domain": "design",
+      "path": "docs/design-contract-v48.json",
+      "sha256": "B3BDE062FC6BF41667D73367736B69F89F622F33C06B83FBF8ADCC8B85CA20D3",
+      "status": "legacy",
+      "supersedes": null,
+      "createdAt": "2026-08-01",
+      "allowedUse": ["historical-comparison"]
+    }
+  ]
+}

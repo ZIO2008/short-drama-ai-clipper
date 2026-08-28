@@ -1,0 +1,7 @@
+{
+  "domain": "runtime",
+  "currentId": "runtime-package-0.1.92-working-tree",
+  "registry": "docs/baseline-registry.json",
+  "sha256": "D5C34CC32598BEC2E415C09EFDBD4BE11EC2CE15F5B6D3279B083CDFFFAC22B2",
+  "policy": "Working-tree context is not a release claim; publishable runtime identities require a release manifest."
+}

@@ -28,7 +28,7 @@
 
 - 新应用 ID：`local.shortdrama.materialstudio`。
 - 用户数据：`AppData/ShortDramaMaterialStudio/<channel>`，与旧工具隔离。
-- 原型源 `D:\个人工作\Web-Prototype` 保持只读；生产 UI 通过 `docs/prototype-reuse-matrix.md` 映射。
+- 当前设计源为根 `Design-Brief.md` 固定的 V49 HTML；`docs/prototype-migration-card-original-clip-v49.md` 只记录已冻结的静态夹具基线，当前没有获授权的运行时迁移任务。早期 Web Prototype/V48 复用矩阵只作历史追溯，不得作为当前发布许可。
 - 备份只包含 SQLite 元数据，不包含原片、音频、字幕、剧本或导出视频。
 
 ## 独立审查

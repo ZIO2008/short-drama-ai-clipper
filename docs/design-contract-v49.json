@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "contractRevision": "49.1-draft",
+  "status": "draft",
+  "activation": {
+    "enabled": false,
+    "reason": "screen-clip 的三种已授权状态已有独立 V49 证据并通过视觉验收；其它屏幕仍待运行时确认与证据采集，且当前发布门禁仍读取 V48。全产品合同不能用于打包或发布。"
+  },
+  "authority": {
+    "projectId": "01b5725c-2688-4cbc-bc29-7432712449b3",
+    "version": "49",
+    "entry": "design/open-design/v2026-08-11-v49-clip-monitor-review/short-drama-material-studio-v49-clip-review.html",
+    "sha256": "C95820F2FCE372E9BBA3A2A1062495D418951025C1A7C65A73429F5C0FFD563D"
+  },
+  "requiredProjectArtifacts": [
+    "short-drama-material-studio-v49-clip-review.html.artifact.json"
+  ],
+  "sourceMirror": {
+    "artifactSource": "short-drama-material-studio-v49-clip-review.html.artifact.json",
+    "files": {
+      "short-drama-material-studio-v49-clip-review.html.artifact.json": "FAFE935C973438356FE908A85DE2A288179EA06F638E8B76E680413ECE5B17E0"
+    },
+    "scope": "V49 HTML is the sole current product design source. The artifact JSON is retained only as the same-directory source manifest; no V48 contract or historical screenshot is an active input."
+  },
+  "viewports": [
+    { "width": 1440, "height": 900 },
+    { "width": 1280, "height": 720 }
+  ],
+  "statePlan": {
+    "mode": "static-html-and-migration-card-inventory",
+    "coverage": "screen-clip-accepted-other-screens-pending",
+    "requiredBeforeActivation": [
+      "confirm every inferred state against the runtime migration boundary and tests",
+      "define the independent V49 evidence root and metadata schema",
+      "bind project-library preview and Electron captures per state and viewport"
+    ]
+  },
+  "screens": [
+    { "id": "screen-library", "states": ["default", "empty", "filtered", "list-view"], "stateSource": "v49-html-dom", "stateStatus": "source-confirmed-pending-runtime-confirmation" },
+    { "id": "screen-assets", "states": ["default", "empty", "delete-confirmation"], "stateSource": "v49-html-dom", "stateStatus": "source-confirmed-pending-runtime-confirmation" },
+    { "id": "screen-production", "states": ["default", "preflight", "packaging-settings"], "stateSource": "v49-html-dom-and-existing-runtime-tests", "stateStatus": "source-confirmed-pending-runtime-confirmation" },
+    { "id": "screen-stitch", "states": ["default", "preflight", "packaging-settings", "running"], "stateSource": "v49-html-dom-and-existing-runtime-tests", "stateStatus": "source-confirmed-pending-runtime-confirmation" },
+    { "id": "screen-clip", "states": ["default-candidate-selected", "context-speed", "missing-media"], "stateSource": "v49-migration-card-and-accepted-evidence", "stateStatus": "visual-accepted-screen-clip-only" },
+    { "id": "screen-clip-report", "states": ["default", "empty", "completed"], "stateSource": "v49-html-dom-and-existing-runtime-tests", "stateStatus": "source-confirmed-pending-runtime-confirmation" },
+    { "id": "screen-results", "states": ["default", "empty", "cards", "list"], "stateSource": "v49-html-dom", "stateStatus": "source-confirmed-pending-runtime-confirmation" },
+    { "id": "screen-tasks", "states": ["default", "failed", "retrying", "drawer-open"], "stateSource": "v49-html-dom-and-existing-runtime-tests", "stateStatus": "source-confirmed-pending-runtime-confirmation" },
+    { "id": "screen-tags", "states": ["default", "empty", "filtered"], "stateSource": "v49-html-dom", "stateStatus": "source-confirmed-pending-runtime-confirmation" },
+    { "id": "screen-settings", "states": ["default", "missing-credential", "saved", "provider-draft"], "stateSource": "v49-html-dom-and-existing-runtime-tests", "stateStatus": "source-confirmed-pending-runtime-confirmation" },
+    { "id": "screen-ai", "states": ["default", "review", "blocked", "export-settings"], "stateSource": "v49-html-dom-and-existing-runtime-tests", "stateStatus": "source-confirmed-pending-runtime-confirmation" },
+    { "id": "screen-timeline", "states": ["default", "clip-selected", "export-settings"], "stateSource": "v49-html-dom-and-existing-runtime-tests", "stateStatus": "source-confirmed-pending-runtime-confirmation" },
+    { "id": "screen-subtitles", "states": ["default", "loading", "empty", "detail", "settings", "missing-media", "import-preview", "import-confirmation", "ocr-calibration"], "stateSource": "v49-html-dom-and-existing-runtime-tests", "stateStatus": "source-confirmed-pending-runtime-confirmation" },
+    { "id": "screen-clip-pool", "states": ["default", "empty", "filtered", "high-volume"], "stateSource": "v49-html-dom-and-existing-runtime-tests", "stateStatus": "source-confirmed-pending-runtime-confirmation" },
+    { "id": "screen-clip-export", "states": ["default", "preflight", "running", "failed", "completed"], "stateSource": "v49-html-dom-and-existing-runtime-tests", "stateStatus": "source-confirmed-pending-runtime-confirmation" },
+    { "id": "screen-provider-${key}", "kind": "dynamic-template", "states": ["default", "candidate-selected", "missing-credential", "saved"], "stateSource": "v49-html-dom-and-existing-runtime-tests", "stateStatus": "source-confirmed-pending-runtime-confirmation" }
+  ],
+  "evidencePolicy": {
+    "root": "docs/design-evidence/v49",
+    "metadataSchema": "docs/design-evidence/v49/evidence.schema.json",
+    "ledger": "docs/design-evidence/v49/evidence-ledger.md",
+    "metadataVersion": 1,
+    "source": "v49-project-library-preview",
+    "requireProjectPreviewBaseline": true,
+    "requireElectronCapturePerScreenState": true,
+    "forbidStatuses": [
+      "skipped-current-baseline-not-present",
+      "captured-historical-reference-only",
+      "v48-contract-input",
+      "visual-acceptance-not-run"
+    ]
+  }
+}

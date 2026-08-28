@@ -1,0 +1,7 @@
+{
+  "domain": "release",
+  "currentId": "release-candidate-0.1.32-p1-internal-trial",
+  "registry": "docs/baseline-registry.json",
+  "sha256": "CBC74B81C11DF9992947A4D3EF066CDEDC684F75C7B10E8FF1E48CFA11CDAF7F",
+  "policy": "Candidate is the latest registered immutable candidate, not a statement that the dirty working tree is released."
+}

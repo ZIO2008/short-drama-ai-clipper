@@ -19,7 +19,7 @@
     "files": {
       "artifact.json": "26BD8F9CD57A635E5E4323374390170B7B87D794752F07297C82790E8C62B2F1",
       "design-brief.md": "988B547B2056DB1BD8F51B201BF8C045CB73265107394E79111CCD05B3298331",
-      "Product-Spec.md": "8196AA1746A896C34EBE85665934B0D617EE8F8BDF0100815E8B3705B4E431A3"
+      "Product-Spec.md": "77924EAD393A6F57913A3AA47FEC25CD0AF2AC30B6A956F524247D2C2DF1542A"
     },
     "scope": "Design-Brief.md 与 Product-Spec.md 是 Open Design 项目级交接文档；Version 48 HTML 是页面视觉与交互的最终裁决源，二者冲突时以 HTML 为准。"
   },
@@ -35,7 +35,7 @@
     { "id": "screen-clip-pool", "states": ["default", "empty", "filtered", "high-volume"] },
     { "id": "screen-clip-export", "states": ["default", "preflight", "running", "failed", "completed"] },
     { "id": "screen-clip-report", "states": ["default", "exception-only", "completed"] },
-    { "id": "screen-subtitles", "states": ["loading", "empty", "incomplete", "needs-review", "validated", "missing-media", "read-error"] },
+    { "id": "screen-subtitles", "states": ["loading", "empty", "incomplete", "needs-review", "validated", "missing-media", "read-error", "stress-sample"] },
     { "id": "screen-results", "states": ["default", "empty"] },
     { "id": "screen-tasks", "states": ["default", "failed", "retrying"] },
     { "id": "screen-settings", "states": ["default", "missing-credential", "saved"] },

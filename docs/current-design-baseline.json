@@ -1,0 +1,7 @@
+{
+  "domain": "design",
+  "currentId": "design-v49-clip-monitor-review",
+  "registry": "docs/baseline-registry.json",
+  "sha256": "C95820F2FCE372E9BBA3A2A1062495D418951025C1A7C65A73429F5C0FFD563D",
+  "policy": "The pointer may move only by adding a new registry entry and recording supersedes; snapshots are immutable."
+}

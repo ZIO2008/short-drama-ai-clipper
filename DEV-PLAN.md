@@ -1,392 +1,463 @@
 # Development Plan — 短剧投流素材生成平台
 
-> **当前整合核验（2026-08-02）：** 本计划的历史 Phase 只作已发生工作的证据，不能决定当前静态整合的范围或顺序。当前唯一设计源为 `design/open-design/v2026-07-30-open-design-final/short-drama-material-studio.html`（SHA-256 `D86D634D67B7DE5F62D5EEAD2737CCC2C4A60401CF7F34F7521BA581CBB6C92B`）。按其结构依赖核验的顺序是：应用壳与剧目库 → 任务中心 → 同一剧目工作区标签关系 → 原剧切片三阶段 → 字幕资产入口/详情关系。四个剧目页签必须共享首屏页头基线；字幕批量操作归入列表工具栏。每一块先在 `docs/prototype-gap-register.md` 记录差异，再合并整页；不使用独立状态审阅页或孤岛页面。本阶段保留已有真实数据、IPC、路由和功能，但不扩展字幕内部后端能力，不新增 P2 解说/TTS/旁白面，也不继续开发或宣称完成多集拼接。完成证据必须包含 1440×900/1280×720 当前 Electron 截图、全量命令、两阶段独立审查；缺项目库逐态视觉基线时，`audit:fidelity` 必须如实保持未完成。
+> 本文件记录当前可执行开发单元，以及原剧切片的完整候选路线图。只有“当前队列”中标为已排期的 Phase 获得执行授权；后续路线图用于说明依赖、交付和工期，不能自动启动。Phase 1–20 的完整原文已归档，不再作为当前队列、设计源或验收门禁。
 
-> 本计划只覆盖 Product-Spec.md 中本轮 P0 资产管理修复。
+## 当前状态（2026-08-25）
 
-## Phase 1: 导入状态、自然排序与增量合并（已完成）
+- 当前全产品设计源只通过 `docs/current-design-baseline.json` 解析到注册表中的 current 不可变快照；本文不重复写具体版本、路径或哈希。
+- superseded/legacy HTML、合同、截图、旧 `audit:fidelity` 与 Phase 1–20 只用于历史追溯；它们不能补充、覆盖或阻断 current 工作。
+- current `screen-clip` 第一屏静态夹具已经建立并冻结；三种夹具状态、结构测试、类型检查和独立审查均已完成，不重复执行。
+- `SUP-011` 通用供应商凭据 schema 仍保持冻结；Phase 24 只修复既有腾讯双凭据节点所有权和 packaged E2E 旁路，不修改认证 schema、密钥迁移或真实云端适配器。
+- 用户已授权的 V49 `screen-clip` 第一屏运行时宿主迁移和同视口视觉验收已完成：默认候选已选、前后审阅加倍速浮层、媒体不可读均在 1440×900 和 1280×720 留存成对证据。候选池、完成报告、字幕和其它屏幕仍未获页面迁移授权；全产品设计合同/脚本门禁替换、全产品视觉验收、打包和发布也未获授权。
+- V49 是静态视觉参考，不自动等同于当前运行时页面、数据或交互。任何可能改动页面结构、文案、交互或数据绑定的事项，必须先写明现状与 V49 的映射依据、影响文件、运行时影响和误改风险，并由用户逐项确认后才可实施。
+- Phase 29 已完成的开发树已生成 `v0.1.92-p1-internal-trial-visual-unverified` 功能验证包：隐私审计 3,744 个文件通过，实际打包 EXE 的 100%/125%/150% DPI 冒烟为 3/3；该包只登记为 verification evidence，不是正式候选。夹具型打包 UI 用例受 Phase 24 的 packaged E2E 安全门禁阻断，不据此修改页面或放宽门禁。
+- 当前开发树仍未形成 Git 收口锚点，视觉审计仍为 `completed=0 / incomplete=94`；因此正式候选、正式版替换和发布继续禁止。页面迁移待决项保持独立，不因本次打包验证自动启动。
+- 收口修复后的临时目录包已通过 packaged smoke 4/4：三档 DPI 3/3，以及不启用 E2E mock、使用系统临时隔离 userData 的 85 集导入、字幕映射和重启恢复 1/1。该临时包不登记为候选，不覆盖既有 verification 包。
+- 最终独立代码审查 Stage 1/2 均 PASS，0 HIGH / 0 MEDIUM；hidden 封存、P1 limited、可重建证据、packaged smoke、隐私门禁与模块拆分均在最新工作树复核通过。该结论只允许建立本地 Git 锚点，不解除视觉与正式发布门禁。
 
-**交付内容：**
-- 为剧目迁移并持久化最近成功导入目录，供文件和文件夹对话框作为初始目录。
-- 将导入服务改为按集号自然排序、跳过已有相同引用、记录同集号不同文件冲突并继续处理其他项。
-- 将导入结果贯通 IPC、preload、共享契约和 UI，显示导入、跳过、冲突摘要。
+## 当前队列
 
-**关键文件：**
-- `src/main/db/schema.ts` — 按剧目的导入偏好表与索引。
-- `src/main/db/migrate.ts` — 兼容已有数据库的列迁移。
-- `src/main/services/drama-service.ts` — 导入合并、排序与结果规则。
-- `src/main/ipc/video-file-dialog.ts`、`src/main/index.ts` — 按剧目传递 defaultPath 的独立选择器。
-- `src/shared/contracts.ts`、`src/preload/index.ts`、`src/renderer/src/App.tsx` — 结果和选择器参数契约。
+```text
+current 基线治理与 `screen-clip` 静态夹具（已完成并冻结）
+  → Phase 21：V49 `screen-clip` 第一屏运行时宿主迁移（已完成：功能、同视口视觉验收与独立审查）
+  → Phase 22：原剧切片闭环核验与页面映射（只读；已完成）
+  → Phase 23：切片证据基础与真实样本基线（已完成：真实 ASR/跨源证据、候选资格、冲突门禁与分层基线）
+  → Phase 24：受控候选生成与任务快照（已完成：精确去重、冻结供应商/证据身份、重启隔离、发布授权与真实 PTS 回链）
+  → Phase 25：原剧切片工作台行为收口（已完成：行为、异步隔离、检查器证据绑定与双视口复核通过）
+  → Phase 26：候选池、批量导出与成果登记（核心业务已完成；V49 页面配置分支延期）
+  → Phase 27：完成报告、成果回链与异常处置（已完成：核心报告逻辑，不改页面结构）
+  → Phase 28：恢复、压力、隐私与数据安全收口（已完成：恢复、压力、隐私与备份边界通过）
+  → Phase 29：真实样本验收与交付候选（P0 主线完成：文本语义、人工审片闭环与隐藏盲验；视频 P1 为 limited-evidence，待新冻结范围合同复跑）
+  → Phase 22 的页面提案（P22-02/P22-04）及 Phase 26/27 V49 页面迁移仍保持独立待决，不自动启动页面迁移或功能重写
+```
 
-**验收标准：**
-- 已有 1 至 23 集时导入 1 至 30 集，缺失集导入且已有项不阻断。
-- 数据库、资产列表和生产选择均按 1、2、…10、11 升序。
+## Phase 22：原剧切片闭环核验与页面映射（只读）
 
-## Phase 2: 资产维护与长列表体验（已完成）
+**目标与范围**：核实“生成候选 → 审阅/确认 → 候选池 → 导出 → 完成报告”在当前 Electron 运行时中已经真实具备哪些能力、哪些只停留在历史记录或测试夹具；再将其中确有同一业务语义的入口与 V49 静态页面逐项比对。此 Phase 不修改 `src/`、静态 V49 HTML、现有页面、数据表、IPC、路由或设计合同，也不把 V49 当作自动替换目标。
 
-**交付内容：**
-- 在资产行提供删除剧集确认和结果反馈，不删除原始视频。
-- 刷新删除后的健康概览、生产资格和列表排序。
-- 修复主内容区与资产表在 85 集时的页面滚动、滚动条和键盘浏览。
+**交付内容**：
 
-**关键文件：**
-- `src/renderer/src/pages/DramaAssetsPage.tsx` — 导入摘要、删除操作与确认交互。
-- `src/renderer/src/pages/DramaWorkspacePage.tsx`、`src/renderer/src/pages/DramaLibraryPage.tsx` — 维护回调与刷新。
-- `src/renderer/src/styles/prototype-interactions.css` — 内容区和资产表滚动规则。
+- 建立真实闭环核验表，逐项记录当前入口、真实数据来源、IPC/服务链路、已有测试或 Electron 证据、结论和未验证前提；明确区分“已验证存在”“需要真实样本或供应商配置”“真实功能缺口”，不将历史 Phase 17–20 的叙述当作当前验收结论。
+- 建立页面映射表，只在业务语义、状态和交互责任均能证明对应时记录“当前运行时入口 ↔ V49 静态区域”；无法一一对应的项明确标为“不映射”，不强行套用静态 DOM、文案或布局。
+- 为每一项可能的后续改动形成独立变更提案：拟改位置、现状证据、V49 参考证据、允许替换的数据槽、影响的真实行为、风险、测试范围和回退边界。提案仅供用户确认，不实施代码或页面修改。
+- 对当前 P0 原剧切片路径、候选池/导出/报告的定点测试及受影响的构建、类型检查执行只读核验；若发现缺陷，只记录可复现步骤和影响范围，不在本 Phase 修复。
 
-**验收标准：**
-- 确认删除只移除应用记录，源视频仍存在。
-- 85 集在 100%/125%/150% DPI 下可滚动至最后一行。
+**关键文件**：
 
-## Phase 3: 回归、真实验证与交付（已完成）
+- `docs/phase-22-original-clip-runtime-baseline.md` — 真实闭环核验表、页面映射表、缺口分类和证据索引。
+- `docs/phase-22-change-proposals.md` — 每项待确认改动的影响、风险、验证和回退边界。
+- `tests/current/p0-workflows.spec.ts` — 当前 Electron P0 链路的只读回归入口。
+- `src/renderer/src/pages/OriginalClipPoolReportRuntimeBridge.ts` — 候选池、导出和完成报告的当前运行时绑定核对对象；本 Phase 不修改。
+- `src/main/services/original-clip-service.ts` — 候选、确认和导出服务链路核对对象；本 Phase 不修改。
 
-**交付内容：**
-- 新增服务、IPC、组件与 E2E 回归测试。
-- 使用指定真实素材前 30 集做独立数据目录的只读引用验证。
-- 打包新 Windows 目录包，做隐私审计、100%/125%/150% DPI 烟测和独立代码审查。
+**验收标准**：
 
-**关键文件：**
-- `src/main/services/drama-service.test.ts` — 导入、排序、冲突和源文件保护。
-- `src/main/ipc/video-file-dialog.test.ts` — 记忆目录和独立对话框。
-- `src/renderer/src/pages/DramaAssetsPage.test.tsx` — 删除、摘要与长列表交互。
-- `tests/e2e/` — 真实导入和 DPI 包级验证。
+- 每一段闭环都有可定位的当前代码、测试或 Electron 证据，并明确其证据等级和外部前提；不能证明的项目不得写为“完成”。
+- 所有 V49 对比项均标明“可映射”或“不映射”及理由；没有任何静态参考被直接改写进当前页面。
+- 每项后续改动均能由用户单独批准或拒绝；未获批准的提案不改变实现范围。
+- 本 Phase 的变更清单不含 `src/`、当前设计快照、V49 HTML、数据表或 IPC 合同；定点回归、类型检查和构建给出实际结果。既有工作树改动单独保留，不以其状态推断本 Phase 结果。
 
-**验收标准：**
-- typecheck、完整测试、目标 E2E、隐私审计通过。
-- 代码审查 Stage 1/2 无 HIGH/MEDIUM，新目录包不覆盖旧包。
+**预计完成窗口**：在现有本地测试和样本可用的前提下，约 1.5 个工作日，目标于 2026-08-22 结束。若需要真实供应商凭据、不可替代媒体或用户选择才能继续，只结束可独立核验部分，并将该外部前提逐条列为未验证项；不会因而擅自改页面或伪造通过。
 
-## Phase 4: 供应商目录与配置引导（进行中）
+**完成后的决策门**：用户逐项选择“修复真实功能缺口”“迁移某个已映射的视觉区域”或“保持现状”。只有选定的提案才会新建一个独立开发 Phase，并在实施前再次说明改动与风险。
 
-**交付内容：**
-- 建立共享、可维护的供应商目录，记录能力、费用标签、质量/场景、接入难度、官方来源、核验日期与预填配置。
-- 将设置页改为“筛选候选 → 查看决策信息 → 预填并确认保存 → 自定义接入”的路径，保留旧配置和密钥引用。
-- 统一能力标识并通过兼容迁移保留旧 `text_semantics`、`video_understanding` 默认方案；让能力状态与项目页受控模式提示使用同一事实来源。
+## 原剧切片完整路线图（候选，不自动启动）
 
-**关键文件：**
-- `src/shared/provider-catalog.ts` — 目录数据、筛选类型与预填模板。
-- `src/main/db/migrate.ts`、`src/main/services/provider-profile-service.ts` — 旧能力标识兼容与本机/云端配置规则。
-- `src/main/ai/capability-registry.ts`、`src/main/ipc/app-ipc.ts` — 统一能力状态。
-- `src/renderer/src/pages/SettingsPage.tsx`、`src/renderer/src/pages/AiRemixWorkspacePage.tsx` — 目录选择、保存提示和项目内推荐。
-- `src/renderer/src/pages/SettingsPage.test.tsx`、`src/main/services/provider-profile-service.test.ts`、`src/main/ai/capability-registry.test.ts`、`tests/e2e/` — 目录、迁移、状态和隔离桌面流程回归。
+> 这条路线覆盖“可用字幕/结构证据 → 受控候选 → 人工审阅确认 → 候选池批量导出 → 完成报告 → 稳定验收”。它不等于把历史 Phase 17–20 重做：每一阶段先消费 Phase 22 的当前证据，只修复被证实的缺口。任何涉及 V49 静态页面的阶段，均须先形成独立迁移卡、说明映射和风险，并取得用户确认。
 
-**验收标准：**
-- 可按能力、费用、质量、接入难度筛选并对照候选；用户可跳转官方资料或选择自定义接入。
-- 选择目录项只预填草稿；保存后才更新默认方案，旧密钥不被覆盖。
-- 本机、缺密钥和云端适配器未启用状态都真实可见；P2 仍无入口。
+```text
+Phase 22 当前事实核验与映射
+  ├─ 证据或资格缺口 → Phase 23 证据基础闭环
+  │                         ↓
+  ├─ 候选生成或任务缺口 → Phase 24 受控候选与任务快照
+  │                         ↓
+  ├─ 审阅行为缺口 → Phase 25 工作台行为收口
+  │                         ↓
+  ├─ 候选池/导出缺口 → Phase 26 批量导出与成果追溯
+  │                         ↓
+  ├─ 报告或结果缺口 → Phase 27 完成报告与成果回链
+  │                         ↓
+  └─ 全链路稳定性 → Phase 28 恢复、压力与隐私
+                            ↓
+                         Phase 29 真实样本验收与交付候选
 
-## Phase 5: 独立能力页与默认浏览器外链（已完成，v0.1.20）
+V49 候选池/报告视觉迁移是 Phase 26、27 的可选分支，不能跨过功能与用户确认门。
+```
 
-**交付内容：**
-- 将 ASR 字幕识别、文本语义分析、视频理解复核拆成独立的设置配置页；总览只承担入口和状态摘要。
-- 将候选目录移到独立能力页首屏，展示常见方案、费用快捷筛选、质量和接入难度筛选，并继续按当前能力过滤。
-- 新增受限外链 IPC，经 Windows 默认浏览器打开官方资料和价格页，拒绝非 http(s) 与内嵌凭据 URL。
+### 阶段冻结与最小回退规则
 
-**关键文件：**
-- `src/renderer/src/pages/SettingsPage.tsx`、`src/renderer/src/components/ProviderCatalogPicker.tsx`、`src/renderer/src/styles/prototype-interactions.css` — 独立入口、首屏目录与可发现筛选。
-- `src/main/ipc/app-ipc.ts`、`src/preload/index.ts`、`src/shared/contracts.ts`、`src/main/security/external-url.ts` — 受限默认浏览器外链。
-- `src/renderer/src/pages/SettingsPage.test.tsx`、`src/renderer/src/components/ProviderCatalogPicker.test.tsx`、`src/main/security/external-url.test.ts`、`tests/e2e/p0-workflows.spec.ts` — 配置、筛选、外链和隔离桌面回归。
+- **先冻结输入再开工**：每个 Phase 启动前记录它消费的需求 ID、数据/IPC 合同、真实样本前提、受影响文件和验收命令；后续 Phase 只能消费这个已冻结接口，不得顺手改变上游职责。
+- **结束即留边界记录**：每个通过的 Phase 在 `docs/original-clip-phase-boundaries/` 新建以实际 Phase 编号命名的边界记录，写入实际改动、通过证据、未验证外部前提和允许依赖方；没有这份记录不得启动依赖 Phase。
+- **后期发现问题只做定点修复**：只有明确违反已通过验收标准的缺陷，才能回流到上游。回流前必须建立一张定点修复卡，列出触发证据、违反的标准、最小影响文件、会重新验证的前后 Phase；禁止以“顺便整理”“想换实现”或新视觉想法重开已完成 Phase。
+- **需求新增不回退**：新功能、V49 映射、页面结构/文案/交互调整一律创建新的并列 Phase 或可选分支；不修改已冻结的功能 Phase，除非用户明确批准其定点修复卡。
+- **外部条件缺失不返工**：缺真实媒体、供应商凭据或隐藏样本时，记录为未验证前提并继续可独立工作；待条件具备后只补对应验收，不重做已经通过的实现。
+- **验证只沿受影响链路传播**：定点修复重新运行该 Phase 的测试、它的直接依赖方和受影响的 Electron 场景；不因一个局部问题重跑整条历史路线或改动无关页面。
+- **视觉与功能分离冻结**：功能通过不自动触发 V49 迁移；视觉迁移失败也只回到该迁移卡和对应页面，不回退候选、导出或证据服务。
 
-**验收标准：**
-- 三种能力不共用配置页面；当前能力以外的目录项不可见。
-- 1440×900 首屏可见费用快捷筛选、质量、难度和候选；本机、免费/试用、按量付费路径可分别验证。
-- 外部资料在系统默认浏览器打开，恶意 URL 被拒绝，P2 继续不可达。
+## Phase 23：切片证据基础与真实样本基线
 
-## Phase 6: Open Design 设计保真收口（已完成，v0.1.21）
+**启动门**：Phase 22 证明字幕质量、媒体 PTS、跨源关联、场景锚或版本化样本基线存在真实缺口，且用户确认处理该缺口。
 
-**交付内容：**
-- 历史记录：当时以 `design/open-design/v2026-07-27/`、`DESIGN-HANDOFF.md` 与 `DESIGN-MANIFEST.json` 作为页面级视觉真相。本 Phase 不再决定当前范围；当前结构整合以 Version 48 最终静态 HTML 为唯一裁决源。
-- 复核应用框架、剧目库/工作区、任务中心、设置和三项供应商能力页；只以真实数据、安全提示、系统原生行为替换演示内容。
-- 将供应商能力页恢复为原型的桌面双栏工作区：候选与筛选在左，当前能力草稿在右；窄宽度再折叠，保留现有目录、密钥和外链安全行为。
+**交付内容**：
 
-**关键文件：**
-- 历史证据：`docs/open-design-v2026-07-27-reuse-matrix.md`；当前设计源、页面映射、差异边界与验收见 `design/open-design/v2026-07-30-open-design-final/`、`docs/open-design-v2026-07-30-reuse-matrix.md` 与 `Product-Spec.md` §10.11。
-- `src/renderer/src/components/ProviderCapabilityPage.tsx`、`src/renderer/src/styles/prototype-interactions.css` — 供应商双栏与响应式布局。
-- `tests/e2e/p0-workflows.spec.ts` — 1440×900、1280×720 供应商页对照截图和无横向溢出断言。
+- 修复已证实的证据包、`n:m` 语义关联、媒体指纹/PTS 和资格门禁缺口；原始字幕 cue、文本和时间码只读保留，缺失或冲突仍明确阻断。
+- 用短夹具、公开完整集和隐藏完整集建立可复现的分层基线，区分“本地夹具可过”与“真实样本已通过”，不把一者冒充为另一者。
+- 把字幕资产作为原剧切片的前置输入核验，不重做字幕页面或 OCR/ASR 功能；只有切片所需的质量、关联或读取事实出现缺口时才改后端链路。
 
-**验收标准：**
-- Open Design 原型的 P0/P1 页面均有生产映射或明确的范围外记录；P2 解说/TTS/旁白仍无生产可达性。
-- 供应商能力页在 1440×900 双栏可见候选与草稿，在 1280×720 无横向溢出并保留可操作筛选/表单。
-- 文档、版本、全量测试、E2E 截图、候选包和独立审查均可追溯。
+**关键文件**：
 
-## Phase 7: P1 受控二创与内部试点收口（已完成，v0.1.22）
+- `src/main/services/clip-evidence-package-service.ts` — 版本化证据包、锚点和覆盖图。
+- `src/main/services/semantic-event-alignment-service.ts` — 多源字幕语义关联与拒绝理由。
+- `src/main/services/subtitle-evidence-service.ts` — 字幕质量和可用性事实。
+- `src/main/db/subtitle-evidence-schema.ts`、`src/main/db/schema.ts` — 仅在确有持久化缺口时进行可回滚迁移。
+- `docs/clip-evidence-baseline/manifest.v1.json`、`src/main/services/real-clip-evidence-baseline.test.ts` — 真实样本基线与验证。
 
-**交付内容：**
-- 将 P1 文本语义分析、视频理解复核与 ASR 接入受控能力状态；未配置密钥时不发起网络请求，并在界面保留区域、费用和人工确认边界。
-- 完成 P1 二创的 30%/40%/50% 处理检查点、可追溯草稿、固定轨审核时间线和人工确认后导出。
-- 将 P2 解说/TTS/旁白保持为未来态：不新增生产路由、preload、IPC、任务、结果或供应商入口；历史 `ai_narration` 草稿在导出服务入口被明确拒绝。
-- 生成 P1 1440×900 / 1280×720 证据截图，并打包唯一的 `v0.1.22-p1-internal-trial` Windows 目录候选。
+**验收标准**：真实候选只能消费同源媒体、有效 PTS、可回链锚和合格字幕/结构证据；缺证据或未闭合冲突在预检中阻断。真实样本、临时数据库和媒体副本物理隔离，所有失败保留原有数据。
 
-**关键文件：**
-- `src/main/ai/remix-export-service.ts`、`src/main/ai/remix-export-service.test.ts` — P1 草稿导出、人工确认与 P2 历史草稿拒绝。
-- `src/main/ipc/app-ipc.ts`、`src/preload/index.ts`、`src/renderer/src/pages/AiRemixWorkspacePage.tsx`、`src/renderer/src/pages/AiReviewTimelinePage.tsx` — P1 受控可达面与审核交互。
-- `tests/e2e/p1-remix-workflow.spec.ts`、`docs/design-evidence/v0.1.21/`、`docs/p1-delivery-audit.md` — 双视口流程和交付证据。
-- `release/candidates/v0.1.22-p1-internal-trial/candidate-manifest.json` — 可执行文件与 app.asar 的固定哈希清单。
+**预计工作量**：3–5 个工作日；需要用户提供或授权使用可复现的真实样本，若需云端字幕/语义能力还需要有效 profile 与凭据。
 
-**验收标准：**
-- P1 仅在本地受控数据和人工确认边界内运行；公共能力列表不出现 `tts`，preload 不暴露 `createNarrationTask`。
-- P2 历史草稿在任何导出或生成记录前被拒绝；生产物不含 P2 任务或成果路径。
-- `typecheck`、完整测试、构建、桌面 E2E、视觉审计、候选包 DPI/长列表验证和独立审查均有可复查证据；干净机验证仍明确列为外部条件下的未执行项。
+**2026-08-21 完成状态**：6 个公开样本 + 2 个隐藏样本的路径/指纹、同源媒体 PTS、版本化证据包、任务恢复/指纹漂移阻断和真实 FFmpeg/ffprobe 导出边界均有隔离证据。真实 `dev-01`、`dev-02` 完成腾讯 ASR 句级时间、OCR/ASR 跨源事件、证据包和 `qualified_with_limit` 候选资格；短夹具覆盖 `n:m` 与冲突 blocked。`dev-02` 实际未触发预设冲突，已如实标记场景卡不成立；隐藏语义场景留给 Phase 29 盲验。详见 `docs/phase-23-evidence-baseline-20260821.md` 和 `docs/original-clip-phase-boundaries/phase-23.md`。
 
-## Phase 8: 原剧分集切片与共享字幕资产重构（已完成；v0.1.28 发布闭环）
+## Phase 24：受控候选生成与任务快照
 
-**目标：**
-- 将单集数字入/出点工作区升级为“生成候选切片”优先、双时间线联动的 P0 剪辑工作台；在同一滚动工作区清晰管理全部分集状态、批量候选和可控重复。
-- 将字幕证据链提升为剧目级共享字幕资产中心：SRT/VTT、固定区域 OCR、离线/受控 ASR、冲突队列、人工决议、导出审计与合法剪映/DaVinci SRT 交换，不再堆进切片页。
-- r5 以“候选池 + 独立导出”为核心：生成仅创建候选；候选按分集分组但在同一可虚拟化窗口中汇总查看；确认候选后以单个/批量独立导出交付，禁止将多剧集候选默认拼为一条成片序列。压力基线为 100 集、5,000 候选、500 个待导出项。
-- 字幕资产中心只负责 ASR/OCR 证据差异与校验；展示字幕的优化发生在具体候选片段的剪辑上下文，保留来源与差异审计。r5 必须修复字幕预览为完整源画幅 `contain` + OCR 区域叠加。
-- 设计实现必须以完整静态原型 `design/open-design/v2026-07-30-open-design-final/short-drama-material-studio.html` 为唯一组合源（SHA-256：`D86D634D67B7DE5F62D5EEAD2737CCC2C4A60401CF7F34F7521BA581CBB6C92B`）：保留既有素材生产入口、应用壳、剧目标签、成果库和任务中心，直接嵌入 SCREEN-005 / SCREEN-011 及候选池、导出、字幕优化状态。不得把独立 r5 HTML 当作设计源或把本 Phase 缩减成两页孤岛开发。
+**启动门**：Phase 23 的证据前置通过，或 Phase 22 证明当前证据链已足以安全生成；用户确认修复候选生成的实际缺口。
 
-**设计门禁（已通过，2026-07-30）：**
-- 用户确认完整静态原型 `short-drama-material-studio.html` 为本轮唯一组合设计源；此前 r5 独立草稿全部废弃。实现必须从素材生产入口进入，继续保留应用壳、剧目上下文、任务与成果的真实可达性，而不是把切片和字幕做成孤岛。
-- 复用、替换和真实数据差异见 `docs/open-design-v2026-07-30-reuse-matrix.md`。任何偏离该原型的信息层级、操作顺序或视觉 token，必须先记录为实现差异；不得以旧切片工具或浏览器默认样式补位。
+**交付内容**：
 
-**实施顺序：**
-1. 先扩展共享契约、SQLite 迁移、候选服务与任务记录：候选生成、分集状态聚合、可控重合、候选内字幕变体审计、导出预检/批量队列与可重试项均使用真实本地数据；原剧切片任务保存完整导出快照，任务中心重试必须恢复快照并真实执行导出，不能只更新状态。
-2. 再实现“候选工作区 → 全部候选 → 完成报告”的同一工作区状态，以及独立字幕资产标签；所有页面复用最终原型的壳和可达路径。
-3. 最后补齐虚拟化压力、双视口视觉证据、桌面 E2E、P2 不可达扫描与独立代码审查；缺少真实 OCR/ASR 引擎时只报告未测，不伪造准确率或费用。
+- 将生成前的分集、资格、资源、供应商和预算检查收敛为真实门禁；文本语义能力不可用、返回不合格或证据不足时阻断，不用模板候选或人工补秒数伪装成功。
+- 固化候选的媒体、证据、事件、锚、规则、供应商和配置快照；重算只创建新轮次，迟到、取消或重启不能覆盖发布指针。
+- 让模型只选择既有事件/锚 ID，程序校验 PTS、归属、顺序和证据；视频复核仅处理必要最小片段，失败依合同阻断或受限。
 
-**验收：**
-- 见 Product-Spec `CLIP-001` 至 `CLIP-004`、`SUB-001` 至 `SUB-003`；测试覆盖、真实样本统计、P2 冻结、独立审查与 Windows 证据均不可缺失。
-- 已完成源码、Electron 与包级验收：候选池、独立导出、真实 FFmpeg 重试、共享字幕互证、完整结论队列、双视口截图、P2 provider 与历史时间线冻结门禁、100%/125%/150% DPI、85 集长列表和实际 EXE 启动均通过。最新入口及哈希见 `docs/v0.1.28-p1-internal-trial-closure.md`；v0.1.23 至 v0.1.27 均仅保留为不可覆盖历史证据，不作为最终工具。
+**关键文件**：
 
-## Phase 9: Open Design Version 48 逐态对齐（实施中；v0.1.32 记录不构成完成证明）
+- `src/main/services/clip-candidate-intelligence-service.ts` — 受控语义候选生成。
+- `src/main/services/openai-compatible-clip-semantic-adapter.ts` — 结构化语义适配边界。
+- `src/main/services/original-clip-service.ts` — 生成、发布和候选状态。
+- `src/main/ipc/production-ipc.ts`、`src/preload/index.ts`、`src/shared/contracts.ts` — 最小受限 IPC 合同。
+- `src/main/services/clip-candidate-intelligence-service.test.ts`、`src/main/services/original-clip-service.test.ts` — 候选和任务回归。
 
-**依赖：** `Product-Spec.md` §10.9、Open Design 项目库 Version 48、既有 Phase 8 服务与 P2 冻结守卫。
+**验收标准**：同输入活动任务去重；取消/失败/迟到结果不改旧候选或配置；每个已发布候选能回链到冻结证据与真实 PTS。不得因本阶段改变任何 V49 页面布局。
 
-**交付清单：**
-1. 以 `ClipCandidatePoolPage` 重构为“当前分集 + 窗口化候选”的第二阶段；保留真实筛选、搜索、选择、导出与 5,000 候选压力基线，新增逐集可达性与窗口测试。
-2. 新增原剧切片完成报告路由状态和页面，接收真实导出任务/候选结果；回退素材生产，成果库仅作为显式后续回链。
-3. 历史 Phase 8 曾以 `SubtitleAssetsPage` 承载字幕列表与详情；该实现已由 Phase 11 删除，不得再用作当前页面、样式或交互先例。
-4. 对齐 `clip-module.css`、复用组件和页面可访问性：最终 token、窄滚动条、模态焦点/图标关闭、1440×900 与 1280×720 布局。
-5. 更新 Playwright/Electron 视觉审计、差异清单、复用矩阵、closure；修复终审发现的逐集字幕首屏竞态、请求乱序隔离与导出批次报告绑定后，递增候选包至 v0.1.32 并重新终审。
-6. 补齐 ALIGN-007：将 FFprobe 宽高贯通 episodes 持久化、共享契约、工作台与字幕详情；缺媒体/加载/未选中占位保持该画幅并提供可辨识暖色场景骨架。工作台和字幕详情均接通“前往剧目资产重新关联”；空 `sourcePath` 进入缺媒体态而不崩溃；重关联到不可读路径时保留旧宽高、清除时长与帧率。以 16:9、9:16、空路径及真实读取失败的 Electron 回归验证，不把手工 DOM 事件作为唯一故障证据。
-7. 补齐 ALIGN-008：从任一剧目内嵌工作区点击应用壳“剧目库”时，强制退出库内选中状态并回到根列表；退出信号不得重挂整个库页或丢失根页的搜索、筛选、排序、视图和创建草稿。重新打开剧目必须重新读取持久化数据。覆盖字幕资产内更新为缺媒体后经全局导航重开，以及根页状态保留的 Electron 回归。
-8. 补齐 ALIGN-009：按 Version 48 将 `OriginalClipWorkspacePage` 默认态收敛为媒体优先的源分集—监视器—双时间线—候选检查器；生成配置只在生成前/预检状态显现，候选内字幕变体改为按需入口，保持独立字幕资产标签和真实证据链。覆盖 1440×900、1280×720 与无横向溢出回归，禁止删除现有候选生成、左右微调、确认和字幕来源能力。
-9. 补齐 ALIGN-010：按 Version 48 收紧既有应用壳的侧栏、顶栏和内容内边距，使切片工作台在 1440×900 首屏完整呈现监视器、当前候选时间线和源分集时间线；不得通过新壳、隐藏全局导航或页面滚动替代嵌入式布局对齐。
-10. 补齐 ALIGN-011：候选池页面保留“原剧切片工作区”模块标题和返回语义，将“全部候选”限制为第二阶段与候选区标题；左侧剧集和右侧队列以真实媒体/候选状态显示未生成、待确认、已确认、导出中、已导出、异常、媒体缺失和计数。以真实 Electron 回归证明当前源分集窗口化、批量选择和导出入口没有因层级修正而回退。
-11. 补齐 ALIGN-012：创建导出时持久化本次 candidate ID 批次，成功完成后在候选池提供“查看最近完成报告”回链；页面仅可传递该批次候选给完成报告，重启后仍可恢复，未完成/不存在批次时不可伪造报告入口。补齐服务、迁移、IPC、组件与 Electron 回归。
-12. 补齐 ALIGN-013：完成报告显示 Version 48 三阶段导航；候选工作区/全部候选回到真实工作区，导出继续在候选池使用真实抽屉而非单独阶段，完成报告为第三个活动阶段。补充阶段可达性与双视口报告截图。
-13. 审查收口：候选池只保留当前分集的真实窗口化（“全部”仅为当前集状态筛选）；单候选、批量、重试导出统一持久化批次，校验 candidate ID 去重并在写入前原子抢占。补齐空/运行中/取消/失败批次不开放报告、重启后恢复完成批次、遗留运行批次在重启时如实取消并释放仍持有候选，以及并发拒绝的服务、组件和 Electron 证据。
-14. 补齐 ALIGN-014：工作台阶段栏改回 Version 48 的分段边框和暖沙橙活动态；收紧时间线与媒体区域的分配，在 1440×900、1280×720 真实 Electron 回归中断言监视器、候选时间线、源时间线的边界均位于首屏，且继续保留 `object-fit: contain`、真实缺媒体画幅和无横向溢出。
-15. 补齐候选池键盘滚动：源分集与当前候选区域取得焦点后，Home、End、PageUp、PageDown 与上下方向键只滚动对应内层容器；用真实 50 候选 Electron 场景证明 End 不滚主页面，并保留 5,000 候选窗口化单测。
-16. 补齐完成报告受限画布：第三阶段复用应用壳内的全高布局，结果行仅在报告内层滚动；1440×900、1280×720 不得出现由报告底部内边距引起的 `#main-content` 默认滚动条、首屏裁切或独立报告页。
-17. 补齐多轮生成配置可达性：候选已选态不在源分集列常驻参数；顶栏再次生成先打开按需配置与预检，重启后仍可明确设置数量、时长、低重合和重复来源。
-18. 补齐 ALIGN-015：字幕详情读取与全剧集状态汇总并发但隔离，慢速 90 集列表不得阻塞当前详情；任一核心证据读取失败时详情各列和结论区如实保持错误态，不得用空数组渲染“未导入”。将既有本地固定区域 OCR 服务接入详情的可达按钮，只有 ASR、固定区域与本机引擎齐备时执行；成功仅新增 OCR 证据，失败不伪造结果。识别设置仅保留有真实证据归档/校验语义的导入策略，不提供“仅作为展示字幕”。补齐慢列表、快速切集、OCR 成功/未就绪/失败的组件回归。
-19. 补齐 ALIGN-016：原剧切片工作区为分集生产状态及当前候选字幕证据/展示变体建立独立 `loading → loaded | error` 状态和请求 ID 隔离。读取失败时不伪造“未生成”或“先建立字幕”，错误仅影响依赖区，不阻塞监视器、双时间线、候选编辑与确认。覆盖状态汇总失败、字幕读取失败、候选快速切换乱序与刷新后恢复。
-20. 补齐 ALIGN-017：爆点前置二创的能力状态读取建立 `loading → loaded | error`、能力缺失错误与单独重试；读取失败不能把空数组渲染为“已配置全部能力”，也不能阻塞受控本地分析。覆盖失败、缺 API、重试恢复和迟到响应；不新增云端或 P2 执行面。
-21. 补齐 ALIGN-018：候选池导出抽屉以 `exportId` 隔离进度轮询、取消、重试和消息；旧批次迟到响应不得覆盖当前批次，失败如实显示。覆盖连续批次、关闭后迟到响应和失败路径。
-22. 补齐 ALIGN-019：以 Version 48 候选池实际项目库预览重收敛候选行的序号/时码/来源/时长/状态/打开操作与面板密度；当前分集已在工具栏明确时不重复渲染列表组标题。显示序号按持久化创建顺序稳定、后续生成不重排，且 `C-xx` 与源时码均可搜索。候选行不常驻选择框，批量选择改由“配置并导出”的按需抽屉承接，默认预选全部已确认候选并能逐项取消；预检、导出、批次持久化和键盘可达性必须继续使用该次真实选择。保持 5,000 候选窗口化；分离顶部“返回素材生产”与第一阶段入口。补充组件和 1440×900、1280×720 Electron 截图/边界回归，不将数据量差异或截图临时态写成视觉通过。
-23. 补齐 ALIGN-020：批量生成返回多个分集候选时，首个真实候选的 `episodeId` 必须同步驱动当前源分集、监视器、双时间线、左侧激活行与检查器；空结果不改变原选择。补充跨分集生成的组件回归，避免候选已切换而源时间线仍停留旧集。
-24. 补齐 ALIGN-021：候选池检查器严格复用 Version 48 的导出→完成报告路径；删除跳过第三阶段的成果库入口，只有完成报告保留通往成果库的显式后续动作。覆盖无完成批次时报告禁用、有完成批次时可达报告，以及候选池不存在成果库跳转。
-25. 补齐 ALIGN-022：以最终 Version 48 覆盖脚本收紧素材生产页为三项 P0/P1 方法，逐字复制三张卡的标签、说明与入口，移除 P2 解说未来卡及无引用 P2 样式；P2 负向 Electron E2E 必须在重建后的产物中验证生产页无卡片、无禁用按钮、无路由/IPC/provider/任务/成果入口。定点三卡顺序、说明、入口及三条真实回调必须回归。
-26. 对所有依赖 `out/` 的 Electron E2E，测试脚本必须先构建当前源码再重建 Electron 原生模块；不得让 P2 冻结或视觉回归在旧构建产物上取得假绿。
-27. 补齐 ALIGN-023：按 Version 48 合并剧目库完整页头、工具栏、三列卡片/同卡片列表和每页六项分页；删除无设计依据的页头计数、卡片操作条、摘要 rail 与表格壳，保留真实剧目/封面/筛选/排序/创建/导入/工作区编辑可达性。加载、全空与读取错误状态未经 Open Design 依据不得自由改造。
-28. 补齐 ALIGN-024：以 `screen-assets` 579–585 行及终版字幕标签注入脚本为默认态组合源，完整核对 `DramaWorkspacePage`、`DramaAssetsPage`、`DramaEditorPage` 的剧目上下文、标签、健康条、工具栏、七列资产表、内层滚动与 1280×720 断点。字幕标签、文件夹导入、删除应用内引用、剧本预览仅作为有规格依据的真实扩展保留；加载、空、失败、缺媒体、删除确认、85 集压力等非原型状态先登记为 Open Design 设计依赖，不能自由美化。补齐定点组件和真实 Electron 长列表/重新关联回归；未取得项目库双视口同态基线前，不得标视觉完成。
-29. 补齐 ALIGN-025：多集拼接的第 4 阶段在任务运行结束、取消或用户重开报告时，从既有 `tasks:list` 与 `tasks:report` IPC 读取当前剧目作用域的 `multi_episode` 任务真实汇总与项明细；按 dramaId 持久化当前 taskId，重开时验证 taskId、dramaId、type，禁止猜测“最近任务”。`onRunTask` 返回只表示执行请求返回：仅 `completed`、`partial`、`failed`、`cancelled` 终态可进入报告，运行/暂停保持真实状态并轮询刷新。以真实成功/缩减/跳过/失败/取消数量、输出路径与原因替代“任务已进入队列”的伪报告；成果库与失败到任务中心保持显式回链，取消保留已完成结果，报告读取错误独立重试。新任务创建必须清除旧终态报告；成果库回链先刷新当前剧目材料再跳转。组件与真实 Electron P0 回归覆盖运行态、连续任务、跨剧目/跨类型指针隔离及重开同一报告。先完成功能真实性，再仅按原型已覆盖的默认报告结构合并，运行/失败/取消视觉状态不自由设计。
+**预计工作量**：4–6 个工作日；真实语义能力联调和真实样本结果属于外部前提，无法提供时只能完成本地门禁与适配器验证。
 
-    验收记录：ALIGN-025 功能与独立两阶段审查已通过；定点 3 文件 / 13 测试、`pnpm test` 71 files / 303 tests、typecheck、build、design-contract 和 Electron P0（6 passed / 8 skipped）通过。`audit:fidelity` 仍为 `completed=0 incomplete=92`，且运行/失败/取消的 Open Design 双视口基线未齐，因此本项视觉验收仍未完成。
+**2026-08-22 完成状态**：活动任务去重已绑定完整请求、eligible 证据包身份、媒体指纹、规则以及文本语义/可选视频复核 provider chain；两段 provider 任一配置变化都不会被旧任务静默使用。旧队首、关机和崩溃恢复不会重放 provider。发布边界验证 candidate/task/round/config/provider/episode/事件 kind/资格与三位小数 PTS，迟到、取消、中断、媒体漂移和事务中途失败均不能覆盖稳定 pointer。packaged 进程无条件清除大小写变体 E2E 覆盖；current Electron 生成与 provider 隔离链通过。没有修改 V49 页面布局；腾讯双凭据仅修复现有 2026-08-05 ASR 页面运行时节点归属，详见 `docs/prototype-migration/provider-credentials-v49-phase24.md` 和 `docs/original-clip-phase-boundaries/phase-24.md`。
 
-**关键文件：**
-- `src/renderer/src/pages/ClipCandidatePoolPage.tsx`
-- `src/renderer/src/pages/OriginalClipReportPage.tsx`（新建）
-- 历史文件 `src/renderer/src/pages/SubtitleAssetsPage.tsx`（Phase 11 已删除；仅保留此处的历史追溯）
-- `src/renderer/src/App.tsx`、`src/renderer/src/pages/DramaWorkspacePage.tsx`
-- `src/renderer/src/styles/clip-module.css`
-- `src/main/ipc/app-ipc.ts`、`src/preload/index.ts`、`src/shared/contracts.ts`（仅字幕生成/设置真实能力需要时）
-- `src/main/db/schema.ts`、`src/main/db/migrate.ts`、`src/main/services/episode-import-service.ts`、`src/main/services/drama-service.ts`
-- `src/renderer/src/components/MediaMonitor.tsx`、`src/renderer/src/styles/clip-module.css`
-- `tests/e2e/phase9-open-design-alignment.spec.ts`（新建）
+## Phase 25：原剧切片工作台行为收口
 
-**验收标准：**
-- ALIGN-001 至 ALIGN-006 的每项在 `docs/prototype-gap-register.md` 有原型证据、生产文件、真实交互和双视口截图；无“未实现”非 P2 项。
-- `pnpm test`、`pnpm run typecheck`、`pnpm run build`、`pnpm run test:e2e`、`pnpm run audit:fidelity` 通过；P2 负向 E2E 继续通过。
-- v0.1.32 候选包将以 manifest 指向的 EXE 实测启动，通过包级 DPI/长列表 E2E、哈希核验与新的独立两阶段审查。
+**启动门**：Phase 22 或 Phase 24 发现真实审阅、确认、媒体会话或异步隔离缺口，且用户确认该功能修复；已验收的 V49 `screen-clip` 三状态不因本阶段重新设计。
 
-## Phase 10: 设计交接与视觉验收门禁（设计合同已就绪，逐状态证据待补齐）
+**交付内容**：
 
-**交付内容：**
+- 修复被证实的切集原子同步、媒体解绑、真实 PTS 定位、审阅范围、确认授权和迟到请求隔离问题。
+- 保持播放、定位、字幕高亮和边界编辑职责分离；四个微调按钮仍是唯一能持久化边界的入口。
+- 补足真实缺媒体、加载失败、候选切换、取消和重启后的可见事实与回归，不能将失败伪装成空状态。
 
-1. 维护 `docs/design-contract-v48.json`：唯一项目 ID、版本、SHA、页面、状态、双视口与允许差异；不允许依据旧 r5 或历史截图覆盖该合同。
-2. 用 `tools/validate-design-contract.mjs` 验证 HTML 哈希、页面标识、Open Design 同版本 `design-brief.md`/`Product-Spec.md`、artifact 和镜像 SHA-256；候选打包前必须通过。
-3. 以项目库预览为基线，补齐每个 `screen × state × viewport` 的 Electron 视觉证据和区域差异；将当前 `captured-current-flow-historical-reference-unavailable` 等旧审计结果列为失败，不能进入 closure。
-4. 建立不可混用的 fixture→状态映射：原剧切片空工作区只能对应 `loading`/`missing-media`，生成并选中候选后才对应 `default`/`candidate-selected`；字幕资产首屏混合状态、单集详情（`validated`/`needs-review`/`missing-media`）和 90 条压力样本分别采集，不得用空态截图替代已选态或把同一张概览图复制到多个状态。
+**关键文件**：
 
-**关键文件：**
+- `src/renderer/src/pages/OriginalClipWorkspaceRuntimeBridge.ts` — 已验收工作台的受限运行时绑定。
+- `src/renderer/src/pages/clip-workspace-media-session.ts`、`src/renderer/src/pages/clip-workspace-surface.ts` — 媒体会话和页面内状态。
+- `src/main/services/original-clip-service.ts`、`tests/current/p0-workflows.spec.ts` — 真实候选、确认与 Electron 回归。
 
-- `docs/design-contract-v48.json`
-- `docs/design-delivery-gate.md`
-- `tools/validate-design-contract.mjs`
-- `tools/pack-current-candidate.mjs`
-- `tools/visual-fidelity-report.mjs`
+**验收标准**：工作台只显示当前分集和候选；媒体切换、缺媒体或定位失败立即停止并释放旧状态；确认仍是导出唯一授权。若涉及 V49 结构、文案或控件位置，必须先另立迁移卡并取得用户确认。
 
-**验收标准：**
+**预计工作量**：0–4 个工作日；如 Phase 22 证明现有行为完整，则本 Phase 以“无代码改动、保留证据”结束。
 
-- `pnpm run validate:design-contract` 通过；若同版本交接物缺失则必须失败。合同已通过但逐状态预览或 Electron 证据缺失时，`pnpm run audit:fidelity` 必须明确失败并逐项列出缺口，不得保留历史跳过状态。
-- 每个合同状态都有项目库预览基线、Electron 截图、fixture、交互断言和允许差异说明；不能用当前应用截图替代原型基线。
-- 打包脚本拒绝未通过设计合同的 UI 候选；设计合同通过后才允许恢复候选包流程。
+**2026-08-23 完成状态**：候选时间线左右键每次 1 秒且限制在候选入/出点，Space 不在按钮、表单、contenteditable、模态或非工作台焦点触发；播放/定位继续不写候选，四个 0.1 秒按钮仍是唯一边界写入口。最新 taskRound 保证取消/中断/失败在重开后可见且旧任务不覆盖新稳定轮次。并发 refresh、seek setter 异常、inline/跨集候选切换、旧媒体 error、queued write、真实 Electron 确认和 CLIP-024/034 检查器证据绑定均有回归。未修改 V49 静态 HTML、DOM 顺序、布局或控件位置；仅在既有 `.r5-note` 和 `.r5-anchor` 数据槽绑定真实证据语义。详见 `docs/original-clip-phase-boundaries/phase-25.md` 与 `docs/prototype-migration/phase25-clip-inspector-evidence.md`。
 
-## Phase 11: Version 48 剧目工作区壳重建（进行中）
+## Phase 26：候选池、批量导出与成果登记
 
-**目标：** 停止在旧 renderer 布局上逐点修补。只以 `design/open-design/v2026-07-30-open-design-final/short-drama-material-studio.html`（SHA-256 `D86D634D67B7DE5F62D5EEAD2737CCC2C4A60401CF7F34F7521BA581CBB6C92B`）中的 `screen-clip`、`screen-clip-pool`、`screen-clip-report`、`screen-subtitles` 取代错误页面结构，再接回真实数据和既有业务回调。
+**启动门**：Phase 24 的候选快照和 Phase 25 的确认授权可用，且用户确认处理候选池或导出缺口。
 
-**交付清单：**
+**交付内容**：
 
-1. 删除 `OriginalClipWorkspacePage.tsx`、`ClipCandidatePoolPage.tsx`、`OriginalClipReportPage.tsx`、`SubtitleAssetsPage.tsx` 及其旧测试，不从中复用任何布局或视觉逻辑。
-2. 直接从原型原文加载四个目标 `screen-*` 节点及其原始 CSS；`DramaWorkspacePage.tsx` 只保留已有路由上下文和最小的返回/成果回链桥接。
-3. 将原型演示数据逐项替换为既有真实数据和 IPC 结果；任何原型未出现的内容、控件或状态不得进入切片和字幕屏幕。
-4. 只验证桥接的真实数据与回调，不再以重写页面的截图/差异台账作为布局验收路径。
-5. 本轮候选池与完成报告只恢复终版原型中已有的会话交互；不接 SQLite、IPC、导出、成果库或文件系统。必须覆盖分集/阶段/筛选/搜索/分页/候选“打开”/报告行选择/抽屉与弹层的可操作状态，以及关闭、包装预览和禁用反馈。
+- 修复候选池的真实筛选、搜索、窗口化、跨分集隔离、删除保护和重复选择语义；压力目标为 100 集 × 50 候选、500 待导出，不以全量 DOM 堆砌处理。
+- 修复导出预检、目录选择、命名/编码/尺寸/字幕/冲突配置、批次进度、取消、重试和 FFmpeg 边界验证；导出失败不登记成果，源片始终不改写。
+- 建立可选的候选池 V49 迁移分支：只有 Phase 22 明确为可映射、用户批准迁移卡并确认页面影响后，才建立静态夹具、绑定真实数据并做同视口视觉验收；否则只修复业务服务和现有页面中的事实问题。
 
-**关键文件：**
+**关键文件**：
 
-- `src/renderer/src/pages/DramaWorkspacePage.tsx`
-- `src/renderer/src/pages/StaticPrototypeSurface.tsx`
-- `src/renderer/src/pages/SubtitleRecognitionSettingsBridge.ts`
-- `src/renderer/src/pages/SubtitleRecognitionSettingsBridge.test.ts`
-- `src/renderer/src/pages/SubtitleImportBridge.ts`
-- `src/renderer/src/pages/SubtitleImportBridge.test.ts`
-- `src/main/services/subtitle-asset-service.ts`
-- `src/main/services/subtitle-asset-service.test.ts`
-- `src/renderer/src/styles/prototype-interactions.css`
-- `design/open-design/v2026-07-30-open-design-final/short-drama-material-studio.html`
+- `src/renderer/src/pages/OriginalClipPoolReportRuntimeBridge.ts`、`src/renderer/src/pages/OriginalClipPoolReportInteractionBridge.ts` — 候选池和导出入口。
+- `src/main/services/clip-export-runtime.ts`、`src/main/services/clip-export-task-config.ts`、`src/main/services/clip-export-verifier.ts` — 导出执行、配置与边界核验。
+- `src/main/services/original-clip-service.ts`、`src/main/ipc/production-ipc.ts`、`src/preload/index.ts` — 候选状态和受限任务接口。
+- `docs/prototype-migration-card-original-clip-v49-candidate-pool.md` — 仅在获批视觉迁移时创建。
 
-**验收：** 已删除的旧页面不再被 renderer 引用；运行时载入的目标 DOM 来自同一 SHA 的四个 `screen-*` 原文，静态页面不因 React/JSX 翻译产生差异。字幕识别设置桥接必须覆盖六项回显及保存、读取失败保护、不支持的展示策略拦截、关闭重开后的迟到读写忽略和同会话单次保存。字幕列表必须只在 `subtitle-list-scroll` 内滚动；导入桥接必须覆盖取消、SRT/VTT 成功、失败、重复点击与选择/写入超时保护，且只调用既有选择/导入 IPC；既有字幕资产服务必须保证迟到重试不重复创建同源资产、轨道或字幕条。必须通过桥接及幂等服务测试、`pnpm run typecheck` 与 `pnpm run build`；`audit:fidelity` 的项目库基线缺口仍如实保留，不能被本迁移替代。
+**验收标准**：只有已确认候选可进入真实导出；任务可取消、失败可追溯、成功成果有来源候选和输出校验；候选删除永不删除源片或已导出成果。视觉迁移分支另行通过静态夹具、双视口和真实失败状态验收。
 
-## Phase 12: 字幕资产本地真实可用（待实施）
+**预计工作量**：核心业务 4–6 个工作日；若批准候选池 V49 全屏/屏内迁移，另加 3–5 个工作日，且先向用户提交具体改动说明。
 
-**依赖：** `Product-Spec.md` §10.12、最终 Open Design Version 48 的 `screen-subtitles` 原文、已有 `SubtitleAssetService`、`SubtitleEvidenceService`、`LocalOcrSubtitleService` 及其 IPC/preload 契约。
+**2026-08-23 状态**：核心业务已完成并通过独立两阶段审查：候选池真实筛选/搜索/窗口化/跨集隔离/删除保护，批量导出预检/进度/取消/失败/重试/FFmpeg 校验，成果登记与源片完整性均有隔离 Electron 或服务证据。用户明确跳过页面修改分支；当前导出入口继续自动收集全部 `confirmed` 候选，命名、字幕和同名策略由后端合同固定，页面不暴露完整配置。详见 `docs/original-clip-phase-boundaries/phase-26.md`。
 
-**目标：** 不改变 `screen-subtitles` 的静态结构、样式、文案或交互顺序；只在 iframe 外层桥接真实本地字幕数据、设置和 OCR，使原型中已有入口可实际使用而不冒充云端能力。
+## Phase 27：完成报告、成果回链与异常处置
 
-**交付清单：**
+**启动门**：Phase 26 至少存在一条真实或隔离的可验证导出批次，且用户确认报告/成果范围的缺口处理。当前启动授权仅覆盖核心报告逻辑；V49 完成报告页面迁移仍延期。
 
-1. 盘点并补齐共享契约、IPC 与 preload 中已实现的字幕资产/轨道/证据/媒体/识别设置读取接口；不重复创建服务或数据库模型。为单集详情提供独立读取聚合，列表汇总与详情读取并发且以请求 ID 隔离。
-2. 将字幕列表的每一行映射到真实剧集及其导入、ASR、OCR、媒体状态；“查看画面/状态”打开原型详情模态后，写入真实源画幅、OCR 区域、轨道、差异/质量和证据。加载、空、错误和缺媒体必须各自可辨，不能继续显示原型样例值。
-3. 保留既有导入桥接并将成功后的真实资产重新读取到列表/当前详情；取消、格式/解析失败、IPC 超时、迟到重试和同源幂等均要可回归。
-4. 保留六项设置原型弹层，读写真实持久化配置；保存中锁定重复提交，读取/保存失败不覆盖旧值；将不支持的“仅作为展示字幕”保持为阻止保存的显式错误。
-5. 将原型列表工具栏已有的“一键生成字幕”连接到既有本地 OCR：详情模态没有 OCR 控件，不新增原型外入口；关闭详情后保持当前剧集选择，供“当前剧集”范围执行。仅对范围内具备 ASR、固定区域、本机引擎和可读媒体的剧集执行；逐集报告真实未就绪/失败原因，成功后只新增 OCR 轨和证据并刷新列表及仍打开的详情。
-6. 补桥接与服务回归：90 集慢列表不阻塞当前详情、快速切集的迟到响应隔离、核心读取失败不伪造未导入、导入/设置/OCR 成功及失败路径、本机引擎缺失和缺媒体。完成后执行独立两阶段 code review、`pnpm test`、`pnpm run typecheck`、`pnpm run build` 和隔离 Electron 实机路径。
+**交付内容**：
 
-**关键文件：**
+- 让完成报告只读取最近真实完成批次，按分集显示成功、失败、取消和未输出原因，并回链候选、范围、配置快照和实际成果。
+- 补齐打开成果位置、返回候选、失败重试和异常筛选的边界；报告读取失败不能改变导出任务或伪装为无数据。
+- 建立可选的完成报告 V49 迁移分支，规则与候选池相同：先证明映射、获用户批准，再迁移静态结构与做视觉验收。
 
-- `src/renderer/src/pages/DramaWorkspacePage.tsx`
-- `src/renderer/src/pages/StaticPrototypeSurface.tsx`
-- `src/renderer/src/pages/SubtitleImportBridge.ts`
-- `src/renderer/src/pages/SubtitleRecognitionSettingsBridge.ts`
-- `src/renderer/src/pages/SubtitleAssetDetailBridge.ts`
-- `src/renderer/src/pages/SubtitleAssetRuntimeBridge.ts`（新建，如现有桥接无法保持单一职责）
-- `src/main/services/subtitle-asset-service.ts`
-- `src/main/services/subtitle-evidence-service.ts`
-- `src/main/services/local-ocr-subtitle-service.ts`
-- `src/main/ipc/app-ipc.ts`、`src/preload/index.ts`、`src/shared/contracts.ts`
+**关键文件**：
 
-**验收标准：**
+- `src/renderer/src/pages/OriginalClipPoolReportRuntimeBridge.ts`、`src/renderer/src/pages/OriginalClipPoolReportInteractionBridge.ts` — 完成报告和结果跳转。
+- `src/main/tasks/task-report-service.ts`、`src/shared/contracts.ts` — 报告聚合与脱敏数据合同。
+- `src/renderer/src/pages/TaskCenterPage.tsx` — 任务中心中的聚合结果入口。
+- `docs/prototype-migration-card-original-clip-v49-report.md` — 仅在获批视觉迁移时创建。
 
-- `SUB-REAL-001` 至 `SUB-REAL-005` 每项均有真实数据/IPC 断言和负向路径测试；没有一处把示例条数、状态或 toast 作为真实结果。
-- 最终 `screen-subtitles` 的静态屏幕源仍来自同一 Version 48 HTML；生产桥接不向 iframe 添加原型外控件、文案或布局。
-- `pnpm test`、`pnpm run typecheck`、`pnpm run build` 和 `pnpm run validate:design-contract` 通过；隔离 Electron 回归同时证明导入、设置和本地 OCR 的成功/失败路径。项目库逐态预览仍缺失时，`audit:fidelity` 必须保留失败，不得据此宣称视觉验收完成。
+**验收标准**：报告不显示静态示例、不会串批次；每一条结果可追溯但不泄露源路径、密钥或完整字幕。视觉迁移仅在用户批准的范围内执行。
+
+**预计工作量**：核心业务 2–4 个工作日；若批准报告 V49 迁移，另加 2–4 个工作日。
+
+**2026-08-23 执行范围**：先收口真实批次读取、成功/失败/取消/未输出原因、候选与成果回链、异常筛选及读取失败隔离；复用现有页面数据槽和跳转出口，不新增控件、不调整布局、不创建报告 V49 迁移卡。已通过 Stage 1/2 独立审查，以及完整测试、类型检查、构建、Electron 重建和目标 E2E；Phase 28 进入当前队列。仍保留一项非阻断质量建议：新 manifest 的 episodeId 与 start/end 应成套校验。
+
+## Phase 28：恢复、压力、隐私与数据安全收口
+
+**启动门**：Phase 23–27 的实际改动已合并为一个可运行闭环，且用户确认进行跨链路可靠性工作。
+
+**交付内容**：
+
+- 覆盖生成和导出任务的去重、并发预算、排队、取消、重启中断、迟到回调、重试和发布指针保护。
+- 覆盖 85 集资产、5,000 候选、500 待导出的性能基线，以及候选、成果、原始证据、媒体与密钥的非破坏边界。
+- 对涉及数据结构的改动建立可校验备份、副本迁移、原子提升和恢复演练；问题报告只生成最小脱敏本地包。
+
+**关键文件**：
+
+- `src/main/services/original-clip-service.ts`、`src/main/services/clip-export-runtime.ts` — 任务和成果一致性。
+- `src/main/db/schema.ts`、`src/main/db/migrate.ts` — 仅在已获批的可回滚数据变更中使用。
+- `src/shared/contracts.ts`、`tests/current/p0-workflows.spec.ts` — 跨进程数据边界与当前 E2E 回归。
+- `docs/phase-28-original-clip-reliability-report.md` — 压力、恢复和隐私证据摘要。
+
+**验收标准**：中断、失败、升级和恢复不清空旧有效数据；没有源媒体/明文密钥/用户路径泄漏到日志、报告或测试快照；压力基线可重复并有实际结果。
+
+**预计工作量**：3–5 个工作日。
+
+**2026-08-23 状态**：已完成。现有生成/导出可靠性边界通过独立两阶段审查；新增精确 85 集、5,000 候选和 500 项受控队列压力测试；备份脱敏覆盖分集、导入目录、封面、成果和任务配置路径。通过 124 files / 707 tests（5 skipped）、类型检查、构建、Node/Electron 原生重建和目标 Electron E2E。未修改页面结构，V49 候选池/报告迁移继续延期。详见 `docs/phase-28-original-clip-reliability-report.md`。
+
+## Phase 29：真实样本验收与交付候选
+
+**启动门**：前述已获授权的功能 Phase 均通过定点回归，且具备符合分层基线要求的真实样本与必要的供应商条件。
+
+**交付内容**：
+
+- 以冻结的短夹具、公开完整集和隐藏完整集，跑通“证据 → 候选 → 人工确认 → 导出 → 报告”并保留受控证据；区分本地验证、真实供应商验证和未验证的外部前提。
+- 执行代码审查、完整性测试、类型检查、构建、真实 Electron 回归和安全检查；只重验受影响链路，不把已冻结的其它页面拖入重跑。
+- 形成交付候选说明、已知限制和回滚信息。打包或发布仍需用户另行授权，不在本 Phase 自动执行。
+
+**关键文件**：
+
+- `tests/current/p0-workflows.spec.ts`、`tests/compatibility/real-original-clip-trial.spec.ts` — 当前与真实样本回归。
+- `src/main/services/real-clip-evidence-baseline.test.ts`、`src/main/services/real-clip-export-evidence-baseline.test.ts` — 分层基线和真实导出验证。
+- `docs/phase-29-original-clip-acceptance.md` — 端到端验收、外部前提与限制。
+
+**验收标准**：所有声称完成的原剧切片能力都有实际运行证据；未获得的供应商、媒体或用户授权明确保留为未验证；不因验证写回原片或生产数据。
+
+**预计工作量**：3–5 个工作日；真实供应商和隐藏样本不可用时，结束本地与公开样本部分，不虚构正式验收。
+
+**2026-08-23 当前进度**：公开 6 集 + 隐藏 2 集证据包基线通过，dev-06 真实 FFmpeg 导出通过，冻结发布治理基线通过；独立 Stage 1/2 审查通过。真实供应商候选生成和 8 集完整端到端外部链路仍列为未验证，不自动打包或发布。详见 `docs/phase-29-original-clip-acceptance.md`。
+
+**2026-08-24 阶段性进度（已被 2026-08-25 完成状态覆盖）**：Task 29.1 三能力无媒体预检通过并经独立 Stage 1/2 审查；正式配置库 SHA 未变化。Task 29.2 在保护上下文保守规则后，`dev-01`、`dev-02` 均得到 1 条 `qualified_with_limit`、0 blocked，文本语义 P0 已通过。Task 29.3 的 `dev-04` 无媒体预检成功，但真实帧级请求和临时 `qwen3.7-plus` 复测均未返回可用受限结果；视频复核降为 P1，不再阻断文本/结构候选人工审片。Task 29.4 packaged-only 闭环执行器和 Task 29.5 6+2 事实矩阵已完成本地实现；一次完整闭环复跑仍受 DeepSeek 输出波动影响，未写成通过。页面、V49、生产库、打包和发布均未修改。
+
+**2026-08-24 阶段性结论（已被 2026-08-25 完成状态覆盖）**：本地实现、719 项测试、类型检查、构建、Electron 重建、目标 E2E 和独立 Stage 1/2 审查均通过；当时真实供应商硬门尚未通过，因此未标记 Phase 29 完成。脱敏证据见 `docs/phase-29-evidence/run-manifest-20260824.json`。
+
+**2026-08-24 临时模型复测结果**：用户授权后仅在临时 SQLite 使用 `qwen3.7-plus` 对 `dev-04` 复测一次；供应商返回无法满足受限 JSON 结果合同，分类为 `invalid-result`，正式配置库 SHA 保持不变。视频复核不再阻断文本 P0 主线。
+
+**2026-08-25 P0 完成记录**：保护上下文由本地规则保守收口：有 `contextBefore/contextAfter` 的窗口即使供应商声称 `standalone`，也只能进入 `limited`；有保护上下文时允许 `continuity=limited`，`unclear`、越窗、时间倒置、事件映射错误和多候选仍拒绝。真实 `dev-01`、`dev-02` 均得到 1 条 `qualified_with_limit`、0 blocked；`hidden-01` 唯一盲验得到 OCR 67、ASR 52、1 条 `qualified_with_limit`、0 blocked。`dev-02` packaged-only 完整闭环通过：人工确认、真实 FFmpeg 导出、成果 `materialId`、报告项和源片 SHA 全部通过，正式数据库写入 0。当日曾将视频 `dev-03/dev-04` 记录为通过，后续独立审查已推翻该扩张结论，详见下方 2026-08-26 更正。Phase 29 的 P0 与人工审片主线完成；打包/发布仍需另行授权。
+
+**2026-08-25 视频复核 P1 追加授权记录**：用户授权继续修复 Model Studio 视频复核。`qwen3.7-plus` 使用官方严格 JSON Schema 输出，锁定 conclusion、evidenceIds、claimKinds、reason 及 `additionalProperties=false`。当日 `dev-04 supported` 与 `dev-03 unclear` 只保留为供应商能力探测；因未绑定冻结候选，不能作为 P1 业务验收。该追加任务不修改页面、V49、正式 profile、数据库 schema、文本语义 P0 或打包发布状态。
+
+**2026-08-26 独立审查更正（覆盖上述视频通过声明）**：旧视频执行器实际从整集 PTS 中段取帧，并为 package/evidenceId 生成临时身份，没有回链冻结候选边界；所以 `dev-03/dev-04` 只能算供应商能力探测，不能算 Task 29.3 通过。当前实现已改为读取哈希冻结的 `multimodal-scopes.v1.json`，在临时 SQLite 建立稳定 package、candidate、snapshot、B 级 scene evidenceId 和精确 PTS，再从本地证据读取命题、派生 factCode、记录帧哈希和供应商快照。旧结果不沿用；在新合同真实复跑前，两项均为 `limited-evidence`。6+2 矩阵已由封存账本完整覆盖，两个隐藏样本的 `runCount=1`，packaged 语义入口会在读取媒体或供应商配置前拒绝重复隐藏运行。Phase 29 的 P0 主线完成结论不变，P1 延期不阻断人工审片；页面、V49 与正式数据仍未修改。
+
+### 2026-08-24 剩余执行计划：真实供应商端到端验收
+
+**授权与固定边界**：用户已授权执行真实供应商验收。只允许读取当前正式应用中已保存的 profile 与密钥引用，并在同一 packaged identity 内复制到临时 SQLite；正式数据库始终只读。所有媒体、候选、导出、报告和结果 JSON 使用临时目录或既有测试结果目录。不得输出明文密钥、完整字幕、源路径或完整请求体；不得修改候选池、导出模态、完成报告布局、V49 静态 HTML、数据库 schema，也不得打包或发布。
+
+**依赖顺序**：
+
+```text
+29.1 三能力只读预检
+  → 29.2 文本语义公开样本（P0）
+  → 29.4 单样本完整闭环（视频复核可选，人工审片兜底）
+  ↘ 29.3 最小视频复核（P1，可并行，不阻断 29.4）
+  → 29.5 公开 6 集 + 隐藏 2 集冻结矩阵
+  → 29.6 回归、审查与封存
+```
+
+#### Task 29.1：packaged identity 与三能力只读预检
+
+**交付内容**：
+
+- 验证腾讯云 ASR、DeepSeek 文本语义、阿里云百炼视频复核三个 profile 的 endpoint、模型、密钥引用和当前 packaged identity 可解密性。
+- 分别执行无业务媒体的连接/模型发现预检，记录成功或固定失败类别；不把“连接成功”改写成“真实识别/语义/视频能力通过”。
+- 记录正式配置数据库写入数为 0，并扫描结果 JSON、日志和测试快照，确认不含密钥、用户路径和业务素材。
+
+**关键文件**：
+
+- `src/main/services/packaged-real-semantic-evidence.ts` — 腾讯 ASR 与 DeepSeek profile 的只读复制和预检入口。
+- `src/main/services/packaged-real-multimodal-probe.ts` — Model Studio 无媒体连通性与模型可用性预检。
+- `src/main/packaged-evidence-dispatcher.ts` — packaged-only 参数路由和脱敏结果输出。
+
+**验收标准**：三个能力各自得到真实且可分类的结果；正式数据库 SHA/写入计数不变；任一能力失败时只阻断依赖它的后续 Task，不伪造替代供应商或清空旧配置。
+
+**预计用时**：0.5 个工作日。
+
+#### Task 29.2：真实 OCR/ASR → DeepSeek 文本语义公开样本
+
+**交付内容**：
+
+- 在调用前冻结 `dev-01`（OCR/ASR 对齐）和 `dev-02`（OCR/ASR 冲突）的预期资格、失败类别和禁止行为，不根据供应商返回结果反向调标准。
+- 对 `dev-01`、`dev-02` 分别运行本地 OCR、真实腾讯 ASR、跨源裁决、证据包和 DeepSeek 结构化候选生成。
+- 验证模型只能返回给定事件/锚 ID，PTS 由本地不可变证据解析；越窗、事件映射、时间顺序、连续性和候选数量错误必须被本地门禁拒绝。
+
+**关键文件**：
+
+- `src/main/services/packaged-real-semantic-evidence.ts` — 两个公开样本的真实文本语义验收执行器。
+- `src/main/services/openai-compatible-clip-semantic-adapter.ts` — 最小材料请求与结构化响应边界。
+- `docs/clip-evidence-baseline/scene-cards.md` — 调用前冻结的样本预期；保持只读，不按结果调参。
+
+**验收标准**：两个样本分别产生与冻结场景卡一致的 `qualified`、`qualified_with_limit` 或 `blocked` 事实；OCR/ASR/候选均可回链，源媒体 SHA 不变，正式数据库写入为 0。若余额、认证、限流、模型或响应合同失败，保留准确失败码并停止扩大样本。
+
+**预计用时**：0.5–1 个工作日。
+
+#### Task 29.3：Model Studio 最小视频复核（P1，可选）
+
+**交付内容**：
+
+- 先执行不带媒体的 Model Studio 连通性和兼容视频模型预检。
+- 对 `dev-04` 只发送本地截取的最多 12 张、绑定 PTS 和哈希的最小帧集，验证 `supported` 结果和证据 ID 回链。
+- 对 `dev-03` 的视觉不明确场景冻结负向预期；没有足够证明时必须维持 blocked，不得以连接成功或通用描述升级资格。
+
+**关键文件**：
+
+- `src/main/services/packaged-real-multimodal-probe.ts` — 无媒体连通性预检。
+- `src/main/services/packaged-real-multimodal-evidence.ts` — `dev-03`/`dev-04` 最小帧级复核。
+- `src/main/services/clip-multimodal-review-service.ts` — 帧数、大小、超时和单次受控重试预算。
+
+**验收标准**：`dev-04` 的支持结论有帧哈希、PTS、证据 ID 和供应商快照；`dev-03` 缺证明时保持 blocked；不上传整集、路径、数据库、字幕全文或密钥，正式数据库写入为 0。该 Task 失败不阻断已有文本/结构证据候选进入人工审片和确认导出。
+
+**预计用时**：0.5–1 个工作日。
+
+#### Task 29.4：单个公开样本完整闭环
+
+**交付内容**：
+
+- 新增 packaged-only 隔离执行器，以首个通过资格门的公开样本跑通“证据 → 候选 → 人工确认授权夹具 → 真实 FFmpeg 导出 → 完成报告”。
+- 在临时 SQLite 中核对冻结任务轮次、候选证据、确认状态、导出批次、成果 `materialId` 和报告回链；失败、取消和未输出不得改写为完成。
+- 比较执行前后源媒体 SHA、正式配置数据库哈希/写入计数和临时目录清理结果。
+
+**关键文件**：
+
+- `src/main/services/packaged-real-original-clip-e2e.ts` — 新增完整闭环的 packaged-only 执行器。
+- `src/main/packaged-evidence-dispatcher.ts` — 新增受限参数和绝对结果 JSON 路径。
+- `src/main/services/clip-export-runtime.ts`、`src/main/tasks/task-report-service.ts` — 复用既有导出与报告合同，不改变页面。
+
+**验收标准**：文本语义 P0 通过后，至少一个公开样本真实生成合格/受限候选，经明确确认后生成可播放成果，报告可回链候选、范围、配置和成果；视频供应商不可用时复用当前工作台人工审片，不把人工决定写成自动证据或供应商结果；源片与正式数据库不变，临时文件可清理。
+
+**预计用时**：1 个工作日。
+
+#### Task 29.5：公开 6 集 + 隐藏 2 集冻结验收矩阵
+
+**交付内容**：
+
+- 按 `ocr-asr-aligned`、`ocr-asr-conflict`、`visual-review-unclear`、`visual-only-supported`、`queue-recovery`、`partial-success` 六类公开场景执行并汇总所有独立失败。
+- 对 `hidden-01`、`hidden-02` 只执行一次冻结验收；结果用于验收，不用于修改阈值、提示、规则或供应商配置。
+- 将每个样本标记为通过、受限、正确阻断或外部失败，并附本地证据、供应商证据、源 SHA、正式库零写入和清理结果。
+
+**关键文件**：
+
+- `docs/clip-evidence-baseline/manifest.v1.json` — 6+2 不可变样本身份与哈希，只读。
+- `src/main/services/packaged-real-original-clip-e2e.ts` — 分层矩阵编排与事实摘要。
+- `docs/phase-29-original-clip-acceptance.md` — 逐样本结果、限制和回滚信息。
+
+**验收标准**：公开样本的文本语义 P0 符合冻结场景卡；视频复核 P1 的供应商失败可单列并转人工审片，不阻断已有文本/结构候选；隐藏样本只有在文本语义 P0 通过后才执行一次，硬门禁 100%，不得出现越权候选、猜测 PTS、源片写回、生产库写入或隐私泄漏。供应商外部失败单列，不得以本地夹具冒充通过。
+
+**预计用时**：1–1.5 个工作日。
+
+#### Task 29.6：完整回归、独立审查与开发主线封存
+
+**交付内容**：
+
+- 执行受影响定点测试、全量 Vitest、TypeScript strict、构建、Electron 原生重建和 current Electron E2E。
+- 派发独立 Stage 1/2 code review，核对 Spec、冻结样本预期、真实调用证据、零生产写入和未授权范围。
+- 更新 Phase 29 验收记录和 DEV-PLAN；将真实供应商无法控制的余额、认证、限流或模型开通问题保留为外部风险，不虚构完成。
+
+**关键文件**：
+
+- `docs/phase-29-original-clip-acceptance.md` — 最终证据与限制。
+- `DEV-PLAN.md` — 原剧切片开发主线完成状态。
+
+**验收标准**：文本语义 P0 和至少一个人工审片兜底的完整闭环有当场证据；视频复核 P1 可明确记录为通过、正确阻断或外部未通过，不能阻断主线；Stage 1/2 均 PASS，页面和 V49 保持未修改。完成只代表原剧切片开发主线封存，不代表打包或发布。
+
+**预计用时**：0.5 个工作日。
+
+**阶段预计结束时间**：在三个供应商均可用、额度充足且没有响应合同缺陷的情况下，预计 4–6 个工作日，于 2026-08-27 至 2026-08-31 完成。若遇外部认证、余额、限流或模型未开通，先完成不依赖该条件的矩阵，准确记录外部阻断；不会因此修改页面或回退重做 Phase 21–28。
+
+## 工期与结束条件
+
+| 路线 | 包含范围 | 预计投入 | 预计日历窗口（从 2026-08-20 起、用户决策与样本均及时提供） |
+| --- | --- | --- | --- |
+| 当前核验 | Phase 22 | 约 1.5 个工作日 | 2026-08-22 |
+| 功能主线 | Phase 22–29，排除未证实缺口与可选 V49 页面迁移 | 约 20–31 个工作日 | 2026-09-18 至 2026-10-05 |
+| 含视觉分支 | 功能主线 + 获批的候选池、完成报告 V49 迁移 | 在功能主线上增加 5–9 个工作日 | 约 2026-09-25 至 2026-10-16 |
+
+原剧切片的“开发任务结束”定义为：Phase 29 对已获授权范围通过真实样本验收，并将所有未能验证的外部前提列明。它不等于自动打包、发布，也不等于全产品 V49 视觉迁移完成。
+
+## Phase 21：V49 `screen-clip` 第一屏运行时宿主迁移
+
+**目标与范围**：把 V49 原剧切片的完整第一屏应用壳、页面坐标系、滚动边界和工作台结构迁入真实 Electron renderer，并把既有原剧切片运行时绑定到原型已有节点。只覆盖原剧切片第一屏；不启动候选池、完成报告、字幕或其它页面迁移。
+
+**交付内容**：
+
+- 建立 V49 第一屏的完整 Electron 宿主，保留原型已有的应用壳、侧栏、页面容器、媒体监视器、双时间线、候选检查器及其滚动归属。
+- 将真实剧目、分集、候选、媒体地址和已有交互回调限制性绑定至原型已有数据槽，不复制静态示例数据，也不改变元素顺序、网格、尺寸或状态 DOM。
+- 复用 `OriginalClipWorkspaceRuntimeBridge`、`clip-workspace-media-session` 与既有 IPC，保持 CLIP-008、CLIP-045 的媒体会话、定位、播放、审阅与 0.1 秒边界不变量；不得以迁移名义重写这些行为。
+- 覆盖默认候选已选、前后审阅加倍速浮层、媒体不可读三种目标状态的结构和真实失败路径，并补充受影响的定点测试。
+
+**关键文件**：
+
+- `docs/prototype-migration-card-original-clip-v49-runtime.md` — 全屏迁移合同、DOM 所有权、数据槽和视觉证据条件。
+- `src/renderer/src/pages/StaticPrototypeSurface.tsx` — V49 静态夹具与真实宿主入口的隔离边界。
+- `src/renderer/src/pages/OriginalClipWorkspaceRuntimeBridge.ts` — 既有运行时向 V49 节点的受限绑定。
+- `src/renderer/src/pages/clip-workspace-surface.ts` — 原型内动态内容和状态呈现辅助函数。
+- `src/renderer/src/pages/clip-workspace-media-session.ts` — 当前源分集唯一媒体会话与播放控制。
+
+**验收标准**：
+
+- 1440×900、1280×720、100% 缩放下，原型与 Electron 的默认、前后审阅加倍速浮层、媒体不可读均有成对截图、哈希、比较区域和接受结论；详见 `docs/design-evidence/v49/screen-clip/`。
+- 默认、前后审阅加倍速浮层和媒体不可读状态保持原型结构；真实数据只替换受限数据槽，切换分集不残留旧媒体、旧候选或旧时间线。
+- `OriginalClipWorkspaceRuntimeBridge` 的既有行为回归、迁移新增测试、类型检查、构建和 current E2E 受影响路径通过；独立代码审查两阶段通过。
+- 本 Phase 不创建数据库迁移、不改供应商认证、不启动候选池/报告/字幕/全产品合同门禁替换/打包/发布；视觉验收仅覆盖本计划已经列明的 `screen-clip` 三种状态。
 
 ## 技术栈
 
-| 层级 | 技术 | 版本 | 说明 |
-|---|---|---|---|
-| Desktop | Electron | 43.1.1 | Windows 本地文件对话框与打包 |
-| UI | React | 19.2.7 | 资产管理界面 |
-| 数据库 | better-sqlite3 / SQLite | 12.11.1 | 本地持久化与迁移 |
-| 测试 | Vitest / Playwright | 4.1.10 / 1.61.1 | 单元、组件与包级验证 |
+| 层级 | 技术 | 当前锁定版本 | 本 Phase 用途 |
+| --- | --- | --- | --- |
+| 桌面运行时 | Electron | 43.1.1 | Windows 桌面宿主与隔离运行时 |
+| 构建 | electron-vite | 5.0.0 | 主进程、preload 与 renderer 构建 |
+| UI | React / React DOM | 19.2.7 | 工作区宿主和状态入口 |
+| 语言 | TypeScript | 7.0.2 | 主进程与 renderer 类型边界 |
+| 数据库 | SQLite / better-sqlite3 | 12.11.1 | 复用既有剧目、分集、候选和任务数据；本 Phase 不迁移表 |
+| 单元测试 | Vitest | 4.1.10 | 迁移卡、隔离层和运行时桥定点回归 |
+| 桌面测试 | Playwright | 1.61.1 | 真实 Electron 结构与行为测试 |
+| 包管理 | pnpm | 11.9.0 | 依赖和验证命令 |
 
-## 数据库表
+本次只是计划入口重组，未更换技术选型或依赖版本；以上版本直接来自当前 `package.json`。
 
-| 表名 | 所属 Phase | 用途 |
-|---|---|---|
-| `drama_import_preferences` | Phase 1 | 保存按剧目的 `last_import_directory` 选择器初始目录 |
-| `episodes` | Phase 1 | 保持剧集引用、数值排序与冲突比对 |
+## 数据库变更
+
+当前没有获授权的数据库变更。
 
 ## 开发规则
 
-- 不提交、不推送、不删除或移动 `E:\剪辑盘` 下真实源视频。
-- 每个 Phase 执行代码审查、测试完整性、类型检查和功能测试。
-- Windows 目录包使用新 release 目录，不覆盖旧包；不执行干净机验证。
-## Phase 13: 原剧切片候选工作区本地真实可用（实施中）
+- 一次只执行一个可独立验收的 Phase；完成并冻结后，不因后续 Phase 自动重跑或重写。
+- 任何需求或设计边界变化先更新对应源文档，再修改代码。
+- UI 以 current HTML 为唯一当前来源；真实数据、安全、IPC、P2 冻结和源文件保护继续服从 `Product-Spec.md`。
+- 每个 Phase 完成 Code Review、测试完整性、编译验证和功能测试；只重验受影响链路。
+- `build`、`rebuild:electron` 与 Electron E2E 串行执行，避免 `better-sqlite3` ABI 污染。
+- 当前工作树未收口，不自动提交、推送、打包或发布。
 
-**目标：**
-- 将最终静态原型 `screen-clip` 的演示/会话桥接替换为真实候选工作区，不重写原型的 HTML、CSS、初始布局或其它模块。
+## 历史归档
 
-**交付内容：**
-1. 以当前剧目 `EpisodeAsset`、`listClipCandidates` 和 `listClipEpisodeStatuses` 填充原型的左轨、监视器、双时间线和检查器；读取中、错误、缺媒体和无候选不可混淆。
-2. 将当前候选的源时间线拖动和四个微调按钮持久化到 `updateClipCandidate`，保留 0.1 秒最短时长与源分集边界；连续拖动按最新范围合并写入。
-3. 接通真实 `confirmClipCandidate`，并按原型既有“生成候选切片”入口先预检再调用生成；成功后切换至首个实际生成候选和其源分集。
-4. 为真实读取、切集乱序、缺媒体、候选写入、确认、生成和失败反馈建立桥接回归；完成后进行独立两阶段代码审查、专项测试、类型检查、构建和设计合同核验。
-5. 用最新原型原文中的“本集候选”切换区展示当前真实分集候选，固定四项窗口并将切换接回同一候选选择状态；不得保留 `C-01` 演示数据。
-
-**关键文件：**
-- `src/renderer/src/pages/OriginalClipWorkspaceRuntimeBridge.ts`
-- `src/renderer/src/pages/OriginalClipWorkspaceRuntimeBridge.test.ts`
-- `src/renderer/src/pages/DramaWorkspacePage.tsx`
-- `design/open-design/v2026-07-30-open-design-final/short-drama-material-studio.html`
-
-**验收标准：**
-- 工作区不再包含硬编码分集、候选或演示确认；所有显示与操作均对应当前 `dramaId` 的真实本地数据。
-- 分集切换不会遗留旧候选、时间线或媒体；无法读取时只显示失败事实。
-- 编辑和确认确实经已有 IPC 持久化，源视频没有写入；不新增候选池、报告、导出或多集拼接范围。
-
-## Phase 14: 原剧切片全部候选与完成报告本地真实可用（待实施）
-
-**目标：**
-
-- 将 Version 48 的 `screen-clip-pool` 与 `screen-clip-report` 演示桥接替换为真实本地候选、导出批次与报告数据；不重写原型 HTML/CSS/布局，不改其它模块。
-
-**实施顺序：**
-
-1. 以真实 `EpisodeAsset`、`listClipCandidates`、`listClipEpisodeStatuses` 重建全部候选左轨、当前集窗口、状态筛选、搜索、翻页和“打开”定位；不保留演示编号或跨集候选混排。
-2. 将原型既有导出弹层接到 `chooseOutputDirectory`、`preflightClipExport`、`startClipExport`、`getClipExportProgress` 与 `cancelClipExport`；只导出真实已确认候选，按 `exportId` 隔离轮询和反馈。
-3. 以 `getLatestClipExportBatch`、真实候选与已有成果记录渲染完成报告；仅真实已完成批次可打开报告，行操作返回对应候选工作区或原型已有成果库回链。
-4. 为读取/空/缺媒体/搜索无结果/预检拒绝/取消/失败/乱序和完整 Electron 路径建立回归，并完成独立两阶段审查、类型检查、构建和设计合同核验。
-5. 以原型垃圾桶按钮为每行候选提供确认删除：仅允许删除未导出候选及其从属字幕变体，严格拒绝导出中/已导出候选以保留批次、报告和输出审计；剧目资产删除按钮改为同原型图标，保留既有确认和源视频保护。
-
-**关键文件：**
-
-- `src/renderer/src/pages/OriginalClipPoolReportRuntimeBridge.ts`
-- `src/renderer/src/pages/OriginalClipPoolReportRuntimeBridge.test.ts`
-- `src/renderer/src/pages/DramaWorkspacePage.tsx`
-- `tests/e2e/phase14-original-clip-pool-report.spec.ts`
-- `design/open-design/v2026-07-30-open-design-final/short-drama-material-studio.html`
-
-**验收标准：**
-
-- 全部候选与完成报告不再含硬编码分集、候选、状态、文件或成功 toast；每个显示和操作均对应当前 `dramaId` 的真实本地数据。
-- 只有真实完成导出批次进入报告；运行、失败、取消和无批次不会伪造报告或成果。
-- 未改动候选工作区、字幕资产、剧目库、成果库、批量拼接、P2 能力或源视频。
-
-## Phase 15: 能力供应商原型直连试跑（实施中）
-
-**目标：**
-
-- 固定 `screen-settings` 的能力供应商总览和三个 `screen-*` 独立配置页为“最终静态原型原文 + 外部 Bridge”，用它完成一次不需要用户参与的真实配置流程试跑。
-
-**实施顺序：**
-
-1. `StaticPrototypeSurface` 仅按需隔离当前 settings/provider 屏幕，保留原型设置页面与三项供应商页面，不改 HTML 文件。
-2. 断开、删除旧 React 供应商总览/目录/配置页；`SettingsPage` 只保留路由状态和对既有非供应商设置项的承接。
-3. Bridge 回接真实 profile、密钥状态、目录预填、密钥保存、profile 保存和受限外链；原型已有费用筛选由原型脚本处理。
-4. 覆盖总览状态、三项路由、手填字段保护、保存、外链、错误校验与非供应商设置回退；然后执行 Electron 路径、构建和独立审查。
-
-**关键文件：**
-
-- `src/renderer/src/pages/StaticPrototypeSurface.tsx`
-- `src/renderer/src/pages/ProviderSettingsPrototypeBridge.ts`
-- `src/renderer/src/pages/SettingsPage.tsx`
-- `src/shared/provider-catalog.ts`
-- `design/open-design/v2026-07-30-open-design-final/short-drama-material-studio.html`
-
-**验收标准：**
-
-- 目标页面来自最终静态原型原文；旧 React 供应商组件不再存在或被引用。
-- 三项真实配置、目录预填、密钥安全存储、保存状态更新和系统默认浏览器外链均可验证；不触发云端调用，P2 仍冻结。
-- 供应商页只按需存在一个 iframe；其他设置项、剧目库和工作区不因本次实现持有或叠加 iframe。
-
-## 独立工具：剪映字幕识别小工具（已交付，不属于主项目 Phase）
-
-`D:\个人工作\剪映字幕识别小工具\` 是可独立完成任务的 Windows 小工具，负责在用户已登录的剪映专业版中识别字幕并导出 SRT。它的代码、运行合同、锚点和实机证据均在独立目录维护，不与本 Electron 产品共享发布节奏。
-
-当前不计划将它接入主产品。若用户后续明确决定集成，必须作为新的需求立项，单独定义调用契约、版本探测、前台控制权、失败隔离、用户授权、日志归属与端到端验收；在此之前不得增加主产品入口、IPC、任务、设置或发布声明。
+- 完整计划：`docs/history/dev-plan/DEV-PLAN-phases-1-20-through-2026-08-17.md`
+- 原始规模：133928 字节、798 个物理行。
+- 原始 SHA-256：`5F6B5554B8D012E53E185BDEEE63E53AAA87EE190891ED34CD6772287C1AC946`。
+- 归档只用于追溯 Phase 1–20 的已发生工作、当时的技术选择和验收记录；不得从归档恢复待办或 superseded/legacy 门禁。
