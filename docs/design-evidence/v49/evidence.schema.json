@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://short-drama.local/schemas/design-evidence-v49.json",
+  "title": "Short Drama V49 visual evidence metadata",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "projectId",
+    "contractRevision",
+    "version",
+    "source",
+    "designSource",
+    "screen",
+    "state",
+    "viewport",
+    "fixture",
+    "test",
+    "evidenceStatus",
+    "captures",
+    "allowedDifferences",
+    "comparisonRegions"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "projectId": { "const": "01b5725c-2688-4cbc-bc29-7432712449b3" },
+    "contractRevision": { "const": "49.1-draft" },
+    "version": { "const": "49" },
+    "source": { "const": "v49-project-library-preview" },
+    "designSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry", "sha256"],
+      "properties": {
+        "entry": {
+          "const": "design/open-design/v2026-08-11-v49-clip-monitor-review/short-drama-material-studio-v49-clip-review.html"
+        },
+        "sha256": {
+          "const": "C95820F2FCE372E9BBA3A2A1062495D418951025C1A7C65A73429F5C0FFD563D"
+        }
+      }
+    },
+    "screen": {
+      "type": "string",
+      "pattern": "^screen-[a-z0-9-]+$"
+    },
+    "state": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "viewport": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["width", "height"],
+          "properties": { "width": { "const": 1440 }, "height": { "const": 900 } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["width", "height"],
+          "properties": { "width": { "const": 1280 }, "height": { "const": 720 } }
+        }
+      ]
+    },
+    "fixture": { "type": "string", "minLength": 1 },
+    "test": { "type": "string", "minLength": 1 },
+    "evidenceStatus": {
+      "enum": ["planned", "captured-unverified", "compared-unaccepted", "accepted"]
+    },
+    "captures": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["projectPreview", "electron"],
+      "properties": {
+        "projectPreview": { "$ref": "#/$defs/capture" },
+        "electron": { "$ref": "#/$defs/capture" }
+      }
+    },
+    "allowedDifferences": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "comparisonRegions": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/comparisonRegion" }
+    },
+    "acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["not-run", "failed", "passed"] },
+        "reviewer": { "type": "string" },
+        "reviewedAt": { "type": "string", "format": "date-time" },
+        "notes": { "type": "string" }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "evidenceStatus": { "const": "accepted" }
+        },
+        "required": ["evidenceStatus"]
+      },
+      "then": {
+        "required": ["acceptance"],
+        "properties": {
+          "acceptance": {
+            "required": ["status"],
+            "properties": {
+              "status": { "const": "passed" }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "capture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "width", "height"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "type": "string", "pattern": "^[A-Fa-f0-9]{64}$" },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "comparisonRegion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "x", "y", "width", "height", "maxChangedPixelRatio", "maxMeanRgbDelta"],
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "x": { "type": "integer", "minimum": 0 },
+        "y": { "type": "integer", "minimum": 0 },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "maxChangedPixelRatio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "maxMeanRgbDelta": { "type": "number", "minimum": 0 }
+      }
+    }
+  }
+}

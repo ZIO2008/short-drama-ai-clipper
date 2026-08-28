@@ -1,0 +1,86 @@
+[
+  {
+    "episodeNo": 2,
+    "cueIndex": 1,
+    "text": "PUA",
+    "startSeconds": 8.8,
+    "endSeconds": 10.02,
+    "frameTimesSeconds": [
+      8.64,
+      8.88,
+      9.94,
+      10.18
+    ],
+    "contactSheet": "D:\\个人工作\\短剧AI切片工具\\02_开发源码\\short-drama-ai-material-platform\\docs\\ocr-acceptance\\2026-08-08\\manual-review\\ep02-cue001-boundary.png"
+  },
+  {
+    "episodeNo": 3,
+    "cueIndex": 39,
+    "text": "公司资金出现了问题",
+    "startSeconds": 101.16,
+    "endSeconds": 102.92,
+    "frameTimesSeconds": [
+      101.0,
+      101.24,
+      102.84,
+      103.08
+    ],
+    "contactSheet": "D:\\个人工作\\短剧AI切片工具\\02_开发源码\\short-drama-ai-material-platform\\docs\\ocr-acceptance\\2026-08-08\\manual-review\\ep03-cue039-boundary.png"
+  },
+  {
+    "episodeNo": 6,
+    "cueIndex": 21,
+    "text": "夜君昊",
+    "startSeconds": 37.0,
+    "endSeconds": 38.2,
+    "frameTimesSeconds": [
+      36.84,
+      37.08,
+      38.12,
+      38.36
+    ],
+    "contactSheet": "D:\\个人工作\\短剧AI切片工具\\02_开发源码\\short-drama-ai-material-platform\\docs\\ocr-acceptance\\2026-08-08\\manual-review\\ep06-cue021-boundary.png"
+  },
+  {
+    "episodeNo": 29,
+    "cueIndex": 34,
+    "text": "我就不走",
+    "startSeconds": 96.0,
+    "endSeconds": 96.8,
+    "frameTimesSeconds": [
+      95.84,
+      96.08,
+      96.72,
+      96.96
+    ],
+    "contactSheet": "D:\\个人工作\\短剧AI切片工具\\02_开发源码\\short-drama-ai-material-platform\\docs\\ocr-acceptance\\2026-08-08\\manual-review\\ep29-cue034-boundary.png"
+  },
+  {
+    "episodeNo": 77,
+    "cueIndex": 38,
+    "text": "做梦都想嫁入豪门",
+    "startSeconds": 110.6,
+    "endSeconds": 113.2,
+    "frameTimesSeconds": [
+      110.44,
+      110.68,
+      113.12,
+      113.36
+    ],
+    "contactSheet": "D:\\个人工作\\短剧AI切片工具\\02_开发源码\\short-drama-ai-material-platform\\docs\\ocr-acceptance\\2026-08-08\\manual-review\\ep77-cue038-boundary.png"
+  },
+  {
+    "episodeNo": 82,
+    "cueIndex": 33,
+    "text": "今天面对大家",
+    "startSeconds": 55.0,
+    "endSeconds": 57.4,
+    "frameTimesSeconds": [
+      54.84,
+      55.08,
+      57.32,
+      57.56
+    ],
+    "contactSheet": "D:\\个人工作\\短剧AI切片工具\\02_开发源码\\short-drama-ai-material-platform\\docs\\ocr-acceptance\\2026-08-08\\manual-review\\ep82-cue033-boundary.png"
+  }
+]

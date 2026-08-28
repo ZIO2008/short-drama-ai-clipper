@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "baselineManifestSha256": "6CF8D83D12837C3BCFEB8EAC341B8CE814005607359BCD3A3FDAF76302845339",
+  "sealedAt": "2026-08-26",
+  "entries": [
+    {
+      "sampleId": "dev-01",
+      "tier": "public",
+      "sceneCards": ["ocr-asr-aligned"],
+      "outcome": "passed",
+      "runCount": 1,
+      "evidence": ["text-semantic-p0"],
+      "sourceShaVerified": true,
+      "productionDatabaseWrites": 0,
+      "temporaryDataCleaned": true
+    },
+    {
+      "sampleId": "dev-02",
+      "tier": "public",
+      "sceneCards": ["ocr-asr-conflict"],
+      "outcome": "passed",
+      "runCount": 1,
+      "evidence": ["text-semantic-p0", "manual-review-export-report-e2e"],
+      "sourceShaVerified": true,
+      "productionDatabaseWrites": 0,
+      "temporaryDataCleaned": true
+    },
+    {
+      "sampleId": "dev-03",
+      "tier": "public",
+      "sceneCards": ["visual-review-unclear"],
+      "outcome": "limited-evidence",
+      "runCount": 1,
+      "evidence": ["media-pts-baseline", "superseded-unbound-provider-probe"],
+      "sourceShaVerified": true,
+      "productionDatabaseWrites": 0,
+      "temporaryDataCleaned": true
+    },
+    {
+      "sampleId": "dev-04",
+      "tier": "public",
+      "sceneCards": ["visual-only-supported"],
+      "outcome": "limited-evidence",
+      "runCount": 1,
+      "evidence": ["media-pts-baseline", "superseded-unbound-provider-probe"],
+      "sourceShaVerified": true,
+      "productionDatabaseWrites": 0,
+      "temporaryDataCleaned": true
+    },
+    {
+      "sampleId": "dev-05",
+      "tier": "public",
+      "sceneCards": ["queue-recovery"],
+      "outcome": "passed",
+      "runCount": 1,
+      "evidence": ["queue-recovery-governance"],
+      "sourceShaVerified": true,
+      "productionDatabaseWrites": 0,
+      "temporaryDataCleaned": true
+    },
+    {
+      "sampleId": "dev-06",
+      "tier": "public",
+      "sceneCards": ["partial-success"],
+      "outcome": "passed",
+      "runCount": 1,
+      "evidence": ["real-ffmpeg-export", "partial-success-governance"],
+      "sourceShaVerified": true,
+      "productionDatabaseWrites": 0,
+      "temporaryDataCleaned": true
+    },
+    {
+      "sampleId": "hidden-01",
+      "tier": "hidden",
+      "sceneCards": ["cross-window-event"],
+      "outcome": "passed",
+      "runCount": 1,
+      "resultSha256": "8DD4CAA84EA4A026CC314686D094E883A6E6940838C2BD612996420D1F5F52FE",
+      "evidence": ["single-blind-text-semantic-p0"],
+      "sourceShaVerified": true,
+      "productionDatabaseWrites": 0,
+      "temporaryDataCleaned": true
+    },
+    {
+      "sampleId": "hidden-02",
+      "tier": "hidden",
+      "sceneCards": ["media-fingerprint-change"],
+      "outcome": "correctly-blocked",
+      "runCount": 1,
+      "evidence": ["media-fingerprint-drift-governance"],
+      "sourceShaVerified": true,
+      "productionDatabaseWrites": 0,
+      "temporaryDataCleaned": true
+    }
+  ]
+}

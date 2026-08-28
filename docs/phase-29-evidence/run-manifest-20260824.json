@@ -1,0 +1,146 @@
+{
+  "version": 1,
+  "phase": 29,
+  "runDate": "2026-08-24",
+  "applicationVersion": "0.1.92",
+  "scope": "real-provider-isolated-acceptance",
+  "productionConfigurationDatabase": {
+    "access": "readonly",
+    "sha256Before": "09AE861290603E4CDB4161E808E774C894F115CA94F4F57E3915B1713D5390A0",
+    "sha256After": "09AE861290603E4CDB4161E808E774C894F115CA94F4F57E3915B1713D5390A0",
+    "writes": 0
+  },
+  "runs": [
+    {
+      "id": "provider-preflight",
+      "input": "no-business-media",
+      "result": {
+        "asr": "success",
+        "textAnalysis": "success",
+        "multimodalReview": "success"
+      },
+      "resultFile": "test-results/phase29-provider-preflight-20260824-125617/result.json"
+    },
+    {
+      "id": "semantic-dev-01-initial",
+      "sampleId": "dev-01",
+      "result": "failed",
+      "stage": "summary",
+      "code": "candidate-not-qualified",
+      "resultFile": "test-results/phase29-semantic-dev01-20260824-130627/result.json"
+    },
+    {
+      "id": "semantic-dev-01-diagnostic",
+      "sampleId": "dev-01",
+      "result": "failed",
+      "stage": "semantic-generation",
+      "code": "provider-response-invalid-continuity",
+      "resultFile": "test-results/phase29-semantic-dev01-diagnostic-20260824-131051/result.json"
+    },
+    {
+      "id": "semantic-dev-01-closed-contract",
+      "sampleId": "dev-01",
+      "result": "failed",
+      "stage": "summary",
+      "code": "candidate-not-qualified",
+      "qualificationCounts": {
+        "candidateCount": 1,
+        "qualifiedCount": 1,
+        "qualifiedWithLimitCount": 0,
+        "blockedCount": 0
+      },
+      "frozenExpected": {
+        "candidateCount": 1,
+        "qualifiedCount": 0,
+        "qualifiedWithLimitCount": 1,
+        "blockedCount": 0
+      },
+      "resultFile": "test-results/phase29-semantic-dev01-closed-contract-20260824-131517/result.json"
+    },
+    {
+      "id": "multimodal-dev-04-initial",
+      "sampleId": "dev-04",
+      "result": "failed",
+      "code": "provider-failed",
+      "elapsedMs": 70063,
+      "resultFile": "test-results/phase29-multimodal-dev04-20260824-131956/result.json"
+    },
+    {
+      "id": "multimodal-dev-04-diagnostic",
+      "sampleId": "dev-04",
+      "result": "failed",
+      "code": "provider-failed",
+      "elapsedMs": 67638,
+      "resultFile": "test-results/phase29-multimodal-dev04-diagnostic-20260824-132240/result.json"
+    },
+    {
+      "id": "multimodal-dev-04-nonthinking",
+      "sampleId": "dev-04",
+      "result": "failed",
+      "code": "provider-request-rejected",
+      "elapsedMs": 103746,
+      "resultFile": "test-results/phase29-multimodal-dev04-nonthinking-20260824-132914/result.json"
+    },
+    {
+      "id": "multimodal-dev-04-qwen37plus",
+      "sampleId": "dev-04",
+      "temporaryModel": "qwen3.7-plus",
+      "result": "failed",
+      "code": "invalid-result",
+      "elapsedMs": 93404,
+      "resultFile": "test-results/phase29-multimodal-dev04-qwen37plus-20260824-164605/result.json"
+    },
+    {
+      "id": "semantic-dev-01-protected-context",
+      "sampleId": "dev-01",
+      "result": "passed",
+      "qualificationCounts": { "candidateCount": 1, "qualifiedCount": 0, "qualifiedWithLimitCount": 1, "blockedCount": 0 },
+      "ocrCueCount": 25,
+      "asrCueCount": 23,
+      "resultFile": "test-results/phase29-semantic-dev01-protected-context-20260824-173819/result.json"
+    },
+    {
+      "id": "semantic-dev-02-protected-context",
+      "sampleId": "dev-02",
+      "result": "passed",
+      "qualificationCounts": { "candidateCount": 1, "qualifiedCount": 0, "qualifiedWithLimitCount": 1, "blockedCount": 0 },
+      "ocrCueCount": 23,
+      "asrCueCount": 51,
+      "resultFile": "test-results/phase29-semantic-dev02-protected-context-20260824-174127/result.json"
+    }
+  ],
+  "notRun": [
+    "dev-02-semantic-after-dev-01-gate-failure",
+    "dev-03-multimodal-after-dev-04-gate-failure",
+    "packaged-original-clip-e2e",
+    "hidden-01",
+    "hidden-02"
+  ],
+  "verification": {
+    "vitest": {
+      "filesPassed": 127,
+      "testsPassed": 719,
+      "filesSkipped": 5,
+      "testsSkipped": 5
+    },
+    "typecheck": "passed",
+    "build": "passed",
+    "electronRebuild": "passed",
+    "targetElectronE2e": {
+      "file": "tests/current/original-clip-pool-export-report.spec.ts",
+      "passed": 1
+    },
+    "independentReview": {
+      "stage1": "passed",
+      "stage2": "passed",
+      "high": 0
+    }
+  },
+  "privacy": {
+    "containsSecrets": false,
+    "containsSubtitleText": false,
+    "containsProviderResponseBody": false,
+    "containsSourceMediaPath": false
+  },
+  "finalStatus": "external-gates-not-passed"
+}

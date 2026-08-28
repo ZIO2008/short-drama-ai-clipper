@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "screens-v48-text-analysis/1440x900-testing.html",
+  "entry": "screens-v48-text-analysis/1440x900-testing.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-08-04T15:49:11.581Z",
+  "updatedAt": "2026-08-04T15:49:11.581Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

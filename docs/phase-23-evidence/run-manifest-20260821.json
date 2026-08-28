@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-08-22T21:42:00+08:00",
+  "phase": 23,
+  "appVersion": "0.1.92",
+  "scope": "isolated-real-asr-and-semantic-evidence",
+  "buildIdentity": {
+    "packageJsonSha256": "CA5ADA98172CDE7919394ECB5428108E32913CB4A4F00C3F5717ED9EC1611A38",
+    "mainBundleSha256": "AF11D3EE5BF69C5D15F4B2E7F7FEAC3EDFEB40039FCA219E9B05EE7B4427ABD1",
+    "mainSourceSha256": "E8881400E5B9F1F805EC20398586F0F4F61384C29E03E64747CF8288522940BC",
+    "asrEvidenceSourceSha256": "B5401987F3F500DA4C0D1ABE4640C3A3F67640DE22AF770CA3A08941E8081E57",
+    "semanticEvidenceSourceSha256": "566F832D6EB2302A2260E460863C4D66B6AC1D1F81A6DEEA15836B8A24513493",
+    "semanticAdapterSourceSha256": "259425B183B00FC3710F000F5CD7FFC3B57432165941A06569E3CB06AFC67E70",
+    "packagedEvidenceDispatcherSourceSha256": "1C02BB23DFB98FDBAA5F7AAC751DE6EA359F2BF72F8820EB2B189EAB0ABE6F8C",
+    "p0TaskRuntimeSourceSha256": "1EE2E624C4960A63E506ED90B657B4213C968CE28FA7F769F3D63F282F27BCB8"
+  },
+  "runs": [
+    {
+      "kind": "asr-evidence",
+      "sampleId": "dev-01",
+      "command": "pnpm exec electron out/main/index.js --real-asr-evidence-sample dev-01 --real-asr-evidence-manifest docs/clip-evidence-baseline/manifest.v1.json --real-asr-evidence-result <unique-temp-json>",
+      "exitCode": 0,
+      "rawArtifactSha256": "108498D941833DD371DFC530829FFC1775056A30DCF45E006822942684C1094E",
+      "result": { "status": "passed", "ocrCueCount": 25, "asrCueCount": 23, "resultFormat": 3, "sentenceMaxLength": 40, "packageStatus": "ready", "semanticEventCount": 14, "blockedConflictCount": 0, "usableAnchorCount": 14, "candidateRangeCount": 14, "sourceDatabaseWrites": 0 }
+    },
+    {
+      "kind": "asr-evidence",
+      "sampleId": "dev-02",
+      "command": "pnpm exec electron out/main/index.js --real-asr-evidence-sample dev-02 --real-asr-evidence-manifest docs/clip-evidence-baseline/manifest.v1.json --real-asr-evidence-result <unique-temp-json>",
+      "exitCode": 0,
+      "rawArtifactSha256": "84593DA929DC65A6A2C183CE680659589A8CDDD82D82FB75E47EDC1E6CCD6CAB",
+      "result": { "status": "passed", "ocrCueCount": 23, "asrCueCount": 51, "resultFormat": 3, "sentenceMaxLength": 40, "packageStatus": "ready", "semanticEventCount": 51, "blockedConflictCount": 0, "usableAnchorCount": 51, "candidateRangeCount": 44, "sourceDatabaseWrites": 0 }
+    },
+    {
+      "kind": "semantic-evidence",
+      "sampleId": "dev-01",
+      "command": "pnpm exec electron out/main/index.js --real-semantic-evidence-sample dev-01 --real-semantic-evidence-manifest docs/clip-evidence-baseline/manifest.v1.json --real-semantic-evidence-result <unique-temp-json>",
+      "exitCode": 0,
+      "rawArtifactSha256": "49ADCCD67B380B54F1C7C2DE3E0DF6D06DB227A92F256CCFECA4DBF5F5B63999",
+      "result": { "status": "passed", "ocrCueCount": 25, "asrCueCount": 23, "packageStatus": "ready", "generationStatus": "reviewing", "candidateCount": 1, "qualifiedCount": 0, "qualifiedWithLimitCount": 1, "blockedCount": 0, "sourceDatabaseWrites": 0 }
+    },
+    {
+      "kind": "semantic-evidence",
+      "sampleId": "dev-02",
+      "command": "pnpm exec electron out/main/index.js --real-semantic-evidence-sample dev-02 --real-semantic-evidence-manifest docs/clip-evidence-baseline/manifest.v1.json --real-semantic-evidence-result <unique-temp-json>",
+      "exitCode": 0,
+      "rawArtifactSha256": "64F47A025FBE2B65F6C9F15DB80FB7922C391EDF07C4D63605158EB3F9E98BA5",
+      "result": { "status": "passed", "ocrCueCount": 23, "asrCueCount": 51, "packageStatus": "ready", "generationStatus": "reviewing", "candidateCount": 1, "qualifiedCount": 0, "qualifiedWithLimitCount": 1, "blockedCount": 0, "sourceDatabaseWrites": 0 }
+    }
+  ],
+  "regression": {
+    "command": "pnpm run rebuild:node && pnpm exec vitest run src/main/services/openai-compatible-clip-semantic-adapter.test.ts src/main/services/clip-candidate-intelligence-service.test.ts src/main/services/packaged-real-semantic-evidence.test.ts src/main/services/packaged-real-asr-evidence.test.ts src/main/services/packaged-real-asr-evidence-guard.test.ts src/main/services/clip-evidence-package-service.test.ts src/main/services/semantic-event-alignment-service.test.ts src/main/services/original-clip-generation-gate.test.ts src/main/p0-task-runtime.test.ts src/main/packaged-evidence-dispatcher.test.ts && pnpm run typecheck && pnpm run build",
+    "testFilesPassed": 10,
+    "testsPassed": 72,
+    "exitCode": 0
+  },
+  "closureVerification": {
+    "invalidResultPathCli": {
+      "entries": ["asr-evidence", "semantic-evidence", "multimodal-probe", "multimodal-evidence"],
+      "expectedExitCode": 1,
+      "allExitedWithinSeconds": 10,
+      "containsUnhandledRejection": false,
+      "containsInvalidResultPath": false,
+      "containsWorkspacePath": false
+    },
+    "currentDispatcherAsrSmoke": {
+      "sampleId": "dev-01",
+      "exitCode": 0,
+      "result": { "status": "passed", "ocrCueCount": 25, "asrCueCount": 23, "resultFormat": 3, "sentenceMaxLength": 40, "packageStatus": "ready", "semanticEventCount": 14, "usableAnchorCount": 14, "candidateRangeCount": 14, "sourceDatabaseWrites": 0 }
+    }
+  },
+  "privacy": {
+    "containsSecrets": false,
+    "containsSubtitleText": false,
+    "containsMediaPaths": false,
+    "containsProviderResponses": false,
+    "sourceDatabaseWrites": 0
+  }
+}

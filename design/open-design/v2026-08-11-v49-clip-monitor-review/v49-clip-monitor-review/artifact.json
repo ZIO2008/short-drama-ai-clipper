@@ -1,0 +1,24 @@
+{
+  "id": "v49-original-clip-monitor-review",
+  "title": "Version 49 原剧切片监视器播放与轻量审片",
+  "version": "49.0",
+  "source": "short-drama-material-studio.html",
+  "artifact": "../short-drama-material-studio-v49-clip-review.html",
+  "scope": [
+    "screen-clip 监视器播放底栏",
+    "screen-clip 候选检查器审阅范围",
+    "screen-clip 候选边界微调"
+  ],
+  "unchanged": [
+    "应用壳与深色 token",
+    "双时间线顺序与候选池结构",
+    "剧目库、资产、字幕资产、完成报告、设置页",
+    "P2 解说、TTS、旁白"
+  ],
+  "evidence": [
+    "screens/1440x900-default.html",
+    "screens/1280x720-review-context-speed.html"
+  ],
+  "creativeDirection": "creative-direction.md",
+  "renderStatus": "固定画布预览已提供；本轮 PNG 导出服务返回 PROJECT_NOT_FOUND，未将无效图片作为交付物。"
+}

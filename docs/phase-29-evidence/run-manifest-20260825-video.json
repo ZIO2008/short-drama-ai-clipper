@@ -1,0 +1,50 @@
+{
+  "version": 1,
+  "phase": 29,
+  "scope": "superseded-unbound-multimodal-provider-probe",
+  "model": "qwen3.7-plus",
+  "contract": "strict-json-schema-factCode-claimKinds",
+  "productionDatabaseWrites": 0,
+  "runs": [
+    {
+      "sampleId": "dev-04",
+      "factCode": "visual-only-supported-v1",
+      "frameCount": 5,
+      "conclusion": "supported",
+      "sourceDatabaseWrites": 0,
+      "resultFile": "test-results/phase29-multimodal-dev04-final-20260825-152744/result.json"
+    },
+    {
+      "sampleId": "dev-03",
+      "factCode": "visual-review-unclear-v1",
+      "frameCount": 5,
+      "providerConclusion": "unclear",
+      "conclusion": "blocked",
+      "sourceDatabaseWrites": 0,
+      "resultFile": "test-results/phase29-multimodal-dev03-final-20260825-152931/result.json"
+    }
+  ],
+  "verification": {
+    "targetedTests": 29,
+    "fullVitestTests": 729,
+    "fullVitestSkipped": 5,
+    "typecheck": "passed",
+    "build": "passed",
+    "electronRebuild": "passed",
+    "targetElectronE2e": 1,
+    "review": "passed"
+  },
+  "privacy": {
+    "containsSecrets": false,
+    "containsProviderResponseBody": false,
+    "containsSourceMediaPath": false,
+    "containsSubtitleText": false
+  },
+  "reviewCorrection": {
+    "date": "2026-08-26",
+    "reason": "The runs used temporary package/evidence identities and whole-episode midpoint frames instead of the frozen candidate/evidence scope.",
+    "allowedUse": "historical-provider-capability-diagnosis-only",
+    "replacementContract": "docs/clip-evidence-baseline/multimodal-scopes.v1.json"
+  },
+  "status": "superseded-unbound-provider-probe"
+}

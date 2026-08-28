@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "projectId": "01b5725c-2688-4cbc-bc29-7432712449b3",
+  "contractRevision": "49.1-draft",
+  "version": "49",
+  "source": "v49-project-library-preview",
+  "designSource": { "entry": "design/open-design/v2026-08-11-v49-clip-monitor-review/short-drama-material-studio-v49-clip-review.html", "sha256": "C95820F2FCE372E9BBA3A2A1062495D418951025C1A7C65A73429F5C0FFD563D" },
+  "screen": "screen-clip",
+  "state": "context-speed",
+  "viewport": { "width": 1280, "height": 720 },
+  "fixture": "原型：完整 V49 HTML 以 ?v49preview=context-speed 固定前后审阅与倍速浮层；Electron：P0 真实候选上点击前后审阅与倍速。",
+  "test": "tests/current/p0-workflows.spec.ts（FLOW-001 to FLOW-004）",
+  "evidenceStatus": "accepted",
+  "captures": {
+    "projectPreview": { "path": "docs/design-evidence/v49/screen-clip/context-speed/1280x720/project-library-preview.png", "sha256": "B4DE84CA761C13530B9B9D8A9ADCAB8AAAFA5AC5DFEE865EE33E3B4667C4DAC1", "width": 1280, "height": 720 },
+    "electron": { "path": "docs/design-evidence/v49/screen-clip/context-speed/1280x720/electron.png", "sha256": "6B2822AC8A8CCE79503BF01374B667BF5D42C1ACF5B909C3E2DA7533E3574605", "width": 1280, "height": 720 }
+  },
+  "allowedDifferences": ["真实媒体、PTS、候选与分集数据来自隔离真实数据。", "CLIP-045 规定运行时倍速为 0.5×、1×、1.5×、2×；该业务合同优先于静态原型演示的 0.75×、1×、1.25×、1.5×。"],
+  "comparisonRegions": [{ "label": "应用壳与页面头部", "x": 0, "y": 0, "width": 1280, "height": 160, "maxChangedPixelRatio": 0.04, "maxMeanRgbDelta": 3 }, { "label": "阶段导航", "x": 240, "y": 160, "width": 1010, "height": 52, "maxChangedPixelRatio": 0.1, "maxMeanRgbDelta": 5 }],
+  "acceptance": { "status": "passed", "reviewer": "Codex same-viewport V49 visual acceptance", "reviewedAt": "2026-08-20T22:08:10+08:00", "notes": "前后审阅高亮与倍速浮层的节点、层级和位置通过人工同视口核对；倍速文字为已登记的 CLIP-045 受控差异。" }
+}

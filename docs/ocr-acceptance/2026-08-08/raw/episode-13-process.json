@@ -1,0 +1,180 @@
+{
+  "episodeNo": 13,
+  "durationSeconds": 106.84,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedSeconds": 36.937,
+  "result": {
+    "ok": true,
+    "cues": [
+      {
+        "startSeconds": 1.2,
+        "endSeconds": 1.6,
+        "text": "\u7761\u7761",
+        "confidence": 0.9993
+      },
+      {
+        "startSeconds": 1.84,
+        "endSeconds": 2.54,
+        "text": "\u7761\u4ec0\u4e48",
+        "confidence": 0.9973
+      },
+      {
+        "startSeconds": 7.8,
+        "endSeconds": 8.52,
+        "text": "\u4e0d\u5982",
+        "confidence": 0.9985
+      },
+      {
+        "startSeconds": 9.68,
+        "endSeconds": 11.02,
+        "text": "\u6211\u4eec\u5c06\u8fd9\u4e2a\u8eab\u4efd",
+        "confidence": 0.9976
+      },
+      {
+        "startSeconds": 12.08,
+        "endSeconds": 12.8,
+        "text": "\u5229\u7528\u4e00\u4e0b",
+        "confidence": 0.9996
+      },
+      {
+        "startSeconds": 15.48,
+        "endSeconds": 16.02,
+        "text": "\u8fd9\u8fd9",
+        "confidence": 0.9972
+      },
+      {
+        "startSeconds": 16.08,
+        "endSeconds": 16.4,
+        "text": "\u8fd9",
+        "confidence": 0.9996
+      },
+      {
+        "startSeconds": 16.6,
+        "endSeconds": 17.4,
+        "text": "\u4e0d\u592a\u597d\u5427",
+        "confidence": 0.9992
+      },
+      {
+        "startSeconds": 22.6,
+        "endSeconds": 23.14,
+        "text": "\u5973\u4eba",
+        "confidence": 0.9995
+      },
+      {
+        "startSeconds": 24.2,
+        "endSeconds": 24.82,
+        "text": "\u4f60\u5728\u73a9\u706b",
+        "confidence": 0.9952
+      },
+      {
+        "startSeconds": 38.8,
+        "endSeconds": 40.0,
+        "text": "\u4f60\u8bd5\u8bd5\u5c31\u77e5\u9053\u4e86",
+        "confidence": 0.9962
+      },
+      {
+        "startSeconds": 49.8,
+        "endSeconds": 50.2,
+        "text": "\u600e\u4e48",
+        "confidence": 0.9984
+      },
+      {
+        "startSeconds": 50.4,
+        "endSeconds": 51.6,
+        "text": "\u8fd9\u4e48\u624b\u5fd9\u811a\u4e71\u7684",
+        "confidence": 0.995
+      },
+      {
+        "startSeconds": 53.0,
+        "endSeconds": 54.52,
+        "text": "\u6709\u70b9\u540d\u4e0d\u526f\u5b9e\u554a",
+        "confidence": 0.9995
+      },
+      {
+        "startSeconds": 56.0,
+        "endSeconds": 57.42,
+        "text": "\u6b3a\u4eba\u592a\u751a",
+        "confidence": 0.997
+      },
+      {
+        "startSeconds": 93.6,
+        "endSeconds": 94.62,
+        "text": "\u4f60\u4e5f\u662f\u7b2c\u4e00\u6b21",
+        "confidence": 0.999
+      },
+      {
+        "startSeconds": 96.2,
+        "endSeconds": 97.18,
+        "text": "\u53ef\u6211\u600e\u4e48\u89c9\u5f97",
+        "confidence": 0.9989
+      },
+      {
+        "startSeconds": 97.44,
+        "endSeconds": 98.2,
+        "text": "\u4f60\u5f88\u719f\u7ec3",
+        "confidence": 0.995
+      },
+      {
+        "startSeconds": 98.6,
+        "endSeconds": 99.62,
+        "text": "\u4e8c\u4e16\u4e3a\u4eba",
+        "confidence": 0.9971
+      },
+      {
+        "startSeconds": 99.6,
+        "endSeconds": 100.22,
+        "text": "\u6211\u80fd\u4e0d\u719f\u7ec3\u5417",
+        "confidence": 0.9962
+      },
+      {
+        "startSeconds": 101.24,
+        "endSeconds": 102.4,
+        "text": "\u6211\u662f\u5929\u751f\u7684",
+        "confidence": 0.9995
+      },
+      {
+        "startSeconds": 103.0,
+        "endSeconds": 103.8,
+        "text": "\u559c\u6b22\u5417",
+        "confidence": 0.9993
+      }
+    ],
+    "stats": {
+      "sampledFrameCount": 534,
+      "textSampleCount": 28,
+      "episodeRegionProbeSampledFrameCount": 11,
+      "episodeRegionProbeDetectedFrameCount": 2,
+      "episodeRegionProbeDetectedBoxCount": 6,
+      "episodeRegionProbeVisualLineGroupCount": 4,
+      "episodeRegionProbeTrackedSubtitleLineCount": 0,
+      "episodeRegionProbeSelectedTextBoxCount": 0,
+      "episodeRegionProbeUsed": 0,
+      "episodeRegionProbeOverrideEligible": 0,
+      "episodeRegionFallbackUsed": 0,
+      "effectiveRegionXPercent": 0.0,
+      "effectiveRegionYPercent": 62.69,
+      "effectiveRegionWidthPercent": 100.0,
+      "effectiveRegionHeightPercent": 7.41,
+      "extractedFrameCount": 28,
+      "textDetectedFrameCount": 24,
+      "textDetectedBoxCount": 24,
+      "visualLineGroupCount": 24,
+      "trackedSubtitleLineCount": 1,
+      "selectedTextBoxCount": 24,
+      "recognizedFrameCount": 24,
+      "refinementSampledFrameCount": 505,
+      "refinedCueCount": 16,
+      "refinementFallbackCount": 6,
+      "totalBoundaryAdjustmentMilliseconds": 1080,
+      "regionProbeElapsedSeconds": 10.735,
+      "candidateElapsedSeconds": 2.844,
+      "recognitionElapsedSeconds": 18.343,
+      "refinementElapsedSeconds": 4.407,
+      "elapsedSeconds": 36.329,
+      "deadlineSeconds": 180
+    }
+  },
+  "stdout": "",
+  "stderr": "\u001b[33mConnectivity check to the model hoster has been skipped because `PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK` is enabled.\u001b[0m\nINFO: Could not find files for the given pattern(s).\nD:\\\u4e2a\u4eba\u5de5\u4f5c\\\u77ed\u5267AI\u5207\u7247\u5de5\u5177\\02_\u5f00\u53d1\u6e90\u7801\\short-drama-ai-material-platform\\tools\\local-ocr\\.venv\\Lib\\site-packages\\paddle\\utils\\cpp_extension\\extension_utils.py:712: UserWarning: No ccache found. Please be aware that recompiling all source files may be required. You can download and install ccache from: https://github.com/ccache/ccache/blob/master/doc/INSTALL.md\n  warnings.warn(warning_message)\n\u001b[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `C:\\Users\\ZIO\\.paddlex\\official_models\\PP-OCRv5_server_det`.\u001b[0m\n\u001b[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `C:\\Users\\ZIO\\.paddlex\\official_models\\PP-OCRv5_server_det`.\u001b[0m\n\u001b[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `C:\\Users\\ZIO\\.paddlex\\official_models\\PP-OCRv5_server_rec`.\u001b[0m\n"
+}

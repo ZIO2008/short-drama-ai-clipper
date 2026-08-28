@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "phase": 29,
+  "runDate": "2026-08-25",
+  "applicationVersion": "0.1.92",
+  "scope": "text-semantic-p0-and-manual-review-e2e",
+  "productionConfigurationDatabase": {
+    "access": "readonly",
+    "sha256Before": "09AE861290603E4CDB4161E808E774C894F115CA94F4F57E3915B1713D5390A0",
+    "sha256After": "09AE861290603E4CDB4161E808E774C894F115CA94F4F57E3915B1713D5390A0",
+    "writes": 0
+  },
+  "successfulRuns": [
+    {
+      "sampleId": "dev-01",
+      "purpose": "text-semantic-p0",
+      "ocrCueCount": 25,
+      "asrCueCount": 23,
+      "candidateCount": 1,
+      "qualifiedWithLimitCount": 1,
+      "blockedCount": 0,
+      "resultFile": "test-results/phase29-semantic-dev01-protected-context-20260824-173819/result.json"
+    },
+    {
+      "sampleId": "dev-02",
+      "purpose": "text-semantic-p0",
+      "ocrCueCount": 23,
+      "asrCueCount": 51,
+      "candidateCount": 1,
+      "qualifiedWithLimitCount": 1,
+      "blockedCount": 0,
+      "resultFile": "test-results/phase29-semantic-dev02-protected-context-20260824-174127/result.json"
+    },
+    {
+      "sampleId": "dev-02",
+      "purpose": "manual-review-export-report-e2e",
+      "candidateConfirmed": true,
+      "exportStatus": "completed",
+      "materialLinked": true,
+      "reportItemCount": 1,
+      "sourceShaUnchanged": true,
+      "resultFile": "test-results/phase29-original-clip-e2e-dev02-export-diagnostic-20260825-122805/result.json"
+    },
+    {
+      "sampleId": "hidden-01",
+      "purpose": "single-blind-cross-window-acceptance",
+      "ocrCueCount": 67,
+      "asrCueCount": 52,
+      "candidateCount": 1,
+      "qualifiedWithLimitCount": 1,
+      "blockedCount": 0,
+      "resultFile": "test-results/phase29-semantic-hidden01-blind-20260825-123557/result.json"
+    }
+  ],
+  "deferred": [
+    {
+      "capability": "multimodal-review",
+      "priority": "P1",
+      "reason": "frozen-package-candidate-scope-contract-added; real provider rerun pending",
+      "blocksMainline": false
+    }
+  ],
+  "verification": {
+    "vitest": { "filesPassed": 132, "testsPassed": 741, "filesSkipped": 5, "testsSkipped": 5 },
+    "typecheck": "passed",
+    "build": "passed",
+    "electronRebuild": "passed",
+    "currentElectronE2e": { "passed": 14, "skipped": 7 },
+    "packagedSmoke": { "passed": 4, "dpi": 3, "business": 1, "isolatedUserData": true, "usesE2eMocks": false },
+    "independentReview": { "stage1": "passed", "stage2": "passed", "high": 0, "medium": 0, "initialFindingsRemediated": true }
+  },
+  "privacy": {
+    "containsSecrets": false,
+    "containsSubtitleText": false,
+    "containsProviderResponseBody": false,
+    "containsSourceMediaPath": false
+  },
+  "acceptanceLedger": {
+    "path": "docs/phase-29-evidence/acceptance-ledger.v1.json",
+    "sha256": "19BFA1D05BB487C4ECB1F3E9BC1EB586311A0A043A7F584EDE1D7CE8E020ABDC",
+    "publicSamples": 6,
+    "hiddenSamples": 2,
+    "multimodalOutcome": "limited-evidence"
+  },
+  "finalStatus": "mainline-p0-passed-multimodal-p1-limited"
+}

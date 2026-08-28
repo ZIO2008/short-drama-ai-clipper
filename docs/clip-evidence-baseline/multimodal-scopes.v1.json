@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "baselineManifestSha256": "6CF8D83D12837C3BCFEB8EAC341B8CE814005607359BCD3A3FDAF76302845339",
+  "scopes": [
+    {
+      "sampleId": "dev-03",
+      "sceneCard": "visual-review-unclear",
+      "packageId": "29000000-0000-4000-8000-000000000003",
+      "evidenceId": "29000000-0000-4000-8001-000000000003",
+      "taskId": "29000000-0000-4000-8002-000000000003",
+      "candidateId": "29000000-0000-4000-8003-000000000003",
+      "snapshotId": "29000000-0000-4000-8004-000000000003",
+      "startSeconds": 32.16,
+      "endSeconds": 32.24,
+      "factCode": "visual-fact-a3198f564520633e79403fea",
+      "statement": "红衣女子把手中的白布交给坐在观众席的黑衣女子。",
+      "claimKinds": ["core-event"],
+      "expectedConclusion": "blocked"
+    },
+    {
+      "sampleId": "dev-04",
+      "sceneCard": "visual-only-supported",
+      "packageId": "29000000-0000-4000-8000-000000000004",
+      "evidenceId": "29000000-0000-4000-8001-000000000004",
+      "taskId": "29000000-0000-4000-8002-000000000004",
+      "candidateId": "29000000-0000-4000-8003-000000000004",
+      "snapshotId": "29000000-0000-4000-8004-000000000004",
+      "startSeconds": 65.64,
+      "endSeconds": 65.72,
+      "factCode": "visual-fact-5bc0c1348a3e22d53318e530",
+      "statement": "黑衣男子双手扶住坐在床上的白衣女子双肩，并面对她说话。",
+      "claimKinds": ["core-event"],
+      "expectedConclusion": "supported"
+    }
+  ]
+}

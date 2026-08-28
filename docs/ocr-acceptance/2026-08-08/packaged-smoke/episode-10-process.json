@@ -1,0 +1,99 @@
+{
+  "episodeNo": 10,
+  "exitCode": 0,
+  "elapsedSeconds": 49.937,
+  "result": {
+    "ok": true,
+    "cues": [
+      {
+        "startSeconds": 10.8,
+        "endSeconds": 12.62,
+        "text": "\u662f\u771f\u7684",
+        "confidence": 0.9999
+      },
+      {
+        "startSeconds": 13.4,
+        "endSeconds": 14.32,
+        "text": "\u8fd9\u81ea\u7531",
+        "confidence": 0.9974
+      },
+      {
+        "startSeconds": 14.88,
+        "endSeconds": 15.96,
+        "text": "\u4e5f\u662f\u771f\u7684",
+        "confidence": 0.9983
+      },
+      {
+        "startSeconds": 25.24,
+        "endSeconds": 26.6,
+        "text": "\u6211\u7ec8\u4e8e\u6539\u53d8\u4e86\u4eba\u751f\u8f68\u8ff9",
+        "confidence": 0.9979
+      },
+      {
+        "startSeconds": 33.0,
+        "endSeconds": 33.4,
+        "text": "\u7ed9\u6211\u9a91\u4f1a\u513f",
+        "confidence": 0.993
+      },
+      {
+        "startSeconds": 55.2,
+        "endSeconds": 56.92,
+        "text": "\u7a7f\u5a5a\u7eb1\u9a91\u673a\u8f66",
+        "confidence": 0.9864
+      },
+      {
+        "startSeconds": 57.0,
+        "endSeconds": 58.38,
+        "text": "\u592a\u9177\u4e86\u5427",
+        "confidence": 0.9982
+      },
+      {
+        "startSeconds": 58.4,
+        "endSeconds": 59.42,
+        "text": "\u597d\u6d6a\u6f2b\u54e6",
+        "confidence": 0.9925
+      },
+      {
+        "startSeconds": 59.4,
+        "endSeconds": 60.72,
+        "text": "\u6211\u4e5f\u60f3\u8981\u8fd9\u6837\u7684\u5a5a\u793c",
+        "confidence": 0.9962
+      }
+    ],
+    "stats": {
+      "sampledFrameCount": 462,
+      "textSampleCount": 20,
+      "episodeRegionProbeSampledFrameCount": 9,
+      "episodeRegionProbeDetectedFrameCount": 4,
+      "episodeRegionProbeDetectedBoxCount": 6,
+      "episodeRegionProbeVisualLineGroupCount": 5,
+      "episodeRegionProbeTrackedSubtitleLineCount": 0,
+      "episodeRegionProbeSelectedTextBoxCount": 0,
+      "episodeRegionProbeUsed": 0,
+      "episodeRegionProbeOverrideEligible": 0,
+      "episodeRegionFallbackUsed": 0,
+      "effectiveRegionXPercent": 0.0,
+      "effectiveRegionYPercent": 62.69,
+      "effectiveRegionWidthPercent": 100.0,
+      "effectiveRegionHeightPercent": 7.41,
+      "extractedFrameCount": 20,
+      "textDetectedFrameCount": 15,
+      "textDetectedBoxCount": 15,
+      "visualLineGroupCount": 15,
+      "trackedSubtitleLineCount": 1,
+      "selectedTextBoxCount": 14,
+      "recognizedFrameCount": 14,
+      "refinementSampledFrameCount": 225,
+      "refinedCueCount": 8,
+      "refinementFallbackCount": 1,
+      "totalBoundaryAdjustmentMilliseconds": 460,
+      "regionProbeElapsedSeconds": 29.609,
+      "candidateElapsedSeconds": 3.172,
+      "recognitionElapsedSeconds": 14.39,
+      "refinementElapsedSeconds": 2.188,
+      "elapsedSeconds": 49.359,
+      "deadlineSeconds": 180
+    }
+  },
+  "stderr": "\u001b[33mConnectivity check to the model hoster has been skipped because `PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK` is enabled.\u001b[0m\nINFO: Could not find files for the given pattern(s).\nD:\\\u4e2a\u4eba\u5de5\u4f5c\\\u77ed\u5267AI\u5207\u7247\u5de5\u5177\\02_\u5f00\u53d1\u6e90\u7801\\short-drama-ai-material-platform\\release\\ocr-acceptance-pack-20260808\\win-unpacked\\resources\\tools\\local-ocr\\.venv\\Lib\\site-packages\\paddle\\utils\\cpp_extension\\extension_utils.py:712: UserWarning: No ccache found. Please be aware that recompiling all source files may be required. You can download and install ccache from: https://github.com/ccache/ccache/blob/master/doc/INSTALL.md\n  warnings.warn(warning_message)\n\u001b[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `C:\\Users\\ZIO\\.paddlex\\official_models\\PP-OCRv5_server_det`.\u001b[0m\n\u001b[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `C:\\Users\\ZIO\\.paddlex\\official_models\\PP-OCRv5_server_det`.\u001b[0m\n\u001b[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `C:\\Users\\ZIO\\.paddlex\\official_models\\PP-OCRv5_server_rec`.\u001b[0m\n"
+}

@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "screens-v48-text-analysis/1280x720-failure.html",
+  "entry": "screens-v48-text-analysis/1280x720-failure.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-08-04T15:49:11.587Z",
+  "updatedAt": "2026-08-04T15:49:11.587Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

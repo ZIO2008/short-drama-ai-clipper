@@ -1,0 +1,426 @@
+{
+  "episodeNo": 34,
+  "durationSeconds": 145.32,
+  "exitCode": 0,
+  "timedOut": false,
+  "elapsedSeconds": 119.453,
+  "result": {
+    "ok": true,
+    "cues": [
+      {
+        "startSeconds": 2.0,
+        "endSeconds": 2.58,
+        "text": "\u6211\u521a\u56de\u6765",
+        "confidence": 0.9995
+      },
+      {
+        "startSeconds": 2.8,
+        "endSeconds": 4.22,
+        "text": "\u76ee\u524d\u6700\u91cd\u8981\u7684\u4e8b\u60c5",
+        "confidence": 0.998
+      },
+      {
+        "startSeconds": 4.44,
+        "endSeconds": 5.22,
+        "text": "\u662f\u63a5\u624b\u516c\u53f8",
+        "confidence": 0.9989
+      },
+      {
+        "startSeconds": 5.68,
+        "endSeconds": 6.92,
+        "text": "\u5404\u90e8\u95e8\u7684\u4eba\u4e8b",
+        "confidence": 0.9995
+      },
+      {
+        "startSeconds": 7.6,
+        "endSeconds": 8.4,
+        "text": "\u4e0d\u6562\u5206\u5fc3",
+        "confidence": 0.9988
+      },
+      {
+        "startSeconds": 11.36,
+        "endSeconds": 11.96,
+        "text": "\u5b8b\u5c11\u73b0\u5728\u662f",
+        "confidence": 0.9983
+      },
+      {
+        "startSeconds": 15.2,
+        "endSeconds": 16.4,
+        "text": "\u8fd9\u4e2a\u4e8b\u53ef\u9a6c\u864e\u4e0d\u5f97",
+        "confidence": 0.9977
+      },
+      {
+        "startSeconds": 18.28,
+        "endSeconds": 19.08,
+        "text": "\u4f60\u4eec\u7537\u4eba\u5440",
+        "confidence": 0.998
+      },
+      {
+        "startSeconds": 20.8,
+        "endSeconds": 21.2,
+        "text": "\u6ce8\u91cd\u4e8b\u4e1a\u662f\u6ca1\u9519",
+        "confidence": 0.9945
+      },
+      {
+        "startSeconds": 21.6,
+        "endSeconds": 23.72,
+        "text": "\u4f46\u662f\u4e00\u4e2a\u5bb6\u65cf",
+        "confidence": 0.9998
+      },
+      {
+        "startSeconds": 23.88,
+        "endSeconds": 24.2,
+        "text": "\u9886\u5934\u4eba\u7684\u5a5a\u59fb\u751f\u6d3b",
+        "confidence": 0.9833
+      },
+      {
+        "startSeconds": 28.88,
+        "endSeconds": 31.02,
+        "text": "\u4f60\u5927\u54e5\u518d\u600e\u4e48\u4e0d\u884c",
+        "confidence": 0.9904
+      },
+      {
+        "startSeconds": 31.28,
+        "endSeconds": 33.02,
+        "text": "\u4f46\u4ed6\u6709\u513f\u5b50\u4e86\u5440",
+        "confidence": 0.9861
+      },
+      {
+        "startSeconds": 33.2,
+        "endSeconds": 34.42,
+        "text": "\u4f60\u53ef\u5f97\u6293\u7d27\u54df",
+        "confidence": 0.98
+      },
+      {
+        "startSeconds": 35.08,
+        "endSeconds": 36.58,
+        "text": "\u4f60\u73b0\u5728\u5de5\u4f5c\u5fd9",
+        "confidence": 0.9979
+      },
+      {
+        "startSeconds": 36.68,
+        "endSeconds": 38.0,
+        "text": "\u4f46\u662f\u53ef\u4ee5\u8ddf\u5fae\u6708",
+        "confidence": 0.9986
+      },
+      {
+        "startSeconds": 38.2,
+        "endSeconds": 39.42,
+        "text": "\u53ef\u4ee5\u5148\u8ba2\u5a5a\u561b",
+        "confidence": 0.9762
+      },
+      {
+        "startSeconds": 39.4,
+        "endSeconds": 40.8,
+        "text": "\u8fd9\u6837",
+        "confidence": 0.9959
+      },
+      {
+        "startSeconds": 40.8,
+        "endSeconds": 41.2,
+        "text": "\u5b8b\u603b\u5c31\u4f1a\u89c9\u5f97",
+        "confidence": 0.999
+      },
+      {
+        "startSeconds": 41.36,
+        "endSeconds": 42.64,
+        "text": "\u4f60\u611f\u60c5\u7a33\u5b9a\u4e86",
+        "confidence": 0.9947
+      },
+      {
+        "startSeconds": 43.44,
+        "endSeconds": 43.8,
+        "text": "\u5bf9\u4f60\u5c31\u53ea\u6709\u597d\u5904",
+        "confidence": 0.998
+      },
+      {
+        "startSeconds": 43.8,
+        "endSeconds": 46.38,
+        "text": "\u4f60\u8bf4\u5bf9\u5417",
+        "confidence": 0.9977
+      },
+      {
+        "startSeconds": 50.2,
+        "endSeconds": 50.82,
+        "text": "\u90a3\u8fd9\u6837",
+        "confidence": 0.9962
+      },
+      {
+        "startSeconds": 51.2,
+        "endSeconds": 52.22,
+        "text": "\u6211\u56de\u53bb\u5c31\u8bf7\u5927\u5e08",
+        "confidence": 0.9994
+      },
+      {
+        "startSeconds": 52.2,
+        "endSeconds": 56.6,
+        "text": "\u9009\u4e00\u4e2a\u5409\u65e5",
+        "confidence": 0.9853
+      },
+      {
+        "startSeconds": 56.6,
+        "endSeconds": 57.2,
+        "text": "\u6211\u5148\u56de\u5bb6\nTHO",
+        "confidence": 0.7588
+      },
+      {
+        "startSeconds": 57.4,
+        "endSeconds": 58.0,
+        "text": "\u5148\u548c\u6211\u7238\u5546\u91cf\u4e00\u4e0b\nCHO",
+        "confidence": 0.8017
+      },
+      {
+        "startSeconds": 58.04,
+        "endSeconds": 58.88,
+        "text": "\u5148\u548c\u6211\u7238\u5546\u91cf\u4e00\u4e0b",
+        "confidence": 0.9993
+      },
+      {
+        "startSeconds": 59.2,
+        "endSeconds": 59.6,
+        "text": "\u554a",
+        "confidence": 1.0
+      },
+      {
+        "startSeconds": 60.4,
+        "endSeconds": 61.6,
+        "text": "\u5e94\u8be5\u7684\u5e94\u8be5\u7684\u554a",
+        "confidence": 0.9989
+      },
+      {
+        "startSeconds": 65.44,
+        "endSeconds": 65.8,
+        "text": "\u6765",
+        "confidence": 0.9999
+      },
+      {
+        "startSeconds": 69.6,
+        "endSeconds": 70.22,
+        "text": "\u5b8b\u9e3f\u624d\u4ee5\u524d\u548c\u5fae\u6708\u5f88\u597d",
+        "confidence": 0.9939
+      },
+      {
+        "startSeconds": 72.36,
+        "endSeconds": 73.52,
+        "text": "\u4f46\u4ed6\u9661\u7136\u95f4\u4e0a\u4f4d\u4e86",
+        "confidence": 0.9983
+      },
+      {
+        "startSeconds": 74.6,
+        "endSeconds": 75.0,
+        "text": "\u60f3\u6cd5\u96be\u514d\u90fd\u4f1a\u53d1\u751f\u53d8\u5316",
+        "confidence": 0.9923
+      },
+      {
+        "startSeconds": 75.96,
+        "endSeconds": 76.4,
+        "text": "\u53ef\u6c90\u5bb6\u4eba",
+        "confidence": 0.9988
+      },
+      {
+        "startSeconds": 77.4,
+        "endSeconds": 77.8,
+        "text": "\u4f3c\u4e4e\u6ca1\u610f\u8bc6\u5230\u8fd9\u4e00\u70b9",
+        "confidence": 0.9778
+      },
+      {
+        "startSeconds": 79.24,
+        "endSeconds": 79.52,
+        "text": "\u4e0d",
+        "confidence": 0.9997
+      },
+      {
+        "startSeconds": 81.0,
+        "endSeconds": 81.4,
+        "text": "\u4ed6\u4eec\u6050\u6015\u5df2\u7ecf\u610f\u8bc6\u5230\u4e86",
+        "confidence": 0.9933
+      },
+      {
+        "startSeconds": 84.12,
+        "endSeconds": 84.66,
+        "text": "\u4f9d\u7136\u628a\u5b8b\u9e3f\u624d",
+        "confidence": 0.9944
+      },
+      {
+        "startSeconds": 87.6,
+        "endSeconds": 88.0,
+        "text": "\u771f\u662f\u53ef\u7b11",
+        "confidence": 0.9998
+      },
+      {
+        "startSeconds": 94.8,
+        "endSeconds": 95.12,
+        "text": "\u4f60\u90fd\u770b\u5230\u4e86",
+        "confidence": 0.9997
+      },
+      {
+        "startSeconds": 95.28,
+        "endSeconds": 95.6,
+        "text": "\u54b1\u4eec\u6c90\u5bb6\u8d8a\u6765\u8d8a\u597d\u4e86",
+        "confidence": 0.9998
+      },
+      {
+        "startSeconds": 101.0,
+        "endSeconds": 102.22,
+        "text": "\u751a\u81f3\u4f1a\u6bd4\u4ee5\u524d",
+        "confidence": 0.9986
+      },
+      {
+        "startSeconds": 103.16,
+        "endSeconds": 103.78,
+        "text": "\u7238\u5440",
+        "confidence": 0.9992
+      },
+      {
+        "startSeconds": 104.8,
+        "endSeconds": 106.0,
+        "text": "\u662f\u771f\u7684\u5e0c\u671b\u4f60\u80fd\u56de\u6765",
+        "confidence": 0.9963
+      },
+      {
+        "startSeconds": 106.64,
+        "endSeconds": 107.06,
+        "text": "\u8001\u8001\u5b9e\u5b9e\u5ac1\u5230\u97e9\u5bb6\u53bb",
+        "confidence": 0.9945
+      },
+      {
+        "startSeconds": 107.8,
+        "endSeconds": 108.42,
+        "text": "\u54b1\u4eec\u5bb6",
+        "confidence": 0.9993
+      },
+      {
+        "startSeconds": 108.6,
+        "endSeconds": 110.56,
+        "text": "\u501f\u52a9\u5b8b\u5bb6\u548c\u97e9\u5bb6\u52bf\u529b",
+        "confidence": 0.9875
+      },
+      {
+        "startSeconds": 110.6,
+        "endSeconds": 111.4,
+        "text": "\u4e0d\u51fa\u4e94\u5e74",
+        "confidence": 1.0
+      },
+      {
+        "startSeconds": 111.48,
+        "endSeconds": 113.0,
+        "text": "\u7edd\u5bf9\u80fd\u6210\u4e3a\u5168\u5e02",
+        "confidence": 0.9987
+      },
+      {
+        "startSeconds": 113.68,
+        "endSeconds": 114.38,
+        "text": "\u7b2c\u4e00\u540d\u6d41\u5bb6\u65cf",
+        "confidence": 0.9971
+      },
+      {
+        "startSeconds": 115.68,
+        "endSeconds": 116.98,
+        "text": "\u548c\u6211\u6709\u4ec0\u4e48\u5173\u7cfb",
+        "confidence": 0.9911
+      },
+      {
+        "startSeconds": 118.4,
+        "endSeconds": 118.8,
+        "text": "\u5357\u70df",
+        "confidence": 0.9769
+      },
+      {
+        "startSeconds": 118.8,
+        "endSeconds": 121.0,
+        "text": "\u4f60\u4e0d\u8981\u800d\u5c0f\u813e\u6c14",
+        "confidence": 0.979
+      },
+      {
+        "startSeconds": 121.0,
+        "endSeconds": 122.02,
+        "text": "\u7238\u90fd\u8bf4\u4e86",
+        "confidence": 0.9996
+      },
+      {
+        "startSeconds": 122.04,
+        "endSeconds": 123.02,
+        "text": "\u53ea\u8981\u4f60\u542c\u4ed6\u7684",
+        "confidence": 0.9999
+      },
+      {
+        "startSeconds": 131.0,
+        "endSeconds": 131.62,
+        "text": "\u5357\u70df",
+        "confidence": 0.9946
+      },
+      {
+        "startSeconds": 132.0,
+        "endSeconds": 133.0,
+        "text": "\u4f60\u7b11\u4ec0\u4e48\u5462",
+        "confidence": 0.9966
+      },
+      {
+        "startSeconds": 134.6,
+        "endSeconds": 135.8,
+        "text": "\u539f\u6765\u4f60\u4eec\u4eca\u5929\u53eb\u6211\u6765",
+        "confidence": 0.9996
+      },
+      {
+        "startSeconds": 136.2,
+        "endSeconds": 136.6,
+        "text": "\u6253\u7684\u662f\u8fd9\u4e2a\u7b97\u76d8",
+        "confidence": 0.9996
+      },
+      {
+        "startSeconds": 138.12,
+        "endSeconds": 138.32,
+        "text": "\u5148\u544a\u8bc9\u6211\u6c90\u5bb6\u6709\u672a\u6765",
+        "confidence": 0.997
+      },
+      {
+        "startSeconds": 139.88,
+        "endSeconds": 141.8,
+        "text": "\u7136\u540e\u518d\u7ed9\u6211\u704c\u8ff7\u9b42\u6c64",
+        "confidence": 0.9938
+      },
+      {
+        "startSeconds": 141.8,
+        "endSeconds": 142.2,
+        "text": "EHO",
+        "confidence": 0.5411
+      }
+    ],
+    "stats": {
+      "sampledFrameCount": 727,
+      "textSampleCount": 97,
+      "episodeRegionProbeSampledFrameCount": 15,
+      "episodeRegionProbeDetectedFrameCount": 14,
+      "episodeRegionProbeDetectedBoxCount": 23,
+      "episodeRegionProbeVisualLineGroupCount": 17,
+      "episodeRegionProbeTrackedSubtitleLineCount": 1,
+      "episodeRegionProbeSelectedTextBoxCount": 14,
+      "episodeRegionProbeUsed": 1,
+      "episodeRegionProbeOverrideEligible": 1,
+      "episodeRegionFallbackUsed": 0,
+      "effectiveRegionXPercent": 0.0,
+      "effectiveRegionYPercent": 62.69,
+      "effectiveRegionWidthPercent": 100.0,
+      "effectiveRegionHeightPercent": 7.41,
+      "extractedFrameCount": 97,
+      "textDetectedFrameCount": 84,
+      "textDetectedBoxCount": 95,
+      "visualLineGroupCount": 85,
+      "trackedSubtitleLineCount": 1,
+      "selectedTextBoxCount": 85,
+      "recognizedFrameCount": 83,
+      "refinementSampledFrameCount": 2504,
+      "refinedCueCount": 41,
+      "refinementFallbackCount": 22,
+      "totalBoundaryAdjustmentMilliseconds": 45880,
+      "regionProbeElapsedSeconds": 30.813,
+      "candidateElapsedSeconds": 4.625,
+      "recognitionElapsedSeconds": 68.234,
+      "refinementElapsedSeconds": 15.188,
+      "elapsedSeconds": 118.875,
+      "deadlineSeconds": 180
+    }
+  },
+  "stdout": "",
+  "stderr": "\u001b[33mConnectivity check to the model hoster has been skipped because `PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK` is enabled.\u001b[0m\nINFO: Could not find files for the given pattern(s).\nD:\\\u4e2a\u4eba\u5de5\u4f5c\\\u77ed\u5267AI\u5207\u7247\u5de5\u5177\\02_\u5f00\u53d1\u6e90\u7801\\short-drama-ai-material-platform\\tools\\local-ocr\\.venv\\Lib\\site-packages\\paddle\\utils\\cpp_extension\\extension_utils.py:712: UserWarning: No ccache found. Please be aware that recompiling all source files may be required. You can download and install ccache from: https://github.com/ccache/ccache/blob/master/doc/INSTALL.md\n  warnings.warn(warning_message)\n\u001b[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `C:\\Users\\ZIO\\.paddlex\\official_models\\PP-OCRv5_server_det`.\u001b[0m\n\u001b[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `C:\\Users\\ZIO\\.paddlex\\official_models\\PP-OCRv5_server_det`.\u001b[0m\n\u001b[32mModel files already exist. Using cached files. To redownload, please delete the directory manually: `C:\\Users\\ZIO\\.paddlex\\official_models\\PP-OCRv5_server_rec`.\u001b[0m\n"
+}

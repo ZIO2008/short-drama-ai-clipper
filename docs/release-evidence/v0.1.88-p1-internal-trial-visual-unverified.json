@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "v0.1.88-p1-internal-trial",
+  "appVersion": "0.1.88",
+  "scope": "P1",
+  "channel": "internal-trial",
+  "packageKind": "verification-only",
+  "visualFidelity": "incomplete",
+  "notFormalCandidate": true,
+  "artifactAvailability": "local-only",
+  "nativeBuildPathRedactions": 1,
+  "executableSha256": "f165f454174a6ae585af91a35dd4e3075bdbe80e0666900f6a0cdf651548a5ae",
+  "appAsarSha256": "3493f5f6a3111f29ef42903585baf6bfbe331971f9e95a37f7999a64ee69033a",
+  "createdAt": "2026-08-14T04:48:25.819Z",
+  "privacy": {
+    "containsExecutablePath": false,
+    "containsDeveloperPath": false,
+    "containsSecrets": false
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "mediaRoot": "D:/shortdrama-evidence-baseline/v1",
+  "publicDevelopmentSet": [
+    { "id": "dev-01", "relativePath": "public/dev-01.mp4", "sha256": "FE2BE32FDDD991D34B9242A6C37EED67609D76209813E6B72DD47B4610D0B081", "sceneCards": ["ocr-asr-aligned"] },
+    { "id": "dev-02", "relativePath": "public/dev-02.mp4", "sha256": "024E9A2F5868D56871247AE70436785BEF5B0388417B0759CF28A770011D90A5", "sceneCards": ["ocr-asr-conflict"] },
+    { "id": "dev-03", "relativePath": "public/dev-03.mp4", "sha256": "5767B409F1CAE52218BD67F4A77EB45CB83AECD08E1D80048C67567C9173E4D6", "sceneCards": ["visual-review-unclear"] },
+    { "id": "dev-04", "relativePath": "public/dev-04.mp4", "sha256": "2C67B895F3AFA474DB014F1859FC451523EF9DA40FE9E03DF3658B3B678C9DDB", "sceneCards": ["visual-only-supported"] },
+    { "id": "dev-05", "relativePath": "public/dev-05.mp4", "sha256": "9DABB1FDACE3E9D1561B2361735C01A60ACCF10F1ED589E25859E438BDBAEC37", "sceneCards": ["queue-recovery"] },
+    { "id": "dev-06", "relativePath": "public/dev-06.mp4", "sha256": "A9088B5A8F0C1DC730B58682BE572FD407AF6D10408642CBABECE70925E745B5", "sceneCards": ["partial-success"] }
+  ],
+  "hiddenAcceptanceSet": [
+    { "id": "hidden-01", "relativePath": "hidden/hidden-01.mp4", "sha256": "E1D412E0E499BFE2ECB66F9B4A10550878822925C23AD9DF58112E1CF876B888", "sceneCards": ["cross-window-event"] },
+    { "id": "hidden-02", "relativePath": "hidden/hidden-02.mp4", "sha256": "E44D1F240F91E6FAFABBA9FA847B3C47180BBDEC12B86E054D09F2F3C2FEC761", "sceneCards": ["media-fingerprint-change"] }
+  ],
+  "history": []
+}
