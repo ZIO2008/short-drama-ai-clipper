@@ -15,7 +15,7 @@ type BaselineManifest = { mediaRoot: string; publicDevelopmentSet: BaselineSampl
 
 const projectRoot = resolve(import.meta.dirname, '../../..')
 const manifestPath = join(projectRoot, 'docs', 'clip-evidence-baseline', 'manifest.v1.json')
-const ledgerPath = join(projectRoot, 'docs', 'phase-29-evidence', 'acceptance-ledger.v1.json')
+const ledgerPath = join(projectRoot, 'docs', 'phase-29-evidence', 'acceptance-ledger.v2.json')
 const temporaryFolders: string[] = []
 
 afterEach(async () => {

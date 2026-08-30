@@ -2,7 +2,7 @@
 
 ## 当前裁决
 
-Phase 21–29 的已授权 P0 开发主线已经形成可运行的 `0.1.92` 开发树和不可覆盖的 Windows 功能验证包，但尚未形成可发布的 Git 锚点，也未通过全产品视觉门禁。视频 P1 的旧结果已降级为未绑定候选的能力探测，当前保持 `limited-evidence`。因此当前身份只能是“已完成 P0 主线功能验收的未收口开发树 + verification-only 证据”，不能称为正式候选、最新版或已发布版本。
+本地 Git 锚点 `ba45738` 已收口此前 Phase 21–29 P0 主线；视频 P1 v2 证据记录了新冻结范围合同下的 `dev-04 supported` 与 `dev-03 unclear → blocked`，并已通过独立 Stage 1/2 审查，0 HIGH / 0 MEDIUM。旧结果只作历史能力探测。全产品视觉门禁仍未通过，因此不能称为正式候选、最新版或已发布版本。
 
 ## 开发树盘点
 
@@ -28,7 +28,7 @@ Phase 21–29 的已授权 P0 开发主线已经形成可运行的 `0.1.92` 开�
 
 - Phase 29 验收：`docs/phase-29-original-clip-acceptance.md`
 - Phase 29 运行清单：`docs/phase-29-evidence/run-manifest-20260825.json`
-- 运行清单 SHA-256：`FC5F8B46E4E8D53575D939862853FBC774953D7AD62CEEC472FE8F3E298A76D4`
+- 运行清单 SHA-256：`0CA251DFE045E17FE1D6F954F278C73E220111B5231CA9A2674B3A7F9115FBC4`
 - 本地原始 verification manifest SHA-256：`52F6BED82A471102A0E4CF0E1460609E78979C85A0BF84F4950256C38B5F5799`
 - 可提交脱敏 verification 快照 SHA-256：`194689A5EDF4D8C8B41318540B3CE62D31D9BBE0CAADDBDCFDC3FCC1DBE3850C`
 - EXE SHA-256：`2fcc63a8d15084e8d2015c6eab16b5dca19b3dbb20b3d33a2c46f28a7cbf76cd`

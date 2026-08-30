@@ -57,7 +57,7 @@ describe('packagedRealSemanticFailureCode', () => {
   it('blocks the sealed hidden-01 before reading media or provider configuration', async () => {
     const original = [...process.argv]
     try {
-      process.argv = [...original, '--real-semantic-evidence-manifest', resolve(import.meta.dirname, '../../../docs/clip-evidence-baseline/manifest.v1.json'), '--phase29-acceptance-ledger', resolve(import.meta.dirname, '../../../docs/phase-29-evidence/acceptance-ledger.v1.json')]
+      process.argv = [...original, '--real-semantic-evidence-manifest', resolve(import.meta.dirname, '../../../docs/clip-evidence-baseline/manifest.v1.json'), '--phase29-acceptance-ledger', resolve(import.meta.dirname, '../../../docs/phase-29-evidence/acceptance-ledger.v2.json')]
       await expect(runPackagedRealSemanticEvidence('hidden-01')).rejects.toThrow('唯一一次')
     } finally { process.argv = original }
   })

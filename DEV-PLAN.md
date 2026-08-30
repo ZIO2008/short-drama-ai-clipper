@@ -2,7 +2,7 @@
 
 > 本文件记录当前可执行开发单元，以及原剧切片的完整候选路线图。只有“当前队列”中标为已排期的 Phase 获得执行授权；后续路线图用于说明依赖、交付和工期，不能自动启动。Phase 1–20 的完整原文已归档，不再作为当前队列、设计源或验收门禁。
 
-## 当前状态（2026-08-25）
+## 当前状态（2026-08-29）
 
 - 当前全产品设计源只通过 `docs/current-design-baseline.json` 解析到注册表中的 current 不可变快照；本文不重复写具体版本、路径或哈希。
 - superseded/legacy HTML、合同、截图、旧 `audit:fidelity` 与 Phase 1–20 只用于历史追溯；它们不能补充、覆盖或阻断 current 工作。
@@ -11,9 +11,9 @@
 - 用户已授权的 V49 `screen-clip` 第一屏运行时宿主迁移和同视口视觉验收已完成：默认候选已选、前后审阅加倍速浮层、媒体不可读均在 1440×900 和 1280×720 留存成对证据。候选池、完成报告、字幕和其它屏幕仍未获页面迁移授权；全产品设计合同/脚本门禁替换、全产品视觉验收、打包和发布也未获授权。
 - V49 是静态视觉参考，不自动等同于当前运行时页面、数据或交互。任何可能改动页面结构、文案、交互或数据绑定的事项，必须先写明现状与 V49 的映射依据、影响文件、运行时影响和误改风险，并由用户逐项确认后才可实施。
 - Phase 29 已完成的开发树已生成 `v0.1.92-p1-internal-trial-visual-unverified` 功能验证包：隐私审计 3,744 个文件通过，实际打包 EXE 的 100%/125%/150% DPI 冒烟为 3/3；该包只登记为 verification evidence，不是正式候选。夹具型打包 UI 用例受 Phase 24 的 packaged E2E 安全门禁阻断，不据此修改页面或放宽门禁。
-- 当前开发树仍未形成 Git 收口锚点，视觉审计仍为 `completed=0 / incomplete=94`；因此正式候选、正式版替换和发布继续禁止。页面迁移待决项保持独立，不因本次打包验证自动启动。
+- 当前开发树已形成本地 Git 收口锚点；全产品视觉审计仍为 `completed=0 / incomplete=94`，因此正式候选、正式版替换和发布继续禁止。页面迁移待决项保持独立，不因功能验收自动启动。
 - 收口修复后的临时目录包已通过 packaged smoke 4/4：三档 DPI 3/3，以及不启用 E2E mock、使用系统临时隔离 userData 的 85 集导入、字幕映射和重启恢复 1/1。该临时包不登记为候选，不覆盖既有 verification 包。
-- 最终独立代码审查 Stage 1/2 均 PASS，0 HIGH / 0 MEDIUM；hidden 封存、P1 limited、可重建证据、packaged smoke、隐私门禁与模块拆分均在最新工作树复核通过。该结论只允许建立本地 Git 锚点，不解除视觉与正式发布门禁。
+- 本地锚点 `ba45738` 对应的收口独立审查 Stage 1/2 均 PASS，0 HIGH / 0 MEDIUM；该审查早于 2026-08-29 视频 P1 v2 证据变更，不能冒充当前变更已审。
 
 ## 当前队列
 
@@ -27,7 +27,7 @@ current 基线治理与 `screen-clip` 静态夹具（已完成并冻结）
   → Phase 26：候选池、批量导出与成果登记（核心业务已完成；V49 页面配置分支延期）
   → Phase 27：完成报告、成果回链与异常处置（已完成：核心报告逻辑，不改页面结构）
   → Phase 28：恢复、压力、隐私与数据安全收口（已完成：恢复、压力、隐私与备份边界通过）
-  → Phase 29：真实样本验收与交付候选（P0 主线完成：文本语义、人工审片闭环与隐藏盲验；视频 P1 为 limited-evidence，待新冻结范围合同复跑）
+  → Phase 29：真实样本验收与交付候选（已完成：文本语义 P0、人工审片闭环、隐藏盲验；视频 P1 的 dev-04 supported 与 dev-03 unclear→blocked 均通过冻结范围合同；v2 证据治理审查通过）
   → Phase 22 的页面提案（P22-02/P22-04）及 Phase 26/27 V49 页面迁移仍保持独立待决，不自动启动页面迁移或功能重写
 ```
 
@@ -266,6 +266,10 @@ V49 候选池/报告视觉迁移是 Phase 26、27 的可选分支，不能跨过
 **2026-08-25 视频复核 P1 追加授权记录**：用户授权继续修复 Model Studio 视频复核。`qwen3.7-plus` 使用官方严格 JSON Schema 输出，锁定 conclusion、evidenceIds、claimKinds、reason 及 `additionalProperties=false`。当日 `dev-04 supported` 与 `dev-03 unclear` 只保留为供应商能力探测；因未绑定冻结候选，不能作为 P1 业务验收。该追加任务不修改页面、V49、正式 profile、数据库 schema、文本语义 P0 或打包发布状态。
 
 **2026-08-26 独立审查更正（覆盖上述视频通过声明）**：旧视频执行器实际从整集 PTS 中段取帧，并为 package/evidenceId 生成临时身份，没有回链冻结候选边界；所以 `dev-03/dev-04` 只能算供应商能力探测，不能算 Task 29.3 通过。当前实现已改为读取哈希冻结的 `multimodal-scopes.v1.json`，在临时 SQLite 建立稳定 package、candidate、snapshot、B 级 scene evidenceId 和精确 PTS，再从本地证据读取命题、派生 factCode、记录帧哈希和供应商快照。旧结果不沿用；在新合同真实复跑前，两项均为 `limited-evidence`。6+2 矩阵已由封存账本完整覆盖，两个隐藏样本的 `runCount=1`，packaged 语义入口会在读取媒体或供应商配置前拒绝重复隐藏运行。Phase 29 的 P0 主线完成结论不变，P1 延期不阻断人工审片；页面、V49 与正式数据仍未修改。
+
+**2026-08-29 视频 P1 冻结范围复验完成**：使用包含冻结 scope 执行器的实际打包 EXE、只读正式供应商配置、临时 SQLite 和新结果路径复验。`dev-04` 绑定稳定 package/candidate/snapshot/evidenceId、65.64–65.72 秒和 5 帧，供应商返回 `supported`；`dev-03` 绑定对应稳定身份、32.16–32.24 秒和 5 帧，供应商返回 `unclear`，系统正确保持 `blocked`。两次正式配置库 SHA-256 前后均为 `14447B235DAA20FD2A8BABB68AF79AFF545CC846B5E6D50AAEE92C8756E441E3`，写入 0。当前裁决封存在 `acceptance-ledger.v2.json` 与 `run-manifest-20260829-video-bound.json`；旧能力探测继续为 superseded。未修改页面、V49、正式配置或正式版。
+
+**2026-08-30 最终审查**：P1 v2 的 tracked 脱敏逐帧结果、scope/ledger/run-manifest 三方身份、正负样本精确集合、供应商快照、生产库零写入、历史不可改写和验证数字经独立 Stage 1/2 复核通过，0 HIGH / 0 MEDIUM。全量 Vitest 133 files / 742 tests passed（5 skipped），build、Electron rebuild、current E2E 串行 14 passed / 7 conditional skipped。
 
 ### 2026-08-24 剩余执行计划：真实供应商端到端验收
 

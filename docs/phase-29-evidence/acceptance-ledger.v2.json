@@ -1,0 +1,99 @@
+{
+  "version": 2,
+  "baselineManifestSha256": "6CF8D83D12837C3BCFEB8EAC341B8CE814005607359BCD3A3FDAF76302845339",
+  "supersedes": "acceptance-ledger.v1.json",
+  "sealedAt": "2026-08-29",
+  "entries": [
+    {
+      "sampleId": "dev-01",
+      "tier": "public",
+      "sceneCards": ["ocr-asr-aligned"],
+      "outcome": "passed",
+      "runCount": 1,
+      "evidence": ["text-semantic-p0"],
+      "sourceShaVerified": true,
+      "productionDatabaseWrites": 0,
+      "temporaryDataCleaned": true
+    },
+    {
+      "sampleId": "dev-02",
+      "tier": "public",
+      "sceneCards": ["ocr-asr-conflict"],
+      "outcome": "passed",
+      "runCount": 1,
+      "evidence": ["text-semantic-p0", "manual-review-export-report-e2e"],
+      "sourceShaVerified": true,
+      "productionDatabaseWrites": 0,
+      "temporaryDataCleaned": true
+    },
+    {
+      "sampleId": "dev-03",
+      "tier": "public",
+      "sceneCards": ["visual-review-unclear"],
+      "outcome": "correctly-blocked",
+      "runCount": 1,
+      "resultSha256": "4F12ADF99ACD3B76D40331391489C254D47C5252FB2FF7963F6416B0286218CA",
+      "evidence": ["media-pts-baseline", "frozen-package-candidate-multimodal-review"],
+      "sourceShaVerified": true,
+      "productionDatabaseWrites": 0,
+      "temporaryDataCleaned": true
+    },
+    {
+      "sampleId": "dev-04",
+      "tier": "public",
+      "sceneCards": ["visual-only-supported"],
+      "outcome": "passed",
+      "runCount": 1,
+      "resultSha256": "1D00DEB30E3217BF400CF3139604F08215800BC65DC63675272DCE97B2C0EEBE",
+      "evidence": ["media-pts-baseline", "frozen-package-candidate-multimodal-review"],
+      "sourceShaVerified": true,
+      "productionDatabaseWrites": 0,
+      "temporaryDataCleaned": true
+    },
+    {
+      "sampleId": "dev-05",
+      "tier": "public",
+      "sceneCards": ["queue-recovery"],
+      "outcome": "passed",
+      "runCount": 1,
+      "evidence": ["queue-recovery-governance"],
+      "sourceShaVerified": true,
+      "productionDatabaseWrites": 0,
+      "temporaryDataCleaned": true
+    },
+    {
+      "sampleId": "dev-06",
+      "tier": "public",
+      "sceneCards": ["partial-success"],
+      "outcome": "passed",
+      "runCount": 1,
+      "evidence": ["real-ffmpeg-export", "partial-success-governance"],
+      "sourceShaVerified": true,
+      "productionDatabaseWrites": 0,
+      "temporaryDataCleaned": true
+    },
+    {
+      "sampleId": "hidden-01",
+      "tier": "hidden",
+      "sceneCards": ["cross-window-event"],
+      "outcome": "passed",
+      "runCount": 1,
+      "resultSha256": "8DD4CAA84EA4A026CC314686D094E883A6E6940838C2BD612996420D1F5F52FE",
+      "evidence": ["single-blind-text-semantic-p0"],
+      "sourceShaVerified": true,
+      "productionDatabaseWrites": 0,
+      "temporaryDataCleaned": true
+    },
+    {
+      "sampleId": "hidden-02",
+      "tier": "hidden",
+      "sceneCards": ["media-fingerprint-change"],
+      "outcome": "correctly-blocked",
+      "runCount": 1,
+      "evidence": ["media-fingerprint-drift-governance"],
+      "sourceShaVerified": true,
+      "productionDatabaseWrites": 0,
+      "temporaryDataCleaned": true
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 ## 当前结论
 
-Phase 29 的 P0 功能主线完成：文本语义的 `dev-01`、`dev-02` 通过，`dev-02` 人工审片确认、真实导出和报告回链通过，`hidden-01` 唯一盲验通过。视频复核 P1 的旧 `dev-03`/`dev-04` 结果经独立审查确认只属于未绑定候选的供应商能力探测，不能作为业务验收；当前已补齐冻结 package/candidate/evidenceId/PTS 执行合同，但尚未使用新合同重新调用供应商，因此矩阵如实保持 `limited-evidence`。安装包打包和发布仍未授权。
+Phase 29 已授权功能主线完成：文本语义 P0 的 `dev-01`、`dev-02` 通过，`dev-02` 人工审片确认、真实导出和报告回链通过，`hidden-01` 唯一盲验通过。视频复核 P1 已使用新冻结 package/candidate/snapshot/evidenceId/PTS 合同复验：`dev-04 supported`，`dev-03 unclear → blocked`。v2 证据治理经独立 Stage 1/2 审查通过，0 HIGH / 0 MEDIUM；旧未绑定结果继续只作历史能力探测。安装包打包和发布仍未授权。
 
 ## 已通过的分层证据
 
@@ -26,11 +26,13 @@ Phase 29 的 P0 功能主线完成：文本语义的 `dev-01`、`dev-02` 通过�
 | `dev-03` 旧严格 Schema 探测 | 已降级为能力探测 | 供应商曾返回 `unclear`，但同样未绑定冻结候选；不得作为 P1 正确阻断证据 |
 | `dev-02` 单样本完整闭环 | 通过 | 文本候选经人工确认后真实 FFmpeg 导出完成；`materialId` 回链、报告 1 项、源片 SHA 不变、生产库写入 0 |
 | `hidden-01` 文本语义唯一盲验 | 通过 | OCR 67、ASR 52、1 条 `qualified_with_limit`、0 blocked、生产库写入 0；未用于二次调参 |
-| 公开 6 + 隐藏 2 矩阵 | 已封存 | 8 项身份、场景卡、运行次数、源片核验、正式库零写入和清理状态已写入不可变账本；`dev-03/dev-04` 为 `limited-evidence`，其余按职责通过或正确阻断 |
+| `dev-04` 冻结范围视频复核（2026-08-29） | 通过 | 稳定 package/candidate/snapshot/evidenceId，65.64–65.72 秒，5 帧，`supported`，正式库写入 0 |
+| `dev-03` 冻结范围视频复核（2026-08-29） | 正确阻断 | 稳定 package/candidate/snapshot/evidenceId，32.16–32.24 秒，5 帧，`unclear → blocked`，正式库写入 0 |
+| 公开 6 + 隐藏 2 矩阵 | 已封存 | 8 项身份、场景卡、运行次数、源片核验、正式库零写入和清理状态写入 v2 账本；全部按职责通过或正确阻断 |
 
-所有真实调用均使用临时 SQLite/临时目录；每次调用后正式数据库 SHA-256 保持不变。文本 P0 与人工审片闭环使用独立成功证据封存。视频 P1 新执行器只接受 `multimodal-scopes.v1.json` 中冻结的 package、candidate、snapshot、scene evidenceId 与实际 PTS；旧视频结果已标记为 superseded，必须以新执行器重新实跑后才能升级矩阵结论。
+所有真实调用均使用临时 SQLite/临时目录；每次调用后正式数据库 SHA-256 保持不变。文本 P0、人工审片闭环和视频 P1 冻结范围复验均使用独立成功证据封存。视频 P1 执行器只接受 `multimodal-scopes.v1.json` 中冻结的 package、candidate、snapshot、scene evidenceId 与实际 PTS；旧视频结果继续标记为 superseded。
 
-P0 结果汇总见 `docs/phase-29-evidence/run-manifest-20260825.json`；完整 6+2 当前裁决见 `docs/phase-29-evidence/acceptance-ledger.v1.json`；旧视频能力探测见 `run-manifest-20260825-video.json`，其状态已明确为 superseded。`run-manifest-20260824.json` 仅保留此前阶段性失败事实。
+完整 6+2 当前裁决见 `docs/phase-29-evidence/acceptance-ledger.v2.json`；新视频复验见 `run-manifest-20260829-video-bound.json`；旧视频能力探测见 `run-manifest-20260825-video.json`，其状态为 superseded。`run-manifest-20260824.json` 仅保留此前阶段性失败事实。
 
 ## 验证命令与结果
 
@@ -50,7 +52,7 @@ src/main/services/real-clip-governance-evidence-baseline.test.ts
 
 ## 延期与限制
 
-- 视频复核 P1 尚待以冻结候选范围执行器重新实跑 `dev-04` 与 `dev-03`；该 P1 延期不影响文本/结构证据候选进入人工审片。
+- 视频复核 P1 已完成冻结候选范围的正负场景验收；后续扩大样本仍属可选，不改变人工审片兜底。
 - 不是 8 个样本都需要逐集调用全部云服务：每个冻结场景按其职责验收；隐藏样本已经各执行一次并由封存账本阻止重复运行。
 - 没有写入用户生产数据库，不修改源媒体；所有测试数据库、输出目录和诊断材料均为临时隔离目录。
 - V49 候选池/报告页面迁移仍延期；本阶段没有页面结构、布局或静态 HTML 改动。

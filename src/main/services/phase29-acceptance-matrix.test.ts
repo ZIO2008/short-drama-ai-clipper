@@ -26,11 +26,13 @@ describe('buildPhase29AcceptanceMatrix', () => {
   })
 
   it('loads the complete sealed 6+2 ledger and blocks every repeated hidden run across processes', async () => {
-    const path = resolve(import.meta.dirname, '../../../docs/phase-29-evidence/acceptance-ledger.v1.json')
+    const path = resolve(import.meta.dirname, '../../../docs/phase-29-evidence/acceptance-ledger.v2.json')
     const frozenManifest = JSON.parse(await readFile(resolve(import.meta.dirname, '../../../docs/clip-evidence-baseline/manifest.v1.json'), 'utf8'))
     const entries = await readSealedPhase29AcceptanceLedger(path, '6CF8D83D12837C3BCFEB8EAC341B8CE814005607359BCD3A3FDAF76302845339', frozenManifest)
     expect(entries).toHaveLength(8)
     expect(entries.filter((entry) => entry.tier === 'hidden')).toHaveLength(2)
+    expect(entries.find((entry) => entry.sampleId === 'dev-04')?.outcome).toBe('passed')
+    expect(entries.find((entry) => entry.sampleId === 'dev-03')?.outcome).toBe('correctly-blocked')
     expect(() => assertHiddenAcceptanceUnused(entries, 'hidden-01')).toThrow('唯一一次')
     expect(() => assertHiddenAcceptanceUnused(entries, 'hidden-02')).toThrow('唯一一次')
   })

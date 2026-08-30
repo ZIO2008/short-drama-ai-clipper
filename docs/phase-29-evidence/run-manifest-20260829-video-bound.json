@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "phase": 29,
+  "runDate": "2026-08-29",
+  "scope": "multimodal-p1-frozen-package-candidate-review",
+  "runner": {
+    "packageKind": "temporary-packaged-evidence-runner",
+    "applicationVersion": "0.1.92",
+    "executableSha256": "F042C0E039AC76FECF845D9A812DBF6656A552E5612F5B03C6FEC12893283E3D",
+    "appAsarSha256": "0BC17711959E2FE886A0D12A7EA2C41F65A9D6E22403012DED4B53454755E887"
+  },
+  "contract": {
+    "baselineManifestSha256": "6CF8D83D12837C3BCFEB8EAC341B8CE814005607359BCD3A3FDAF76302845339",
+    "multimodalScopeSha256": "B6ED59B632CC13CCE571D75C90E456936DC5A3D7087A6B44D539863CD5536034",
+    "model": "qwen3.7-plus",
+    "binding": ["packageId", "candidateId", "snapshotId", "evidenceId", "factCode", "pts", "frameSha256", "providerSnapshot"]
+  },
+  "productionConfigurationDatabase": {
+    "access": "readonly",
+    "sha256Before": "14447B235DAA20FD2A8BABB68AF79AFF545CC846B5E6D50AAEE92C8756E441E3",
+    "sha256After": "14447B235DAA20FD2A8BABB68AF79AFF545CC846B5E6D50AAEE92C8756E441E3",
+    "writes": 0
+  },
+  "acceptanceLedger": {
+    "path": "docs/phase-29-evidence/acceptance-ledger.v2.json",
+    "sha256": "7C8CA1AA7733390F43ADED7F51587B426EC39CF4B8F967FDA90529CC853F68E1"
+  },
+  "runs": [
+    {
+      "sampleId": "dev-04",
+      "packageId": "29000000-0000-4000-8000-000000000004",
+      "candidateId": "29000000-0000-4000-8003-000000000004",
+      "snapshotId": "29000000-0000-4000-8004-000000000004",
+      "evidenceId": "29000000-0000-4000-8001-000000000004",
+      "factCode": "visual-fact-5bc0c1348a3e22d53318e530",
+      "startSeconds": 65.64,
+      "endSeconds": 65.72,
+      "frameCount": 5,
+      "conclusion": "supported",
+      "resultPath": "docs/phase-29-evidence/results/20260829-dev04-bound.json",
+      "resultSha256": "1D00DEB30E3217BF400CF3139604F08215800BC65DC63675272DCE97B2C0EEBE",
+      "sourceResultSha256": "3D1EDB658E7FB9E3FF33735A0754A922254B2736822E2D07A1648308B914FB17",
+      "sourceDatabaseWrites": 0
+    },
+    {
+      "sampleId": "dev-03",
+      "packageId": "29000000-0000-4000-8000-000000000003",
+      "candidateId": "29000000-0000-4000-8003-000000000003",
+      "snapshotId": "29000000-0000-4000-8004-000000000003",
+      "evidenceId": "29000000-0000-4000-8001-000000000003",
+      "factCode": "visual-fact-a3198f564520633e79403fea",
+      "startSeconds": 32.16,
+      "endSeconds": 32.24,
+      "frameCount": 5,
+      "providerConclusion": "unclear",
+      "conclusion": "blocked",
+      "resultPath": "docs/phase-29-evidence/results/20260829-dev03-bound.json",
+      "resultSha256": "4F12ADF99ACD3B76D40331391489C254D47C5252FB2FF7963F6416B0286218CA",
+      "sourceResultSha256": "CC88B928EE900AA599B563BC28539AEA4618FE604F11D76060B1D2CCDBD1C6A6",
+      "sourceDatabaseWrites": 0
+    }
+  ],
+  "privacy": {
+    "containsSecrets": false,
+    "containsProviderResponseBody": false,
+    "containsSourceMediaPath": false,
+    "containsSubtitleText": false
+  },
+  "verification": {
+    "vitest": { "filesPassed": 133, "testsPassed": 742, "filesSkipped": 5, "testsSkipped": 5 },
+    "typecheck": "passed",
+    "build": "passed",
+    "currentElectronE2e": { "passed": 14, "skipped": 7, "workers": 1 },
+    "independentReview": { "stage1": "passed", "stage2": "passed", "high": 0, "medium": 0 }
+  },
+  "status": "multimodal-p1-positive-and-negative-passed"
+}

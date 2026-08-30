@@ -7,9 +7,9 @@ type AcceptanceRecord = { sampleId: string; status: 'passed' | 'failed'; code?: 
 
 export type Phase29AcceptanceOutcome = 'passed' | 'correctly-blocked' | 'limited-evidence' | 'external-failed' | 'failed' | 'not-run'
 export type Phase29AcceptanceEntry = { sampleId: string; tier: 'public' | 'hidden'; sceneCards: string[]; outcome: Phase29AcceptanceOutcome; failureCode: string | null }
-export type Phase29AcceptanceLedgerEntry = { sampleId: string; tier: 'public' | 'hidden'; sceneCards: string[]; outcome: Phase29AcceptanceOutcome; runCount: number; sourceShaVerified: boolean; productionDatabaseWrites: number; temporaryDataCleaned: boolean; evidence: string[] }
+export type Phase29AcceptanceLedgerEntry = { sampleId: string; tier: 'public' | 'hidden'; sceneCards: string[]; outcome: Phase29AcceptanceOutcome; runCount: number; resultSha256?: string; sourceShaVerified: boolean; productionDatabaseWrites: number; temporaryDataCleaned: boolean; evidence: string[] }
 type AcceptanceLedger = { version: number; baselineManifestSha256: string; entries: Phase29AcceptanceLedgerEntry[] }
-export const PHASE29_ACCEPTANCE_LEDGER_SHA256 = '19BFA1D05BB487C4ECB1F3E9BC1EB586311A0A043A7F584EDE1D7CE8E020ABDC'
+export const PHASE29_ACCEPTANCE_LEDGER_SHA256 = '7C8CA1AA7733390F43ADED7F51587B426EC39CF4B8F967FDA90529CC853F68E1'
 
 const outcomeFor = (record: AcceptanceRecord | undefined): Phase29AcceptanceOutcome => {
   if (!record) return 'not-run'
@@ -44,7 +44,7 @@ export const readSealedPhase29AcceptanceLedger = async (path: string, baselineMa
   const digest = createHash('sha256').update(bytes).digest('hex').toUpperCase()
   if (digest !== PHASE29_ACCEPTANCE_LEDGER_SHA256) throw new Error('Phase 29 验收账本哈希不匹配，拒绝执行隐藏样本。')
   const ledger = JSON.parse(bytes.toString('utf8')) as AcceptanceLedger
-  if (ledger.version !== 1 || ledger.baselineManifestSha256 !== baselineManifestSha256.toUpperCase()) throw new Error('Phase 29 验收账本未绑定当前 Baseline v1。')
+  if (ledger.version !== 2 || ledger.baselineManifestSha256 !== baselineManifestSha256.toUpperCase()) throw new Error('Phase 29 验收账本未绑定当前 Baseline v1。')
   const expected = [...manifest.publicDevelopmentSet.map((sample) => ({ ...sample, tier: 'public' as const })), ...manifest.hiddenAcceptanceSet.map((sample) => ({ ...sample, tier: 'hidden' as const }))]
   if (ledger.entries.length !== expected.length) throw new Error('Phase 29 验收账本必须完整覆盖公开 6 集 + 隐藏 2 集。')
   const seen = new Set<string>()
@@ -52,6 +52,7 @@ export const readSealedPhase29AcceptanceLedger = async (path: string, baselineMa
     const entry = ledger.entries.find((candidate) => candidate.sampleId === item.id)
     if (!entry || seen.has(entry.sampleId) || entry.tier !== item.tier || JSON.stringify(entry.sceneCards) !== JSON.stringify(item.sceneCards)) throw new Error('Phase 29 验收账本身份或场景卡不一致。')
     if (!Number.isInteger(entry.runCount) || entry.runCount !== 1 || !entry.sourceShaVerified || entry.productionDatabaseWrites !== 0 || !entry.temporaryDataCleaned || !entry.evidence.length) throw new Error('Phase 29 验收账本缺少一次性运行、源片、隔离或清理证据。')
+    if ((entry.sampleId === 'dev-03' || entry.sampleId === 'dev-04') && !/^[A-F0-9]{64}$/.test(entry.resultSha256 ?? '')) throw new Error('视频 P1 验收账本缺少可提交结果快照哈希。')
     seen.add(entry.sampleId)
   }
   return ledger.entries
