@@ -75,20 +75,22 @@ export class ClipEvidencePackagePublication extends ClipEvidencePackageBuilder {
     if (!row?.sourceFingerprint || !currentFingerprint || row.sourceFingerprint !== currentFingerprint || currentFingerprint !== packageRecord.sourceMediaFingerprint) throw new Error('当前源媒体指纹已变化，不能继续使用冻结证据包。')
   }
 
-  assertPublishedCandidate(candidateId: string, options: { range?: { startSeconds: number; endSeconds: number } } = {}): { qualification: Exclude<ClipCandidateQualification, 'blocked'>; packageId: string } {
+  assertPublishedCandidate(candidateId: string, options: { range?: { startSeconds: number; endSeconds: number }; allowHistoricalExport?: boolean } = {}): { qualification: Exclude<ClipCandidateQualification, 'blocked'>; packageId: string } {
     const row = this.database.prepare(`SELECT snapshot.qualification, snapshot.package_id AS packageId, package.source_media_fingerprint AS sourceMediaFingerprint,
       episode.source_path AS sourcePath, episode.source_fingerprint AS currentSourceFingerprint, item.planned_range AS plannedRange, snapshot.summary_json AS summaryJson,
-      member.episode_id AS episodeId, member.task_id AS taskId, member.task_round AS taskRound, pointer.task_id AS pointerTaskId, pointer.task_round AS pointerTaskRound
+      member.episode_id AS episodeId, member.task_id AS taskId, member.task_round AS taskRound, item.status AS candidateStatus, pointer.task_id AS pointerTaskId, pointer.task_round AS pointerTaskRound
       FROM clip_candidate_publish_members member JOIN clip_candidate_snapshots snapshot ON snapshot.id = member.snapshot_id JOIN clip_evidence_packages package ON package.id = snapshot.package_id
       JOIN task_items item ON item.id = member.candidate_id JOIN episodes episode ON episode.id = member.episode_id LEFT JOIN clip_candidate_publish_pointers pointer ON pointer.drama_id = member.drama_id AND pointer.episode_id = member.episode_id
-      WHERE member.candidate_id = ?`).get(candidateId) as { qualification: ClipCandidateQualification; packageId: string; sourceMediaFingerprint: string; sourcePath: string; currentSourceFingerprint: string | null; plannedRange: string; summaryJson: string; episodeId: string; taskId: string; taskRound: number; pointerTaskId: string | null; pointerTaskRound: number | null } | undefined
+      WHERE member.candidate_id = ?`).get(candidateId) as { qualification: ClipCandidateQualification; packageId: string; sourceMediaFingerprint: string; sourcePath: string; currentSourceFingerprint: string | null; plannedRange: string; summaryJson: string; episodeId: string; taskId: string; taskRound: number; candidateStatus: string; pointerTaskId: string | null; pointerTaskRound: number | null } | undefined
     if (!row) {
       const task = this.database.prepare("SELECT task.config_snapshot AS configSnapshot FROM task_items item JOIN production_tasks task ON task.id = item.task_id WHERE item.id = ? AND task.type = 'original_clip'").get(candidateId) as { configSnapshot: string } | undefined
       let automatic = false; try { const config: unknown = JSON.parse(task?.configSnapshot ?? '{}'); automatic = Boolean(config && typeof config === 'object' && 'generation' in config) } catch { automatic = true }
       if (automatic) throw new Error('自动候选缺少当前已发布且合格的证据快照，不能继续操作。')
       return { qualification: 'qualified', packageId: 'manual-candidate' }
     }
-    if (row.qualification === 'blocked' || row.pointerTaskId !== row.taskId || row.pointerTaskRound !== row.taskRound) throw new Error('候选不属于当前已发布且合格的证据快照，不能继续操作。')
+    const hasPriorMaterial = Boolean(this.database.prepare('SELECT 1 FROM generated_materials WHERE task_item_id = ? LIMIT 1').get(candidateId))
+    const historicalExport = (options.allowHistoricalExport === true || hasPriorMaterial) && ['exported', 'exporting'].includes(row.candidateStatus)
+    if (row.qualification === 'blocked' || (!historicalExport && (row.pointerTaskId !== row.taskId || row.pointerTaskRound !== row.taskRound))) throw new Error('候选不属于当前已发布且合格的证据快照，不能继续操作。')
     const currentFingerprint = fingerprintMediaSource(row.sourcePath)
     if (!row.currentSourceFingerprint || !currentFingerprint || row.currentSourceFingerprint !== currentFingerprint || currentFingerprint !== row.sourceMediaFingerprint) throw new Error('候选冻结证据与当前源媒体指纹不一致，不能继续操作。')
     let planned: { episodeId?: unknown; startSeconds?: unknown; endSeconds?: unknown } = {}; let frozen: { startSeconds?: unknown; endSeconds?: unknown } = {}
