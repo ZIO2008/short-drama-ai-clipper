@@ -49,6 +49,17 @@
       "allowedUse": ["candidate-traceability", "internal-trial"]
     },
     {
+      "id": "release-candidate-0.1.92-p1-internal-trial",
+      "snapshotId": "v0.1.92-p1-internal-trial",
+      "domain": "release",
+      "path": "docs/release-evidence/v0.1.92-p1-internal-trial.json",
+      "sha256": "A9403AAA033C693B852158D548C567BA2365AA9BADB79A9D56DA052923E3897D",
+      "status": "candidate",
+      "supersedes": "release-candidate-0.1.32-p1-internal-trial",
+      "createdAt": "2026-10-11",
+      "allowedUse": ["candidate-traceability", "internal-trial", "scoped-visual-gate"]
+    },
+    {
       "id": "evidence-verification-0.1.88-p1-visual-unverified",
       "snapshotId": "v0.1.88-p1-internal-trial-visual-unverified",
       "domain": "evidence",

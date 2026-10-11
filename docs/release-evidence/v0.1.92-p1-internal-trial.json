@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "v0.1.92-p1-internal-trial",
+  "appVersion": "0.1.92",
+  "scope": "P1",
+  "channel": "internal-trial",
+  "packageKind": "formal-candidate",
+  "artifactAvailability": "local-only",
+  "visualFidelity": "passed",
+  "visualScope": ["screen-clip:default-candidate-selected", "screen-clip:context-speed", "screen-clip:missing-media"],
+  "notFormalCandidate": false,
+  "nativeBuildPathRedactions": 1,
+  "executableSha256": "9b5a176b263cd5f6c25ee7f0d6a5fde4f13c8ddacf28cbf8ab2132510d40691a",
+  "appAsarSha256": "bb683feec4f7633790ca9c0ab7b8806510f453310283a080d5fa7f044019eefc",
+  "createdAt": "2026-10-11T04:46:13.305Z",
+  "privacy": {
+    "containsExecutablePath": false,
+    "containsDeveloperPath": false,
+    "containsSecrets": false,
+    "packageFilesAudited": 3744
+  },
+  "packagedSmoke": {
+    "testsPassed": 4,
+    "testsFailed": 0,
+    "coverage": "100/125/150 DPI plus real 85-episode import and subtitle mapping in isolated temporary userData"
+  }
+}
