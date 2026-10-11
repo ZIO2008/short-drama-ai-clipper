@@ -19,7 +19,19 @@ describe('bindOriginalClipPoolReportRuntime', () => {
     testDocument.querySelector<HTMLInputElement>('#clipCandidateSearch')!.value = 'candidate-1'; testDocument.querySelector<HTMLInputElement>('#clipCandidateSearch')!.dispatchEvent(new Event('input', { bubbles: true }))
     testDocument.querySelector<HTMLButtonElement>('[data-clip-open-candidate]')!.click(); expect(open).toHaveBeenCalledWith(candidate())
     testDocument.querySelector<HTMLButtonElement>('[data-clip-export-open]')!.click(); testDocument.getElementById('saveExport')!.click(); await settle()
-    expect(preflight).toHaveBeenCalledWith('d1', expect.objectContaining({ candidateIds: ['candidate-1'], outputDirectory: 'D:\\output' }))
+    expect(preflight).toHaveBeenCalledWith('d1', expect.objectContaining({ candidateIds: ['candidate-1'], outputDirectory: 'D:\\切片' }))
+  })
+  it('defaults to a 切片 subdirectory and accepts a manually edited output directory', async () => {
+    const preflight = vi.fn().mockResolvedValue({ candidateIds: ['candidate-1'], count: 1, totalDurationSeconds: 15, estimatedSizeBytes: 1, outputDirectory: 'D:\\custom', namingPattern: 'clip', encoding: 'copy', outputSize: 'source', subtitleStrategy: 'none', conflictStrategy: 'append', blocked: [] })
+    const testDocument = fixture(); Object.assign(window, { desktopApi: api({ preflightClipExport: preflight }) })
+    bindOriginalClipPoolReportRuntime({ document: testDocument, dramaId: 'd1', episodes: [episode], onOpenCandidate: vi.fn() }); await settle()
+    testDocument.querySelector<HTMLButtonElement>('[data-clip-export-open]')!.click()
+    const directory = testDocument.querySelector<HTMLInputElement>('#exportDirectory')!
+    expect(directory.value).toBe('D:\\切片')
+    expect(directory.readOnly).toBe(false)
+    directory.value = 'D:\\custom'; directory.dispatchEvent(new Event('input', { bubbles: true }))
+    testDocument.getElementById('saveExport')!.click(); await settle()
+    expect(preflight).toHaveBeenCalledWith('d1', expect.objectContaining({ outputDirectory: 'D:\\custom' }))
   })
   it('filters real candidate statuses through the production bridge', async () => {
     const items = [candidate('pending-1', 'pending_review'), candidate('editing-1', 'editing'), candidate('confirmed-1', 'confirmed'), candidate('exported-1', 'exported')]
