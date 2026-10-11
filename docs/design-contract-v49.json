@@ -1,10 +1,12 @@
 {
   "schemaVersion": 1,
-  "contractRevision": "49.1-draft",
-  "status": "draft",
+  "contractRevision": "49.1-scoped",
+  "status": "ready",
   "activation": {
-    "enabled": false,
-    "reason": "screen-clip 的三种已授权状态已有独立 V49 证据并通过视觉验收；其它屏幕仍待运行时确认与证据采集，且当前发布门禁仍读取 V48。全产品合同不能用于打包或发布。"
+    "enabled": true,
+    "mode": "scoped",
+    "screenIds": ["screen-clip"],
+    "reason": "仅 screen-clip 的三种状态和两个视口已有独立 V49 证据并通过视觉验收；其它屏幕继续待运行时确认与证据采集，不纳入本次发布视觉门禁。"
   },
   "authority": {
     "projectId": "01b5725c-2688-4cbc-bc29-7432712449b3",

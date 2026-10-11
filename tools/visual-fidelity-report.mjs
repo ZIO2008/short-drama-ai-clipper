@@ -9,8 +9,11 @@ const contract = JSON.parse(await readFile(join(root, 'docs', 'design-contract-v
 const evidenceRoot = join(root, contract.evidencePolicy.root)
 const designFile = join(root, contract.authority.entry)
 const report = []
+const activeScreenIds = contract.activation?.mode === 'scoped'
+  ? new Set(contract.activation.screenIds ?? [])
+  : new Set(contract.screens.map((screen) => screen.id))
 
-if (contract.status !== 'ready' || contract.activation?.enabled !== true) {
+if (contract.status !== 'ready' || contract.activation?.enabled !== true || activeScreenIds.size === 0) {
   report.push({ name: 'design-gate', status: 'blocked-current-design-gate-not-active', contractStatus: contract.status, activationEnabled: contract.activation?.enabled === true })
   await mkdir(output, { recursive: true })
   await writeFile(join(output, 'fidelity-report.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf8')
@@ -24,7 +27,7 @@ if (designSha256 !== contract.authority.sha256) {
   report.push({ name: 'design-source', status: 'invalid-design-source-sha', expected: contract.authority.sha256, actual: designSha256 })
 }
 
-for (const screen of contract.screens) {
+for (const screen of contract.screens.filter((candidate) => activeScreenIds.has(candidate.id))) {
   for (const state of screen.states) {
     for (const viewport of contract.viewports) {
       report.push(await verifyEvidence(screen.id, state, viewport))
@@ -88,7 +91,7 @@ function validateMetadata(metadata, screen, state, viewport) {
   const errors = []
   if (metadata.projectId !== contract.authority.projectId) errors.push(`projectId must equal ${contract.authority.projectId}`)
   if (String(metadata.version) !== String(contract.authority.version)) errors.push(`version must equal ${contract.authority.version}`)
-  if (metadata.source !== 'open-design-project-library-preview') errors.push('source must be open-design-project-library-preview')
+  if (metadata.source !== contract.evidencePolicy.source) errors.push(`source must be ${contract.evidencePolicy.source}`)
   if (metadata.screen !== screen || metadata.state !== state) errors.push('screen/state must match evidence directory')
   if (metadata.viewport?.width !== viewport.width || metadata.viewport?.height !== viewport.height) errors.push('viewport must match evidence directory')
   if (typeof metadata.fixture !== 'string' || metadata.fixture.length === 0) errors.push('fixture is required')
