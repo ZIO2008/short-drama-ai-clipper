@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp, rename, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import Database from 'better-sqlite3'
@@ -27,10 +27,10 @@ describe('original clip retry integration', () => {
       database.prepare('INSERT INTO episodes (id, drama_id, episode_no, sort_order, source_path, duration_seconds, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run('episode', 'drama', 1, 0, sourcePath, 1, 'ready', now, now)
       const service = new OriginalClipService(database); const candidate = service.createCandidate('drama', 'episode', { startSeconds: 0, endSeconds: 0.8 }); service.confirmCandidate(candidate.id)
       const task = database.prepare('SELECT task_id AS taskId FROM task_items WHERE id = ?').get(candidate.id) as { taskId: string }
-      const brokenFfmpeg = join(folder, 'missing-ffmpeg.exe'); const configuredFfmpeg = process.env.SHORTDRAMA_FFMPEG_PATH
-      process.env.SHORTDRAMA_FFMPEG_PATH = brokenFfmpeg
+      const temporarilyUnavailableSource = join(folder, 'episode.temporarily-unavailable.mp4')
+      await rename(sourcePath, temporarilyUnavailableSource)
       await expect(service.exportCandidates('drama', { candidateIds: [candidate.id], outputDirectory, namingPattern: 'retry_{candidate}', encoding: 'h264-balanced', outputSize: '1920x1080', subtitleStrategy: 'none', conflictStrategy: 'append' })).resolves.toEqual([expect.objectContaining({ candidateId: candidate.id, status: 'failed' })])
-      process.env.SHORTDRAMA_FFMPEG_PATH = ffmpegPath
+      await rename(temporarilyUnavailableSource, sourcePath)
       expect(database.prepare('SELECT config_snapshot AS configSnapshot FROM production_tasks WHERE id = ?').get(task.taskId)).toEqual({ configSnapshot: expect.stringContaining('retry_{candidate}') })
       const result = await service.retryFailedTask(task.taskId)
       expect(result.status).toBe('completed')
@@ -38,7 +38,6 @@ describe('original clip retry integration', () => {
       expect(database.prepare('SELECT status FROM task_items WHERE id = ?').get(candidate.id)).toEqual({ status: 'exported' })
       const material = database.prepare('SELECT path FROM generated_materials WHERE task_item_id = ?').get(candidate.id) as { path: string }
       expect(existsSync(material.path)).toBe(true)
-      process.env.SHORTDRAMA_FFMPEG_PATH = configuredFfmpeg
     } finally {
       if (oldFfmpeg === undefined) delete process.env.SHORTDRAMA_FFMPEG_PATH; else process.env.SHORTDRAMA_FFMPEG_PATH = oldFfmpeg
       if (oldFfprobe === undefined) delete process.env.SHORTDRAMA_FFPROBE_PATH; else process.env.SHORTDRAMA_FFPROBE_PATH = oldFfprobe

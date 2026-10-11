@@ -35,6 +35,8 @@ current 基线治理与 `screen-clip` 静态夹具（已完成并冻结）
 
 ## Phase 30：原剧切片导出配置（局部恢复）
 
+**Task 30.4 · 已导出候选再次导出（本轮执行）**：现有导出弹窗把 `confirmed` 与 `exported` 候选都列为可导出，但不得重复抢占 `exporting`；每次创建新批次/成果并沿用同名追加规则，失败、取消与重启恢复不能撤销已有成功成果。完成标准：同一候选使用不同质量或包装配置二次导出，两个文件和批次证据均保留；不修改弹窗结构。
+
 **目标**：满足 `CLIP-005` 的“确认后、导出前配置”，只补本次导出可用的命名与字幕选择。当前同名安全合同仅支持自动追加编号，作为只读事实呈现；本 Phase 不新增覆盖模式或候选池勾选队列。
 
 **Task 30.1 · 现状和页面裁决卡（已完成）**：对照 `Product-Spec.md`、V49 完整 HTML、实际 `#exportModal`、`OriginalClipPoolReportRuntimeBridge.ts`、`ClipExportConfig` 与后端预检，形成 `docs/phase-30-export-config-decision.md`。完成标准是明确哪些合同已存在、哪些字段固定、页面增加哪些控件及其风险。
