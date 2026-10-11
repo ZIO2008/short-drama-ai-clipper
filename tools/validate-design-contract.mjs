@@ -3,11 +3,18 @@ import { existsSync, readFileSync } from 'node:fs'
 import { resolve, dirname, join } from 'node:path'
 
 const root = resolve(import.meta.dirname, '..')
-const contractPath = join(root, 'docs', 'design-contract-v48.json')
+const currentPointer = JSON.parse(readFileSync(join(root, 'docs', 'current-design-baseline.json'), 'utf8'))
+const registry = JSON.parse(readFileSync(join(root, currentPointer.registry), 'utf8'))
+const currentEntry = registry.baselines.find((entry) => entry.id === currentPointer.currentId && entry.domain === 'design' && entry.status === 'current')
+if (!currentEntry) throw new Error(`当前设计指针没有对应的 current 注册项：${currentPointer.currentId}`)
+const contractPath = join(root, 'docs', 'design-contract-v49.json')
 const contract = JSON.parse(readFileSync(contractPath, 'utf8'))
 const failures = []
 const info = []
 const sourcePath = resolve(root, contract.authority.entry)
+if (currentEntry.path !== contract.authority.entry || currentEntry.sha256 !== contract.authority.sha256 || currentPointer.sha256 !== contract.authority.sha256) {
+  failures.push('current 设计指针、注册表和合同的路径或哈希不一致')
+}
 
 if (!existsSync(sourcePath)) failures.push(`设计 HTML 不存在：${sourcePath}`)
 else {
@@ -32,10 +39,13 @@ for (const [artifact, expectedHash] of Object.entries(contract.sourceMirror?.fil
   else info.push(`Open Design 交接镜像哈希匹配：${artifact}`)
 }
 
-if (contract.status !== 'ready') failures.push(`设计合同状态不是 ready：${contract.status}`)
+if (!['draft', 'ready'].includes(contract.status)) failures.push(`设计合同状态不受支持：${contract.status}`)
 if (!Array.isArray(contract.screens) || contract.screens.some((screen) => !screen.id || !Array.isArray(screen.states) || screen.states.length === 0)) failures.push('页面或状态清单不完整')
 
 for (const line of info) console.log(`OK ${line}`)
 for (const line of failures) console.error(`FAIL ${line}`)
 if (failures.length) process.exitCode = 1
-else console.log(`DESIGN_CONTRACT_OK project=${contract.authority.projectId} version=${contract.authority.version}`)
+else {
+  console.log(`DESIGN_CONTRACT_OK project=${contract.authority.projectId} version=${contract.authority.version} status=${contract.status}`)
+  if (contract.activation?.enabled !== true) console.log('DESIGN_GATE_NOT_ACTIVE current V49 contract is valid but not activated for release admission')
+}

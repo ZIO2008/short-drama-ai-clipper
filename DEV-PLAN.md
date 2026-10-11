@@ -59,7 +59,7 @@ current 基线治理与 `screen-clip` 静态夹具（已完成并冻结）
 
 **完成标准**：所有身份和门禁都有文件、哈希、命令或脚本行号证据；不修改 `src/renderer`、V49 HTML、正式数据库、正式配置或发布目录；独立审查确认结论没有把旧视觉门禁误写成当前页面缺口。
 
-**Phase 31 结果（已完成）**：审计结论见 `docs/release-admission-audit-v0.1.92.md`。当前可继续内部 verification-only 验证，但正式候选与发布仍被阻断；阻断直接来自发布脚本仍读取旧 V48 视觉审计，且 V49 合同尚未激活，不构成 94 个已确认页面缺陷。后续先由用户决定 V49 发布门禁的激活范围，再决定是否修改发布工程接线；本 Phase 未修改页面。
+**Phase 31 结果（已完成）**：审计结论见 `docs/release-admission-audit-v0.1.92.md`。发布脚本和设计合同校验已改为读取 current V49；当前可继续内部 verification-only 验证，但正式候选与发布仍被阻断，因为 V49 合同尚未激活。旧 V48 的 `completed=0 / incomplete=94` 不再作为当前运行时页面缺陷清单。本 Phase 未修改页面。
 
 ## Phase 22：原剧切片闭环核验与页面映射（只读）
 

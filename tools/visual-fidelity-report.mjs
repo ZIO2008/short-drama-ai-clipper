@@ -5,13 +5,17 @@ import { createCanvas, loadImage } from '@napi-rs/canvas'
 
 const root = resolve(import.meta.dirname, '..')
 const output = join(root, 'test-results', 'fidelity')
-const contract = JSON.parse(await readFile(join(root, 'docs', 'design-contract-v48.json'), 'utf8'))
-const evidenceRoot = join(root, 'docs', 'design-evidence', 'v48')
+const contract = JSON.parse(await readFile(join(root, 'docs', 'design-contract-v49.json'), 'utf8'))
+const evidenceRoot = join(root, contract.evidencePolicy.root)
 const designFile = join(root, contract.authority.entry)
 const report = []
 
-if (contract.status !== 'ready') {
-  report.push({ name: 'design-contract', status: 'blocked-design-contract-not-ready', contractStatus: contract.status })
+if (contract.status !== 'ready' || contract.activation?.enabled !== true) {
+  report.push({ name: 'design-gate', status: 'blocked-current-design-gate-not-active', contractStatus: contract.status, activationEnabled: contract.activation?.enabled === true })
+  await mkdir(output, { recursive: true })
+  await writeFile(join(output, 'fidelity-report.json'), `${JSON.stringify(report, null, 2)}\n`, 'utf8')
+  console.log(`FIDELITY_AUDIT_BLOCKED reason=current-v49-design-gate-not-active report=test-results/fidelity/fidelity-report.json`)
+  process.exit(1)
 }
 
 const design = await readFile(designFile)
@@ -45,7 +49,7 @@ async function verifyEvidence(screen, state, viewport) {
   if (!await exists(electronPath)) missing.push('electron-capture')
   if (!await exists(metadataPath)) missing.push('evidence-metadata')
   if (missing.length > 0) {
-    return { name: `${screen}:${state}:${viewportName}`, status: 'missing-version48-evidence', missing, expected: relativeEvidencePaths(screen, state, viewportName) }
+    return { name: `${screen}:${state}:${viewportName}`, status: 'missing-current-design-evidence', missing, expected: relativeEvidencePaths(screen, state, viewportName) }
   }
 
   let metadata
@@ -122,6 +126,6 @@ async function exists(path) {
 }
 
 function relativeEvidencePaths(screen, state, viewport) {
-  const base = `docs/design-evidence/v48/${screen}/${state}/${viewport}`
+  const base = `${contract.evidencePolicy.root}/${screen}/${state}/${viewport}`
   return { preview: `${base}/project-library-preview.png`, electron: `${base}/electron.png`, metadata: `${base}/evidence.json` }
 }
