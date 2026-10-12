@@ -24,10 +24,10 @@ describe('OriginalClipPoolReportRuntimeBridge pressure boundary', () => {
     expect(document.getElementById('clipPoolWindowMeta')?.textContent).toContain('50 个匹配候选 · 当前窗口 1 / 3')
     expect([...document.querySelectorAll<HTMLElement>('.clip-inspector-stat b')].map((node) => node.textContent)).toEqual(['500', '0', '500', '4500'])
 
-    document.querySelector<HTMLButtonElement>('[data-clip-export-open]')!.click(); document.getElementById('saveExport')!.click()
+    document.querySelector<HTMLInputElement>('[data-clip-export-candidate="episode-1-candidate-01"]')!.click(); document.querySelector<HTMLButtonElement>('[data-clip-export-open]')!.click(); document.getElementById('saveExport')!.click()
     await vi.waitFor(() => expect(preflight).toHaveBeenCalled())
     const exportedIds = (preflight.mock.calls[0]![1] as { candidateIds: string[] }).candidateIds
-    expect(exportedIds).toHaveLength(500); expect(new Set(exportedIds).size).toBe(500)
+    expect(exportedIds).toEqual(['episode-1-candidate-01'])
 
     document.querySelector<HTMLButtonElement>('[data-clip-window="next"]')!.click()
     expect(document.querySelectorAll('.clip-candidate-list-row')).toHaveLength(20)
