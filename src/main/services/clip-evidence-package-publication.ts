@@ -89,7 +89,7 @@ export class ClipEvidencePackagePublication extends ClipEvidencePackageBuilder {
       return { qualification: 'qualified', packageId: 'manual-candidate' }
     }
     const hasPriorMaterial = Boolean(this.database.prepare('SELECT 1 FROM generated_materials WHERE task_item_id = ? LIMIT 1').get(candidateId))
-    const historicalExport = (options.allowHistoricalExport === true || hasPriorMaterial) && ['exported', 'exporting'].includes(row.candidateStatus)
+    const historicalExport = hasPriorMaterial && ((options.allowHistoricalExport === true && row.candidateStatus === 'exported') || row.candidateStatus === 'exporting')
     if (row.qualification === 'blocked' || (!historicalExport && (row.pointerTaskId !== row.taskId || row.pointerTaskRound !== row.taskRound))) throw new Error('候选不属于当前已发布且合格的证据快照，不能继续操作。')
     const currentFingerprint = fingerprintMediaSource(row.sourcePath)
     if (!row.currentSourceFingerprint || !currentFingerprint || row.currentSourceFingerprint !== currentFingerprint || currentFingerprint !== row.sourceMediaFingerprint) throw new Error('候选冻结证据与当前源媒体指纹不一致，不能继续操作。')

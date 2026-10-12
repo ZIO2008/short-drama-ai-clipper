@@ -9,6 +9,33 @@ import { randomUUID } from 'node:crypto'
 import { fingerprintMediaSource } from '../media/media-source-fingerprint.js'
 
 describe('ClipEvidencePackageService', () => {
+  it('allows a previously exported candidate to be exported again after a newer round is published', async () => {
+    const database = new Database(':memory:'); database.pragma('foreign_keys = ON'); migrateDatabase(database)
+    const now = new Date().toISOString(); const sourcePath = join(tmpdir(), `repeat-published-${randomUUID()}.mp4`)
+    await writeFile(sourcePath, 'frozen-media')
+    try {
+      const fingerprint = fingerprintMediaSource(sourcePath); if (!fingerprint) throw new Error('fixture fingerprint unavailable')
+      database.prepare('INSERT INTO dramas VALUES (?, ?, ?, ?)').run('d', 'Demo', now, now)
+      database.prepare('INSERT INTO episodes (id, drama_id, episode_no, sort_order, source_path, source_fingerprint, duration_seconds, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run('e', 'd', 2, 0, sourcePath, fingerprint, 30, 'ready', now, now)
+      database.prepare('INSERT INTO clip_evidence_packages (id, drama_id, episode_id, version, source_media_fingerprint, rule_version, status, evidence_json, reason, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?)').run('package', 'd', 'e', 1, fingerprint, 'test', 'ready', '{}', now, now)
+      for (const round of [1, 2]) {
+        const taskId = `task-${round}`; const candidateId = `candidate-${round}`; const snapshotId = `snapshot-${round}`
+        database.prepare('INSERT INTO production_tasks (id, drama_id, type, config_snapshot, status, progress_current, progress_total, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run(taskId, 'd', 'original_clip', JSON.stringify({ generation: {} }), 'reviewing', 0, 1, now, now)
+        database.prepare('INSERT INTO task_items (id, task_id, planned_range, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)').run(candidateId, taskId, JSON.stringify({ episodeId: 'e', startSeconds: 10, endSeconds: 20 }), round === 1 ? 'exported' : 'confirmed', now, now)
+        database.prepare('INSERT INTO clip_candidate_snapshots (id, candidate_id, package_id, qualification, config_json, provider_json, summary_json, task_id, task_round, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(snapshotId, candidateId, 'package', 'qualified', '{}', '{}', JSON.stringify({ startSeconds: 10, endSeconds: 20 }), taskId, round, now, now)
+        database.prepare('INSERT INTO clip_candidate_publish_members (candidate_id, snapshot_id, drama_id, episode_id, task_id, task_round, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)').run(candidateId, snapshotId, 'd', 'e', taskId, round, now)
+      }
+      database.prepare('INSERT INTO clip_candidate_publish_pointers (drama_id, episode_id, snapshot_id, task_id, task_round, updated_at) VALUES (?, ?, ?, ?, ?, ?)').run('d', 'e', 'snapshot-2', 'task-2', 2, now)
+      database.prepare('INSERT INTO generated_materials (id, drama_id, task_id, task_item_id, path, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)').run('old-material', 'd', 'task-1', 'candidate-1', 'old-output.mp4', now, now)
+      const service = new ClipEvidencePackageService(database)
+      expect(() => service.assertPublishedCandidate('candidate-1')).toThrow('当前已发布')
+      expect(service.assertPublishedCandidate('candidate-1', { allowHistoricalExport: true })).toMatchObject({ packageId: 'package' })
+      database.prepare("UPDATE task_items SET status = 'exporting' WHERE id = 'candidate-1'").run()
+      expect(service.assertPublishedCandidate('candidate-1')).toMatchObject({ packageId: 'package' })
+      await writeFile(sourcePath, 'changed-media')
+      expect(() => service.assertPublishedCandidate('candidate-1', { allowHistoricalExport: true })).toThrow('源媒体指纹不一致')
+    } finally { database.close(); await rm(sourcePath, { force: true }) }
+  })
   it('persists a failed package when the source media cannot be fingerprinted', () => {
     const database = new Database(':memory:'); database.pragma('foreign_keys = ON'); migrateDatabase(database)
     const now = new Date().toISOString()
