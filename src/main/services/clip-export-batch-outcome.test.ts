@@ -2,6 +2,7 @@ import Database from 'better-sqlite3'
 import { describe, expect, it, vi } from 'vitest'
 import { migrateDatabase } from '../db/migrate.js'
 import { OriginalClipService } from './original-clip-service.js'
+import { recordMockedClipExport } from '../../../tests/helpers/record-mocked-clip-export.js'
 
 const setup = () => {
   const database = new Database(':memory:'); database.pragma('foreign_keys = ON'); migrateDatabase(database); const now = new Date().toISOString()
@@ -15,6 +16,27 @@ const setup = () => {
 }
 
 describe('original clip multi-candidate export outcomes', () => {
+  it('keeps this batch material identity when a later export of its completed candidate exists', async () => {
+    const { database, service, candidates, config, taskId, now } = setup()
+    const [first, sibling] = candidates as [typeof candidates[number], typeof candidates[number]]
+    vi.spyOn(service as unknown as { exportCandidateWithConfig: (id: string, config: unknown, batch: string) => Promise<{ candidate: typeof first; outputPath: string }> }, 'exportCandidateWithConfig').mockImplementation(async (id, _config, batch) => {
+      if (id === sibling.id) {
+        database.prepare('INSERT INTO generated_materials (id, drama_id, task_id, task_item_id, path, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)').run('later-export', 'd', taskId, first.id, 'later.mp4', '2099-01-01', '2099-01-01')
+        throw new Error('sibling failed')
+      }
+      database.prepare("UPDATE task_items SET status = 'exported', export_batch_id = NULL WHERE id = ?").run(id)
+      database.prepare('INSERT INTO generated_materials (id, drama_id, task_id, task_item_id, path, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)').run('this-batch', 'd', taskId, id, 'first.mp4', now, now)
+      recordMockedClipExport(database, batch, id, 'this-batch')
+      return { candidate: service.getCandidate(id), outputPath: 'first.mp4' }
+    })
+    await service.exportCandidates('d', config)
+    expect(service.getLatestExportBatch('d')?.items).toEqual([
+      expect.objectContaining({ candidateId: first.id, materialId: 'this-batch', status: 'exported' }),
+      expect.objectContaining({ candidateId: sibling.id, materialId: null, status: 'failed' })
+    ])
+    database.close()
+  })
+
   it('preserves one successful material when a sibling export fails', async () => {
     const { database, service, candidates, config, taskId, now } = setup(); const [success, failure] = candidates as [typeof candidates[number], typeof candidates[number]]
     vi.spyOn(service as unknown as { exportCandidateWithConfig: (id: string) => Promise<{ candidate: typeof success; outputPath: string }> }, 'exportCandidateWithConfig').mockImplementation(async (id) => {

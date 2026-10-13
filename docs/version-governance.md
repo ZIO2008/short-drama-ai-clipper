@@ -8,17 +8,17 @@
 
 V49 是全产品唯一当前设计基线：`design/open-design/v2026-08-11-v49-clip-monitor-review/short-drama-material-studio-v49-clip-review.html`（SHA-256 `C95820F2FCE372E9BBA3A2A1062495D418951025C1A7C65A73429F5C0FFD563D`）。V48 HTML、`docs/design-contract-v48.json`、V48 截图和 V48 `audit:fidelity` 结果均为历史追溯资料，不得作为当前 V49 开发、视觉验收或发布的裁决。
 
-当前尚未建立 V49 设计合同和逐状态视觉证据；因此现有 `validate:design-contract`、`audit:fidelity`、`release:verify` 与 `pack:current` 中遗留的 V48 依赖不能为当前工作树提供发布许可，也不能阻断 V49 的逐屏迁移。正式候选/发布在“V49 来源迁移 → V49 合同与门禁替换 → 用户决定并完成 V49 视觉验收”完成前保持不可用。该规则记录事实，不在本次文档治理中修改任何脚本。
+当前 V49 合同已按 `screen-clip` 激活：3 个状态 × 2 个视口，共 6 项视觉证据；`validate:design-contract`、`audit:fidelity` 和打包入口读取当前 V49 合同。该范围允许生成内部候选，不代表全产品视觉完成或公开发布。其它屏幕的迁移和验收仍需另行授权。下文 2026-08 的未启用记录是历史事实，不覆盖本段现行结论。
 
 ## 当前状态的唯一查询方式
 
-在主线根目录执行 `pnpm run status:current`。它只读 Git，检查当前权威文档是否存在，并校验 `release/candidates/*/candidate-manifest.json`、候选目录内的 EXE、`app.asar`、两份 SHA-256 和 `releaseId`。命令分别输出“最近不可变候选”（文件和哈希可追溯）与“当前标准下已验证候选”（额外存在候选目录内的 `verification-evidence.json`，其中绑定 manifest/closure 哈希、验证时间及 tests/typecheck/build/packagedE2E/fidelity/review 六项 `passed`）；两者不能混称。`--json` 供脚本或诊断包读取。
+在主线根目录执行 `pnpm run status:current`。它只读 Git，校验候选 manifest、EXE 和 app.asar 的哈希，分别报告最近不可变候选、当前标准下已验证候选，以及它与当前源码是否一致。schemaVersion 2 要求干净源码提交、构建输入指纹、当前 scoped 设计合同指纹；验证记录的 tests/typecheck/build/currentE2E/packagedE2E/fidelity/review 均须引用实际命令记录和输出日志哈希，并绑定 manifest/closure。`tools/run-candidate-check.mjs` 负责捕获真实命令、开始/结束时间、环境与退出码；独立审查报告作为 review 的输出证据。本地哈希用于追溯和发现变化，不是防止有写权限者伪造的认证系统。无来源的旧 passed 标记不得作为当前通过依据。登记文档的后续提交不改变构建输入，源码改变则必须重新验证。`--json` 供脚本读取。
 
-状态只允许有三种含义：
+状态区分以下四种含义：
 
 1. **当前开发树**：可以有未收口改动，绝不称为“最新版”或发布版本。
 2. **最近不可变候选**：必须以不可覆盖目录中的 `candidate-manifest.json` 与哈希为准；它可能因当前门禁收紧而不再是“已验证候选”。
-3. **当前标准下已验证候选**：除了不可变候选完整性，还必须有正式候选标记、通过的视觉审计和结构化验证记录；记录中的候选 ID、manifest 哈希、closure 路径/哈希和六项门禁均必须匹配。没有就如实显示“未找到”。
+3. **当前标准下已验证候选**：除了不可变候选完整性，还必须有正式候选标记、通过的视觉审计和结构化验证记录；记录中的候选 ID、manifest 哈希、closure 路径/哈希和七项命令证据均必须匹配。没有就如实显示“未找到”。
 4. **历史包**：只用于追溯或显式回滚，不能被默认启动、默认测试或目录修改时间重新定义为当前版本。
 
 当前仓库未配置远程时，状态命令必须如实显示“未配置”；建立异机备份前，不得声称已经具备异机恢复能力。
@@ -122,13 +122,13 @@ Design Evidence 清理沿用 Open Design 的目录哈希算法：`v48/current-el
 
 ## 历史候选流程（已禁用，不能用于 V49）
 
-以下仅记录 Version 48 候选的旧流程；当前正式候选保持不可用，除非并直到 V49 迁移、V49 合同/证据/脚本门禁替换，以及用户决定并完成 V49 视觉验收。
+以下仅记录 Version 48 候选的旧流程，不再作为现行命令说明。当前内部候选采用本文顶部的 V49 scoped 门禁；2026-10-13 起还须绑定源码及可核验命令证据。正式版替换和公开发布未获授权。
 
 1. 历史上运行 `pnpm run check:version`，版本、范围、UI 和包级测试入口不一致会失败；这不是当前 V49 候选命令。
-2. 当前不得把 `pnpm run release:verify` 作为 V49 候选流程执行：它仍先校验历史 Version 48 合同并运行历史 `audit:fidelity`，故只能用于历史诊断。待 V49 合同、证据目录和对应脚本门禁建立后，正式候选流程才可恢复为“校验 V49 合同 → 按用户决定完成 V49 视觉验收 → 构建与哈希 manifest → 包级 E2E”。
+2. 当时 `pnpm run release:verify` 仍依赖 Version 48，因此不能用于 V49。该接线问题现已修正；当前流程为“校验 V49 scoped 合同 → 审核源码与验证证据 → 构建与哈希 manifest → 包级 E2E → 内部候选登记”。
 3. 当前开发入口仍是 `pnpm dev`。历史候选 manifest 中的 `executablePath` 仅供追溯；不得从 `release-v*` 目录启动来证明当前工作树或 V49 候选。
 
-最近不可变候选：`v0.1.32-p1-internal-trial`。它包含逐集字幕首屏加载真实状态、请求乱序详情隔离与完成报告导出批次绑定；manifest EXE 与 `app.asar` 哈希可核验。更重要的是，`docs/history/closures/v0.1.32-p1-internal-trial-closure.md` 已记录后续 Version 48 逐态视觉审计不完整，因此它只可称为最近不可变候选，**不是当前标准下已验证候选**。当前标准下已验证候选为空，任何人不得将该历史候选或开发树称为正式发布版本。`v0.1.11`–`v0.1.31` 已按本文件的首批清理记录送入回收站，不能再作为证据或默认启动入口。
+**历史候选记录（2026-08-17）：** 当时最近不可变候选为 `v0.1.32-p1-internal-trial`，视觉缺口见 `docs/history/closures/v0.1.32-p1-internal-trial-closure.md`。该记录不代表当前候选；当前 release 指针与 `status:current` 分别报告登记身份和实物验证。旧包仅供追溯。
 
 **验证包保留状态（2026-08-17）：** `release/verification/` 中唯一保留的是 `v0.1.88-p1-internal-trial-visual-unverified`。它是历史诊断验证介质，不是正式候选，也不代表当前 `0.1.92` 开发树；当前开发树与正式候选的结论只能以 `pnpm run status:current` 为准。`v0.1.35` 至 `v0.1.86` 的历史内部试验包已按用户确认送入回收站，不能再作为证据或默认启动入口。`v0.1.88` 同样不构成正式候选或发布。
 

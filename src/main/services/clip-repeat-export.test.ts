@@ -2,6 +2,7 @@ import Database from 'better-sqlite3'
 import { describe, expect, it, vi } from 'vitest'
 import { migrateDatabase } from '../db/migrate.js'
 import { OriginalClipService } from './original-clip-service.js'
+import { recordMockedClipExport } from '../../../tests/helpers/record-mocked-clip-export.js'
 
 const setup = () => {
   const database = new Database(':memory:')
@@ -26,11 +27,12 @@ describe('repeat original-clip export', () => {
       number += 1
       database.prepare("UPDATE task_items SET status = 'exported', export_batch_id = NULL WHERE id = ? AND export_batch_id = ?").run(id, batch)
       database.prepare('INSERT INTO generated_materials (id, drama_id, task_id, task_item_id, path, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)').run(`material-${number}`, 'd', taskId, id, `${output}\\clip-${number}.mp4`, now, now)
+      recordMockedClipExport(database, batch, id, `material-${number}`)
       return { status: 'succeeded' }
     })
-    await service.exportCandidates('d', config('D:\\first'))
+    expect(await service.exportCandidates('d', config('D:\\first'))).toEqual([expect.objectContaining({ status: 'exported' })])
     expect(service.preflightExport('d', config('D:\\second')).blocked).toEqual([])
-    await service.exportCandidates('d', config('D:\\second'))
+    expect(await service.exportCandidates('d', config('D:\\second'))).toEqual([expect.objectContaining({ status: 'exported' })])
     expect(database.prepare('SELECT path FROM generated_materials ORDER BY id').all()).toEqual([{ path: 'D:\\first\\clip-1.mp4' }, { path: 'D:\\second\\clip-2.mp4' }])
     expect(database.prepare('SELECT COUNT(*) AS n FROM clip_export_batches').get()).toEqual({ n: 2 })
     expect(service.getCandidate(candidate.id).status).toBe('exported')
@@ -50,6 +52,7 @@ describe('repeat original-clip export', () => {
     runner.mockImplementationOnce(async (id, output, batch) => {
       database.prepare("UPDATE task_items SET status = 'exported', export_batch_id = NULL WHERE id = ? AND export_batch_id = ?").run(id, batch)
       database.prepare('INSERT INTO generated_materials (id, drama_id, task_id, task_item_id, path, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)').run('first-material', 'd', taskId, id, `${output}\\first.mp4`, now, now)
+      recordMockedClipExport(database, batch, id, 'first-material')
       return { status: 'succeeded' }
     }).mockRejectedValueOnce(new Error('repeat render failed'))
     await service.exportCandidates('d', config('D:\\first'))

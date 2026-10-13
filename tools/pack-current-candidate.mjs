@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, statSyn
 import { execFileSync, spawnSync } from 'node:child_process'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import { auditPackagePrivacy, developmentPathStrings, redactFileDevelopmentPaths } from './package-privacy-audit.mjs'
+import { captureProvenance, assertPackSource } from './candidate-provenance.mjs'
 
 const packageJson = JSON.parse(readFileSync('package.json', 'utf8'))
 const verificationOnly = process.argv.includes('--verification')
@@ -35,6 +36,8 @@ if (canonicalVerificationOutputRoot && isWithinDirectory(canonicalVerificationOu
 const outputDirectory = verificationOnly
   ? resolve(canonicalVerificationOutputRoot ?? resolve('release', 'verification'), `${releaseId}-visual-unverified`)
   : resolve(canonicalCandidateOutputRoot, releaseId)
+const sourceBefore = captureProvenance(process.cwd())
+assertPackSource(sourceBefore, sourceBefore, verificationOnly)
 const pnpm = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm'
 const sha256 = (path) => createHash('sha256').update(readFileSync(path)).digest('hex')
 const walk = (directory) => readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -91,6 +94,7 @@ const packageFiles = walk(join(outputDirectory, 'win-unpacked'))
 auditPackagePrivacy(packageFiles, sensitiveDevelopmentPaths)
 console.log(`PACKAGE_PRIVACY_AUDIT=passed (${packageFiles.length} files)`)
 const manifest = {
+  ...sourceBefore,
   releaseId,
   appVersion: packageJson.version,
   scope,
@@ -104,6 +108,7 @@ const manifest = {
   appAsarSha256: sha256(asarPath),
   createdAt: new Date().toISOString()
 }
+assertPackSource(sourceBefore, captureProvenance(process.cwd()), verificationOnly)
 writeFileSync(join(outputDirectory, 'candidate-manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, 'utf8')
 console.log(`CURRENT_CANDIDATE=${executablePath}`)
 console.log(`CURRENT_CANDIDATE_MANIFEST=${join(outputDirectory, 'candidate-manifest.json')}`)

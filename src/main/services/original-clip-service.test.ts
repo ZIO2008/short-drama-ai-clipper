@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import { migrateDatabase } from '../db/migrate.js'
 import { OriginalClipService } from './original-clip-service.js'
+import { recordMockedClipExport } from '../../../tests/helpers/record-mocked-clip-export.js'
 import { persistClipExportConfig, readClipExportConfig } from './clip-export-task-config.js'
 import ffmpegModule from 'ffmpeg-static'
 import ffprobeModule from 'ffprobe-static'
@@ -249,8 +250,9 @@ describe('OriginalClipService', () => {
     const service = new OriginalClipService(db); const candidate = service.createCandidate('d', 'e', { startSeconds: 1, endSeconds: 4 }); const task = db.prepare('SELECT task_id AS taskId FROM task_items WHERE id = ?').get(candidate.id) as { taskId: string }
     persistClipExportConfig(db, { candidateIds: [candidate.id], outputDirectory: 'D:\\first-output', namingPattern: 'quality_E{episode}_{candidate}', encoding: 'h264-quality', outputSize: '1080x1920', subtitleStrategy: 'burn', conflictStrategy: 'append' })
     db.prepare("UPDATE task_items SET status = 'failed', reason = '模拟失败' WHERE id = ?").run(candidate.id)
-    const runner = vi.spyOn(service as unknown as { runCandidateItem: (id: string, outputDirectory: string, batchId: string, signal?: AbortSignal, config?: unknown) => Promise<{ status: 'succeeded' }> }, 'runCandidateItem').mockImplementation(async () => {
+    const runner = vi.spyOn(service as unknown as { runCandidateItem: (id: string, outputDirectory: string, batchId: string, signal?: AbortSignal, config?: unknown) => Promise<{ status: 'succeeded' }> }, 'runCandidateItem').mockImplementation(async (id, _output, batch) => {
       db.prepare('INSERT INTO generated_materials (id, drama_id, task_id, task_item_id, path, duration_seconds, fps, size_bytes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run('material', 'd', task.taskId, candidate.id, 'D:\\retry-output\\quality.mp4', 3, 25, 1, now, now)
+      recordMockedClipExport(db, batch, id, 'material')
       return { status: 'succeeded' }
     })
     await expect(service.retryFailedCandidate(candidate.id, 'D:\\retry-output')).resolves.toMatchObject({ outputPath: 'D:\\retry-output\\quality.mp4' })

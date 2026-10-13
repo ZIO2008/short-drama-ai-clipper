@@ -99,6 +99,19 @@ test('CLIP-REAL-005 to CLIP-REAL-008 closes the isolated Electron pool, export, 
     throw new Error('isolated candidate was not generated')
   })
 
+  // Seed only the isolated fixture in dev; all confirmation/export/report actions below
+  // run against the real packaged IPC and bundled FFmpeg when a candidate is supplied.
+  if (process.env.SHORTDRAMA_PACKAGED_EXE) {
+    await app.close()
+    app = await electron.launch({
+      executablePath: resolve(process.env.SHORTDRAMA_PACKAGED_EXE),
+      args: ['--packaged-smoke', '--packaged-smoke-user-data', dataDirectory],
+      env: { ...process.env, SHORTDRAMA_MATERIAL_CHANNEL: 'packaged-smoke' }
+    })
+    expect(await app.evaluate(({ app: runtime }) => runtime.isPackaged)).toBe(true)
+    page = await app.firstWindow()
+    await expect(page.getByRole('heading', { name: '剧目库' })).toBeVisible()
+  }
   await page.getByRole('tab', { name: '素材生产' }).click()
   await page.getByRole('button', { name: '进入工作区' }).click()
   let frame = page.frameLocator('iframe[title="原剧切片工作区"]')
@@ -140,7 +153,34 @@ test('CLIP-REAL-005 to CLIP-REAL-008 closes the isolated Electron pool, export, 
     return (await window.desktopApi.listMaterials(drama.id)).find((item) => item.taskItemId === id)?.path ?? null
   }, candidateId)
   expect(materialPath).toContain(outputDirectory)
+  expect(materialPath).not.toBeNull()
+  const firstOutputHash = createHash('sha256').update(await readFile(materialPath!)).digest('hex')
+  const firstBatch = await page.evaluate(async () => {
+    const drama = (await window.desktopApi.listDramas()).find((item) => item.name === '原剧切片闭环隔离剧目')!
+    return window.desktopApi.getLatestClipExportBatch(drama.id)
+  })
+  expect(firstBatch?.candidateIds).toEqual([candidateId])
   expect(createHash('sha256').update(await readFile(sourcePath)).digest('hex')).toBe(sourceSha256)
+  await frame.locator('#closeExport').click()
+  await expect(exportChoice).not.toBeChecked()
+  await exportChoice.check()
+  await frame.locator('[data-clip-export-open]').first().click()
+  await frame.locator('#exportModal [data-quality-mode="bitrate"]').click()
+  await frame.locator('#exportBitrate').fill('1500')
+  await frame.locator('#saveExport').click()
+  await expect.poll(async () => page.evaluate(async () => {
+    const drama = (await window.desktopApi.listDramas()).find((item) => item.name === '原剧切片闭环隔离剧目')!
+    return (await window.desktopApi.listMaterials(drama.id)).length
+  }), { timeout: 60_000 }).toBe(2)
+  await expect(exportChoice).not.toBeChecked()
+  const secondBatch = await page.evaluate(async () => {
+    const drama = (await window.desktopApi.listDramas()).find((item) => item.name === '原剧切片闭环隔离剧目')!
+    return window.desktopApi.getLatestClipExportBatch(drama.id)
+  })
+  expect(secondBatch?.id).not.toBe(firstBatch?.id)
+  expect(secondBatch?.candidateIds).toEqual([candidateId])
+  expect(secondBatch?.config?.qualityMode).toBe('bitrate')
+  expect(createHash('sha256').update(await readFile(materialPath!)).digest('hex')).toBe(firstOutputHash)
   await frame.locator('#closeExport').click()
 
   await frame.locator('#screen-clip-pool [data-r5-open="clip-report"]').first().click()

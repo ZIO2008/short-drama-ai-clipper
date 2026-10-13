@@ -16,6 +16,10 @@ describe('original clip export recovery', () => {
     vi.spyOn(service as unknown as { runCandidateItem: (id: string, output: string, batch: string) => Promise<{ status: 'succeeded' }> }, 'runCandidateItem').mockImplementation(async (id, output, batch) => {
       database.prepare("UPDATE task_items SET status = 'exported', export_batch_id = NULL WHERE id = ? AND export_batch_id = ?").run(id, batch)
       database.prepare('INSERT INTO generated_materials (id, drama_id, task_id, task_item_id, path, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)').run(`material-${recoverableStatus}`, 'd', task.taskId, id, `${output}\\result.mp4`, now, now)
+      const row = database.prepare('SELECT candidate_ids_json AS manifest FROM clip_export_batches WHERE id = ?').get(batch) as { manifest: string }
+      const manifest = JSON.parse(row.manifest) as { items: unknown[] }
+      manifest.items.push({ candidateId: id, status: 'exported', materialId: `material-${recoverableStatus}`, reason: null })
+      database.prepare('UPDATE clip_export_batches SET candidate_ids_json = ? WHERE id = ?').run(JSON.stringify(manifest), batch)
       return { status: 'succeeded' }
     })
 

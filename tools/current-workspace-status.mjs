@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path'
+import { verifyProvenance } from './candidate-provenance.mjs'
 
 const git = (args, cwd) => execFileSync('git', args, { cwd, encoding: 'utf8' }).trim()
 const repositoryRoot = git(['rev-parse', '--show-toplevel'], process.cwd())
@@ -62,6 +63,7 @@ const validateCandidateIntegrity = (candidate) => {
 
 const validateCurrentVerification = (candidate) => {
   const reasons = [...candidate.reasons]
+  let provenance = { currentSourceMatches: false, sourceIsAncestor: false }
   if (candidate.packageKind !== 'formal-candidate') reasons.push('缺少正式候选标记')
   if (candidate.visualFidelity !== 'passed') reasons.push('缺少当前通过的视觉审计标记')
   const verificationPath = join(candidate.directory, 'verification-evidence.json')
@@ -69,11 +71,11 @@ const validateCurrentVerification = (candidate) => {
   else {
     try {
       const verification = JSON.parse(readFileSync(verificationPath, 'utf8'))
-      const requiredChecks = ['tests', 'typecheck', 'build', 'packagedE2E', 'fidelity', 'review']
+      provenance = verifyProvenance(repositoryRoot, candidate, verification)
+      reasons.push(...provenance.reasons)
       if (verification.releaseId !== candidate.releaseId) reasons.push('验证记录 releaseId 不匹配')
       if (verification.candidateManifestSha256 !== sha256(candidate.manifestPath)) reasons.push('验证记录 manifest 哈希不匹配')
       if (!verification.verifiedAt || Number.isNaN(Date.parse(verification.verifiedAt))) reasons.push('验证记录缺少有效时间')
-      if (requiredChecks.some((check) => verification.checks?.[check] !== 'passed')) reasons.push('验证记录存在未通过门禁')
       const expectedClosurePath = join(repositoryRoot, 'docs', `${candidate.releaseId}-closure.md`)
       if (verification.closurePath !== expectedClosurePath || !existsSync(expectedClosurePath)) reasons.push('验证记录 closure 路径不匹配')
       else if (verification.closureSha256 !== sha256(expectedClosurePath)) reasons.push('验证记录 closure 哈希不匹配')
@@ -81,7 +83,7 @@ const validateCurrentVerification = (candidate) => {
       reasons.push('结构化验证记录无法解析')
     }
   }
-  return { ...candidate, currentVerified: reasons.length === 0, verificationReasons: reasons }
+  return { ...candidate, ...provenance, currentVerified: reasons.length === 0, verificationReasons: reasons }
 }
 
 const latestCandidate = () => {
@@ -102,10 +104,12 @@ const latestCandidate = () => {
     .map(validateCandidateIntegrity)
   const immutable = candidates.filter((candidate) => candidate.valid)
     .sort((left, right) => String(right.createdAt ?? '').localeCompare(String(left.createdAt ?? '')))
-  const verified = immutable.map(validateCurrentVerification).filter((candidate) => candidate.currentVerified)
+  const assessed = immutable.map(validateCurrentVerification)
+  const verified = assessed.filter((candidate) => candidate.currentVerified)
   return {
     immutableCandidate: immutable[0] ?? null,
     verifiedCandidate: verified[0] ?? null,
+    candidateAssessments: assessed.map(({ releaseId, verificationReasons, currentSourceMatches }) => ({ releaseId, verificationReasons, currentSourceMatches })),
     rejectedCount: candidates.length - verified.length
   }
 }
@@ -131,6 +135,9 @@ const report = {
   remotes,
   documents,
   rejectedCandidateCount: candidateSelection.rejectedCount,
+  candidateAssessments: candidateSelection.candidateAssessments ?? [],
+  currentSourceVerified: Boolean(candidate?.currentSourceMatches),
+  historicalRecoveryAnchor: immutableCandidate ? { releaseId: immutableCandidate.releaseId, manifestPath: immutableCandidate.manifestPath, sourceCommit: immutableCandidate.sourceCommit ?? null } : null,
   latestVerifiedCandidate: candidate
     ? {
         releaseId: candidate.releaseId ?? null,
@@ -138,7 +145,11 @@ const report = {
         manifestPath: candidate.manifestPath,
         executablePath: candidate.executablePath ?? null,
         packageKind: candidate.packageKind ?? null,
-        visualFidelity: candidate.visualFidelity ?? null
+        visualFidelity: candidate.visualFidelity ?? null,
+        sourceCommit: candidate.sourceCommit,
+        sourceInputsSha256: candidate.sourceInputsSha256,
+        currentSourceMatches: candidate.currentSourceMatches,
+        sourceIsAncestor: candidate.sourceIsAncestor
       }
     : null,
   latestImmutableCandidate: immutableCandidate
@@ -151,7 +162,9 @@ const report = {
       }
     : null,
   conclusion: worktree.total === 0
-    ? '当前开发树干净；它仍需经过构建和验证后才能称为候选包。'
+    ? candidate?.currentSourceMatches
+      ? '当前开发树干净；源码与已验证内部候选一致，未公开发布。'
+      : '当前开发树干净；它仍需经过构建和验证后才能称为候选包。'
     : '当前开发树含未收口改动；它不是可发布版本。最近不可变候选与当前标准下已验证候选必须以状态命令分别显示的结果为准。',
   versionRelation: immutableCandidate?.appVersion === packageJson.version
     ? '当前开发树声明版本与最近不可变候选版本一致；它是否达当前验证标准仍以状态命令的“已验证候选”字段为准。'
@@ -168,7 +181,8 @@ if (process.argv.includes('--json')) {
   console.log(`工作树：${report.worktree.total === 0 ? '干净' : `未收口（暂存 ${report.worktree.staged} / 已改 ${report.worktree.unstaged} / 未追踪 ${report.worktree.untracked}）`}`)
   console.log(`远程备份：${report.remotes.length > 0 ? report.remotes.join(', ') : '未配置'}`)
   console.log(`最近不可变候选：${report.latestImmutableCandidate?.releaseId ?? '未找到'}${report.latestImmutableCandidate?.createdAt ? `（${report.latestImmutableCandidate.createdAt}）` : ''}`)
-  console.log(`当前标准下已验证候选：${report.latestVerifiedCandidate?.releaseId ?? '未找到'}`)
+  console.log(`最近已验证候选：${report.latestVerifiedCandidate?.releaseId ?? '未找到'}`)
+  console.log(`当前源码匹配已验证候选：${report.currentSourceVerified ? '是（输入指纹及提交祖先关系已核验）' : '否；历史包不能证明当前源码已验证'}`)
   console.log(`候选 manifest：${report.latestImmutableCandidate?.manifestPath ?? '未找到'}`)
   if (report.rejectedCandidateCount > 0) console.log(`已排除不可验证候选：${report.rejectedCandidateCount}`)
   console.log(`结论：${report.conclusion}`)

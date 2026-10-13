@@ -22,7 +22,8 @@ const playwrightCli = resolve(projectRoot, 'node_modules', '@playwright', 'test'
 if (!existsSync(playwrightCli)) throw new Error(`Project Playwright CLI is required: ${playwrightCli}`)
 const packagedTests = resolvePlaywrightSuiteTests('current', [
   'packaged-real-dpi.spec.ts',
-  'packaged-business-smoke.spec.ts'
+  'packaged-business-smoke.spec.ts',
+  'original-clip-pool-export-report.spec.ts'
 ], projectRoot)
 execFileSync(process.execPath, [playwrightCli, 'test', ...packagedTests], {
   stdio: 'inherit',

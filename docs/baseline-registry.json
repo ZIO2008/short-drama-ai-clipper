@@ -13,18 +13,23 @@
       "status": "current",
       "supersedes": null,
       "createdAt": "2026-08-11",
-      "allowedUse": ["design-reference", "visual-acceptance"]
+      "allowedUse": [
+        "design-reference",
+        "visual-acceptance"
+      ]
     },
     {
       "id": "runtime-package-0.1.92-working-tree",
       "snapshotId": "package-json-0.1.92",
       "domain": "runtime",
-      "path": "package.json",
+      "path": "docs/runtime-baselines/package-0.1.92.json",
       "sha256": "D5C34CC32598BEC2E415C09EFDBD4BE11EC2CE15F5B6D3279B083CDFFFAC22B2",
-      "status": "current",
+      "status": "superseded",
       "supersedes": null,
       "createdAt": "2026-08-19",
-      "allowedUse": ["tooling-context"]
+      "allowedUse": [
+        "tooling-context"
+      ]
     },
     {
       "id": "test-playwright-config-current",
@@ -35,7 +40,9 @@
       "status": "current",
       "supersedes": null,
       "createdAt": "2026-08-19",
-      "allowedUse": ["test-discovery-context"]
+      "allowedUse": [
+        "test-discovery-context"
+      ]
     },
     {
       "id": "release-candidate-0.1.32-p1-internal-trial",
@@ -46,7 +53,10 @@
       "status": "candidate",
       "supersedes": null,
       "createdAt": "2026-07-30",
-      "allowedUse": ["candidate-traceability", "internal-trial"]
+      "allowedUse": [
+        "candidate-traceability",
+        "internal-trial"
+      ]
     },
     {
       "id": "release-candidate-0.1.92-p1-internal-trial",
@@ -57,7 +67,11 @@
       "status": "candidate",
       "supersedes": "release-candidate-0.1.32-p1-internal-trial",
       "createdAt": "2026-10-11",
-      "allowedUse": ["candidate-traceability", "internal-trial", "scoped-visual-gate"]
+      "allowedUse": [
+        "candidate-traceability",
+        "internal-trial",
+        "scoped-visual-gate"
+      ]
     },
     {
       "id": "evidence-verification-0.1.88-p1-visual-unverified",
@@ -68,7 +82,9 @@
       "status": "legacy",
       "supersedes": null,
       "createdAt": "2026-08-14",
-      "allowedUse": ["historical-diagnosis"]
+      "allowedUse": [
+        "historical-diagnosis"
+      ]
     },
     {
       "id": "evidence-verification-0.1.92-p1-visual-unverified",
@@ -79,7 +95,11 @@
       "status": "current",
       "supersedes": "evidence-verification-0.1.88-p1-visual-unverified",
       "createdAt": "2026-08-25",
-      "allowedUse": ["verification-only", "package-smoke", "privacy-audit"]
+      "allowedUse": [
+        "verification-only",
+        "package-smoke",
+        "privacy-audit"
+      ]
     },
     {
       "id": "design-v48-contract-legacy",
@@ -90,7 +110,22 @@
       "status": "legacy",
       "supersedes": null,
       "createdAt": "2026-08-01",
-      "allowedUse": ["historical-comparison"]
+      "allowedUse": [
+        "historical-comparison"
+      ]
+    },
+    {
+      "id": "runtime-package-0.1.93-working-tree",
+      "snapshotId": "package-json-0.1.93",
+      "domain": "runtime",
+      "path": "package.json",
+      "sha256": "4AE60A281E588D5B24C021F4BA3530E4E06A08CC0D75EF41978FF8947927DFA7",
+      "status": "current",
+      "supersedes": "runtime-package-0.1.92-working-tree",
+      "createdAt": "2026-10-13",
+      "allowedUse": [
+        "tooling-context"
+      ]
     }
   ]
 }
