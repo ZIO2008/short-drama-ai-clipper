@@ -111,6 +111,7 @@ test('CLIP-REAL-005 to CLIP-REAL-008 closes the isolated Electron pool, export, 
     expect(await app.evaluate(({ app: runtime }) => runtime.isPackaged)).toBe(true)
     page = await app.firstWindow()
     await expect(page.getByRole('heading', { name: '剧目库' })).toBeVisible()
+    await page.getByRole('button', { name: '打开剧目：原剧切片闭环隔离剧目' }).click()
   }
   await page.getByRole('tab', { name: '素材生产' }).click()
   await page.getByRole('button', { name: '进入工作区' }).click()

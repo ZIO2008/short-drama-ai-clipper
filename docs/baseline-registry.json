@@ -118,10 +118,23 @@
       "id": "runtime-package-0.1.93-working-tree",
       "snapshotId": "package-json-0.1.93",
       "domain": "runtime",
-      "path": "package.json",
+      "path": "docs/runtime-baselines/package-0.1.93.json",
       "sha256": "4AE60A281E588D5B24C021F4BA3530E4E06A08CC0D75EF41978FF8947927DFA7",
-      "status": "current",
+      "status": "superseded",
       "supersedes": "runtime-package-0.1.92-working-tree",
+      "createdAt": "2026-10-13",
+      "allowedUse": [
+        "tooling-context"
+      ]
+    },
+    {
+      "id": "runtime-package-0.1.94-working-tree",
+      "snapshotId": "package-json-0.1.94",
+      "domain": "runtime",
+      "path": "package.json",
+      "sha256": "E494F4E070F0DB8F73F5F28010E0282766BD07E703A23BC5A0F01FCF731C9EBD",
+      "status": "current",
+      "supersedes": "runtime-package-0.1.93-working-tree",
       "createdAt": "2026-10-13",
       "allowedUse": [
         "tooling-context"
