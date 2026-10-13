@@ -1,7 +1,7 @@
 {
   "domain": "release",
-  "currentId": "release-candidate-0.1.92-p1-internal-trial",
+  "currentId": "release-candidate-0.1.94-p1-internal-trial",
   "registry": "docs/baseline-registry.json",
-  "sha256": "A9403AAA033C693B852158D548C567BA2365AA9BADB79A9D56DA052923E3897D",
+  "sha256": "B9E18DD4AAF67785851BA71E7E2A41202675C1751AB8D071E30BEC1EBFAC9AEB",
   "policy": "Candidate is the latest registered immutable candidate, not a statement that the dirty working tree is released."
 }

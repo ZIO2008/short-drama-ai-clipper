@@ -1,0 +1,19 @@
+
+Running 5 tests using 3 workers
+
+(node:37804) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:9844) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:14056) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+PACKAGED_REAL_DPI { devicePixelRatio: 1, scrollWidth: 1418, innerWidth: 1418 }
+  ok 1 [current] › tests\current\packaged-real-dpi.spec.ts:10:37 › packaged app starts at 100% DPI without clipping (5.8s)
+PACKAGED_REAL_DPI { devicePixelRatio: 1.25, scrollWidth: 1423, innerWidth: 1423 }
+  ok 4 [current] › tests\current\packaged-real-dpi.spec.ts:10:37 › packaged app starts at 125% DPI without clipping (4.4s)
+PACKAGED_REAL_DPI { devicePixelRatio: 1.5, scrollWidth: 1426, innerWidth: 1426 }
+  ok 5 [current] › tests\current\packaged-real-dpi.spec.ts:10:37 › packaged app starts at 150% DPI without clipping (4.5s)
+  ok 2 [current] › tests\current\packaged-business-smoke.spec.ts:9:1 › packaged app persists 85 real IPC imports and subtitle mapping in isolated temporary userData (16.6s)
+  ok 3 [current] › tests\current\original-clip-pool-export-report.spec.ts:66:1 › CLIP-REAL-005 to CLIP-REAL-008 closes the isolated Electron pool, export, and report path (16.2s)
+
+  5 passed (21.5s)

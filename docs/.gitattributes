@@ -1,0 +1,4 @@
+# Preserve exact bytes for the hashes in this immutable candidate evidence.
+v0.1.94-p1-internal-trial-closure.md -text
+release-evidence/v0.1.94-p1-internal-trial.json -text
+release-evidence/v0.1.94-p1-internal-trial/checks/* -text

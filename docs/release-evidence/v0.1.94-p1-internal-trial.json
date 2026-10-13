@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 2,
+  "sourceCommit": "af20a1ec7ac01752ebc9c50e32581e53e87833c6",
+  "sourceInputsSha256": "c33a8f76f813b39db879c91eeaed48c2c9d367fc8d8102e2aa1ffcf490dbeb4a",
+  "sourceDirty": false,
+  "designContractSha256": "d759a4bc7b6a72cb36d2abbc73bb03f15db8a4817a82f75ee341f7330aece613",
+  "releaseId": "v0.1.94-p1-internal-trial",
+  "appVersion": "0.1.94",
+  "scope": "P1",
+  "channel": "internal-trial",
+  "packageKind": "formal-candidate",
+  "visualFidelity": "passed",
+  "notFormalCandidate": false,
+  "nativeBuildPathRedactions": 1,
+  "executableSha256": "8c0985bf4caad1262a868deb4c858299db88814af58f5347d43aba5c67dba13e",
+  "appAsarSha256": "b1e5a9804e9caa1bfe3cfc2ec858d0696016121711a4ef431032dd8cb04feafb",
+  "createdAt": "2026-10-13T13:05:29.657Z",
+  "artifactAvailability": "local-only",
+  "originalManifestSha256": "e253267cb4f4e8754a324a265903d24770b1ce37a9643d27ad4dd7ba85550758",
+  "visualScope": [
+    "screen-clip:default-candidate-selected",
+    "screen-clip:context-speed",
+    "screen-clip:missing-media"
+  ],
+  "privacy": {
+    "packageFilesAudited": 3744,
+    "auditLog": "v0.1.94-p1-internal-trial/checks/pack.log"
+  },
+  "verification": {
+    "schemaVersion": 2,
+    "releaseId": "v0.1.94-p1-internal-trial",
+    "sourceCommit": "af20a1ec7ac01752ebc9c50e32581e53e87833c6",
+    "sourceInputsSha256": "c33a8f76f813b39db879c91eeaed48c2c9d367fc8d8102e2aa1ffcf490dbeb4a",
+    "sourceDirty": false,
+    "designContractSha256": "d759a4bc7b6a72cb36d2abbc73bb03f15db8a4817a82f75ee341f7330aece613",
+    "candidateManifestSha256": "e253267cb4f4e8754a324a265903d24770b1ce37a9643d27ad4dd7ba85550758",
+    "closurePath": "docs/v0.1.94-p1-internal-trial-closure.md",
+    "closureSha256": "07e66af410c95efe47d2585f6470e44391844df4ca6ac6ba93da163c20cbc828",
+    "verifiedAt": "2026-10-13T13:06:53.900Z",
+    "checks": {
+      "tests": {
+        "evidencePath": "v0.1.94-p1-internal-trial/checks/tests.json",
+        "evidenceSha256": "a67608687bcf42fc1075339a2a45cd6b1ecaa2a3b7b9399cc070971c0b03e18a"
+      },
+      "typecheck": {
+        "evidencePath": "v0.1.94-p1-internal-trial/checks/typecheck.json",
+        "evidenceSha256": "1b89cfecce93bf762328991433e87734746640398737bbe73e39b06134a50b43"
+      },
+      "build": {
+        "evidencePath": "v0.1.94-p1-internal-trial/checks/build.json",
+        "evidenceSha256": "5680e5440ccf859d67051233604056c2b2ecc9490b77834b1a76bdd7875d7001"
+      },
+      "currentE2E": {
+        "evidencePath": "v0.1.94-p1-internal-trial/checks/currentE2E.json",
+        "evidenceSha256": "b1c3bd15cb1f6daf8727d344a21f39142be5887ad6a9c52d00b26895206eb449"
+      },
+      "packagedE2E": {
+        "evidencePath": "v0.1.94-p1-internal-trial/checks/packagedE2E.json",
+        "evidenceSha256": "9e4fae7aa3b7d8e40ea3662b5bf765498d53cf436d0fbf79de24d5ff452e276c"
+      },
+      "fidelity": {
+        "evidencePath": "v0.1.94-p1-internal-trial/checks/fidelity.json",
+        "evidenceSha256": "2d073ab1583d2930ac891079263242d94d16c8fa6fcb5ed9d2ccd8a4c07ee6c3"
+      },
+      "review": {
+        "evidencePath": "v0.1.94-p1-internal-trial/checks/review.json",
+        "evidenceSha256": "18c4e28853e311ef56bf66af2e624a8ac6446f156c3b1a098ef9e0b70e74af16"
+      }
+    }
+  },
+  "limitations": [
+    "Internal candidate only; no public release or formal replacement",
+    "Scoped visual evidence only",
+    "Packaged export test seeds isolated candidates in development, then confirms and exports in the actual package"
+  ]
+}
