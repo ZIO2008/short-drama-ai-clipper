@@ -5,7 +5,7 @@
 ## 当前状态（2026-10-14）
 
 - 本机旧版替换的执行计划见 `docs/release-readiness/2026-10-14-legacy-replacement-plan.md`。目标是新平台成为默认工具、旧版保留备用；按旧版依赖盘点、接管验证、具体切换清单、入口切换、实际使用观察推进。
-- 用户已启动该计划并确认旧版只需备用。默认入口已指向素材平台 0.1.95，旧版固定备用入口和切换前备份已建立，见 `docs/release-readiness/2026-10-14-legacy-dependency-inventory.md` 与 `docs/release-readiness/2026-10-14-legacy-switch-result.md`；默认入口实机确认及实际工作观察待完成。
+- 用户已启动该计划并确认旧版只需备用。默认入口已指向素材平台 0.1.95，旧版固定备用入口和切换前备份已建立；默认 BAT 实际启动固定安装的 0.1.95 EXE，用户确认剧目和分集正常，见 `docs/release-readiness/2026-10-14-legacy-dependency-inventory.md` 与 `docs/release-readiness/2026-10-14-legacy-switch-result.md`。后续实际工作观察待完成。
 
 - 当前 Phase 30 局部导出与试用反馈收口已形成 `v0.1.95-p1-internal-trial` 内部候选：772 项测试通过、当前 Electron 14 项通过、实际包 5/5，七项结构化证据及包哈希已绑定，见 `docs/v0.1.95-p1-internal-trial-closure.md`。用户于 2026-10-14 确认本轮导出终态修复实机测试无问题；该确认不扩大为全产品验收。其后用户授权本机默认入口切换；正式发布候选及公开发布仍未获授权。
 - 2026-10-14 用户明确暂缓真实切片质量评估：开头吸引力、切点、剧情完整性、字幕贴合度和投流可用性均不列入下一阶段，待用户以后重新提出再规划。
