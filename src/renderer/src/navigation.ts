@@ -20,6 +20,20 @@ export const NAVIGATION_ITEMS: readonly NavigationItem[] = [
 export const isRouteId = (value: string): value is RouteId =>
   NAVIGATION_ITEMS.some((item) => item.id === value)
 
+/** Keep prototype sidebar demo handlers from navigating inside a runtime iframe. */
+export const bindPrototypeGlobalNavigation = (document: Document): (() => void) => {
+  const navigate = (click: MouseEvent): void => {
+    const trigger = (click.target as Element).closest<HTMLElement>('[data-screen], [data-open], [data-r5-open]')
+    const target = trigger?.dataset.screen ?? trigger?.dataset.r5Open ?? trigger?.dataset.open
+    if (!target || !isRouteId(target)) return
+    click.preventDefault()
+    click.stopImmediatePropagation()
+    window.dispatchEvent(new CustomEvent(GLOBAL_NAVIGATION_EVENT, { detail: target }))
+  }
+  document.addEventListener('click', navigate, true)
+  return () => document.removeEventListener('click', navigate, true)
+}
+
 export const getInitialRoute = (): RouteId => {
   const route = window.location.hash.replace(/^#\/?/, '')
   return isRouteId(route) ? route : 'library'

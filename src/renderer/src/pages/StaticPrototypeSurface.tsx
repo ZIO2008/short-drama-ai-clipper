@@ -1,5 +1,5 @@
 import { useLayoutEffect, useMemo, useRef, useState, type ReactElement } from 'react'
-import { GLOBAL_NAVIGATION_EVENT, isRouteId } from '../navigation.js'
+import { bindPrototypeGlobalNavigation } from '../navigation.js'
 import prototypeHtml from '../../../../design/open-design/v2026-07-30-open-design-final/short-drama-material-studio.html?raw'
 import clipMonitorReviewPrototypeHtml from '../../../../design/open-design/v2026-08-11-v49-clip-monitor-review/short-drama-material-studio-v49-clip-review.html?raw'
 import textAnalysisConnectivityPrototypeHtml from '../../../../design/open-design/v2026-08-05-model-studio-connectivity/short-drama-material-studio.html?raw'
@@ -210,17 +210,7 @@ export const StaticPrototypeSurface = ({ screen, mode = 'runtime', fixtureState 
   const wireSurface = (document: Document): void => {
     if (document.body.dataset.staticPrototypeWired === 'true') return
     document.body.dataset.staticPrototypeWired = 'true'
-    // The full clip shell keeps the prototype sidebar. Runtime navigation must
-    // leave the iframe before its demo listeners activate an unbound screen.
-    document.addEventListener('click', (click) => {
-      if (mode !== 'runtime') return
-      const trigger = (click.target as Element).closest<HTMLElement>('[data-screen], [data-open], [data-r5-open]')
-      const target = trigger?.dataset.screen ?? trigger?.dataset.r5Open ?? trigger?.dataset.open
-      if (!target || !isRouteId(target)) return
-      click.preventDefault()
-      click.stopImmediatePropagation()
-      window.dispatchEvent(new CustomEvent(GLOBAL_NAVIGATION_EVENT, { detail: target }))
-    }, true)
+    const disposeNavigation = mode === 'runtime' ? bindPrototypeGlobalNavigation(document) : () => undefined
     document.addEventListener('click', (click) => {
       const trigger = (click.target as Element).closest<HTMLElement>('[data-subtitle-open-static]')
       if (!trigger) return
@@ -248,7 +238,8 @@ export const StaticPrototypeSurface = ({ screen, mode = 'runtime', fixtureState 
       if (target === 'production' || target === 'library') { click.preventDefault(); onBack() }
     }, true)
     runtimeCleanup.current?.()
-    runtimeCleanup.current = mode === 'runtime' ? onReady?.(document) ?? null : null
+    const disposeRuntime = mode === 'runtime' ? onReady?.(document) : null
+    runtimeCleanup.current = () => { disposeNavigation(); disposeRuntime?.() }
   }
   if (loadFailed) return <section className="static-prototype-surface-error" role="alert" aria-live="assertive">
     <div>
