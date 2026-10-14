@@ -5,3 +5,4 @@ release-evidence/v0.1.94-p1-internal-trial/checks/* -text
 v0.1.95-p1-internal-trial-closure.md -text
 release-evidence/v0.1.95-p1-internal-trial.json -text
 release-evidence/v0.1.95-p1-internal-trial/checks/* -text whitespace=-blank-at-eof
+release-readiness/scripts/* -text
