@@ -1,6 +1,7 @@
 import type { IconName } from './components/UiIcon.js'
 
 export type RouteId = 'library' | 'tasks' | 'tags' | 'settings'
+export const GLOBAL_NAVIGATION_EVENT = 'shortdrama:global-navigation'
 
 export type NavigationItem = {
   id: RouteId

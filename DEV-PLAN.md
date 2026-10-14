@@ -4,6 +4,8 @@
 
 ## 当前状态（2026-10-14）
 
+- 日常使用发现切片工作区侧栏落入原型演示页，启动定点修复，见 `docs/release-readiness/2026-10-14-prototype-navigation-fix.md`；本机替换的实际任务观察暂不判为通过，修复后补验该导航路径。
+
 - 本机旧版替换的执行计划见 `docs/release-readiness/2026-10-14-legacy-replacement-plan.md`。目标是新平台成为默认工具、旧版保留备用；按旧版依赖盘点、接管验证、具体切换清单、入口切换、实际使用观察推进。
 - 用户已启动该计划并确认旧版只需备用。默认入口已指向素材平台 0.1.95，旧版固定备用入口和切换前备份已建立；默认 BAT 实际启动固定安装的 0.1.95 EXE，用户确认剧目和分集正常，见 `docs/release-readiness/2026-10-14-legacy-dependency-inventory.md` 与 `docs/release-readiness/2026-10-14-legacy-switch-result.md`。后续实际工作观察待完成。
 

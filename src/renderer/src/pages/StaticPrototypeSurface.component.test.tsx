@@ -42,6 +42,51 @@ const setFrameDocument = (frame: HTMLIFrameElement, contentDocument: Document): 
 }
 
 describe('StaticPrototypeSurface loading guard', () => {
+  it('leaves static-fixture sidebar behavior inside the prototype', async () => {
+    const navigate = vi.fn()
+    window.addEventListener('shortdrama:global-navigation', navigate)
+    const { container } = render(<StaticPrototypeSurface screen="clip" mode="static-fixture" onBack={vi.fn()} />)
+    const fixture = readyClipFixtureDocument()
+    const button = fixture.createElement('button')
+    button.dataset.screen = 'library'
+    fixture.querySelector('.sidebar')!.append(button)
+    const prototypeNavigation = vi.fn()
+    button.addEventListener('click', prototypeNavigation)
+    setFrameDocument(container.querySelector<HTMLIFrameElement>('iframe')!, fixture)
+    fireEvent.load(container.querySelector('iframe')!)
+    await act(async () => { await Promise.resolve() })
+    try {
+      button.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+      expect(prototypeNavigation).toHaveBeenCalledOnce()
+      expect(navigate).not.toHaveBeenCalled()
+    } finally { window.removeEventListener('shortdrama:global-navigation', navigate) }
+  })
+
+  it.each(['library', 'tasks', 'tags', 'settings'])('routes runtime sidebar %s to the host without exposing prototype pages', async (target) => {
+    const navigate = vi.fn()
+    window.addEventListener('shortdrama:global-navigation', navigate)
+    const { container } = render(<StaticPrototypeSurface screen="clip" onBack={vi.fn()} />)
+    const frame = container.querySelector<HTMLIFrameElement>('iframe')!
+    const runtimeDocument = readyClipFixtureDocument()
+    const button = runtimeDocument.createElement('button')
+    button.className = 'nav-btn'
+    button.dataset.screen = target
+    button.innerHTML = '<span>全局导航</span>'
+    runtimeDocument.querySelector('.sidebar')!.append(button)
+    const prototypeNavigation = vi.fn(() => runtimeDocument.getElementById('screen-library')!.classList.add('active'))
+    button.addEventListener('click', prototypeNavigation)
+    setFrameDocument(frame, runtimeDocument)
+    fireEvent.load(frame)
+    await act(async () => { await Promise.resolve() })
+    try {
+      button.firstElementChild!.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+      expect(navigate).toHaveBeenCalledTimes(1)
+      expect((navigate.mock.calls[0][0] as CustomEvent).detail).toBe(target)
+      expect(prototypeNavigation).not.toHaveBeenCalled()
+      expect(runtimeDocument.getElementById('screen-library')!.classList.contains('active')).toBe(false)
+    } finally { window.removeEventListener('shortdrama:global-navigation', navigate) }
+  })
+
   it('keeps the V49 clip fixture isolated from the runtime bridge', async () => {
     const onReady = vi.fn()
     const onPrepared = vi.fn()

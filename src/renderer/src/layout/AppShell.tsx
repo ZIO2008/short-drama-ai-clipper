@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type KeyboardEvent, type ReactElement } fr
 import type { NotificationSnapshot } from '../../../shared/contracts.js'
 import { NotificationDrawer } from '../components/NotificationDrawer.js'
 import { UiIcon } from '../components/UiIcon.js'
-import { NAVIGATION_ITEMS, isRouteId, type RouteId } from '../navigation.js'
+import { GLOBAL_NAVIGATION_EVENT, NAVIGATION_ITEMS, isRouteId, type RouteId } from '../navigation.js'
 import { RouteContent, type RouteContentProps } from './RouteContent.js'
 
 type AppShellProps = Partial<Omit<RouteContentProps, 'route' | 'title' | 'description'>> & {
@@ -17,6 +17,16 @@ export const AppShell = (props: AppShellProps): ReactElement => {
   const activeItem = NAVIGATION_ITEMS.find((item) => item.id === props.activeRoute) ?? NAVIGATION_ITEMS[0]
   const notificationButtonRef = useRef<HTMLButtonElement>(null); const wasOpen = useRef(false)
   const [taskFocusId, setTaskFocusId] = useState<string | null>(null)
+  useEffect(() => {
+    const navigateFromSurface = (event: Event): void => {
+      const target: unknown = (event as CustomEvent<unknown>).detail
+      if (typeof target !== 'string' || !isRouteId(target)) return
+      setTaskFocusId(null)
+      props.onNavigate(target)
+    }
+    window.addEventListener(GLOBAL_NAVIGATION_EVENT, navigateFromSurface)
+    return () => window.removeEventListener(GLOBAL_NAVIGATION_EVENT, navigateFromSurface)
+  }, [props.onNavigate])
   useEffect(() => { if (wasOpen.current && !props.notificationsOpen) notificationButtonRef.current?.focus(); wasOpen.current = props.notificationsOpen }, [props.notificationsOpen])
   useEffect(() => {
     const defaultContext = `全局 / ${activeItem.label}`

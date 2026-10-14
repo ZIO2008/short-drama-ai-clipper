@@ -1,10 +1,52 @@
-import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { spawnSync } from 'node:child_process'
+import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { _electron as electron, expect, test } from '@playwright/test'
 
 test.skip(!process.env.SHORTDRAMA_PACKAGED_EXE, 'Requires SHORTDRAMA_PACKAGED_EXE for an explicit packaged candidate.')
+
+test('packaged clip subtitle preflight failure returns to real global pages instead of prototype demos', async () => {
+  test.setTimeout(120_000)
+  const root = await mkdtemp(join(tmpdir(), 'short-drama-packaged-navigation-'))
+  const source = join(root, '01.mp4')
+  const ffmpeg = createRequire(import.meta.url)('ffmpeg-static') as string
+  const fixture = spawnSync(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-f', 'lavfi', '-i', 'color=c=black:s=320x180:d=4', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', source], { windowsHide: true })
+  expect(fixture.status).toBe(0)
+  await mkdir(join(root, 'data'))
+  const app = await electron.launch({ timeout: 30_000, executablePath: resolve(process.env.SHORTDRAMA_PACKAGED_EXE!), args: ['--packaged-smoke', '--packaged-smoke-user-data', join(root, 'data')], env: { ...process.env, SHORTDRAMA_MATERIAL_CHANNEL: 'packaged-smoke' } })
+  try {
+    const page = await app.firstWindow()
+    await expect(page.getByRole('heading', { name: '剧目库' })).toBeVisible()
+    await page.evaluate(async (sourcePath) => {
+      const drama = await window.desktopApi.createDrama('导航回归真实剧目')
+      await window.desktopApi.importEpisodes(drama.id, [sourcePath])
+    }, source)
+    await page.reload()
+    for (const target of ['library', 'tasks', 'tags', 'settings']) {
+      if (target !== 'library') await page.getByRole('button', { name: '剧目库', exact: true }).click()
+      await page.getByRole('button', { name: '打开剧目：导航回归真实剧目' }).click()
+      await page.getByRole('tab', { name: '素材生产' }).click()
+      await page.getByRole('button', { name: '进入工作区' }).click()
+      const frame = page.frameLocator('iframe[title="原剧切片工作区"]')
+      await expect(frame.locator('[data-r5-open="generate"]')).toBeEnabled()
+      await frame.locator('[data-r5-open="generate"]').click()
+      await expect(frame.locator('#screen-clip')).toContainText(/没有.*字幕|字幕.*锚点/)
+      await frame.locator(`.nav-btn[data-screen="${target}"]`).click()
+      await expect(page.locator('iframe[title="原剧切片工作区"]')).toHaveCount(0)
+      await expect(page).toHaveURL(new RegExp(`#/${target}$`))
+      await expect(page.locator('body')).not.toContainText('春江未眠')
+      await expect(page.locator('body')).not.toContainText('破茧之后 · 暑期投流')
+      if (target === 'library') await expect(page.getByRole('button', { name: '打开剧目：导航回归真实剧目' })).toBeVisible()
+    }
+  } finally {
+    const pid = app.process()?.pid
+    await app.close().catch(() => undefined)
+    if (pid && process.platform === 'win32') spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], { windowsHide: true })
+    await rm(root, { recursive: true, force: true })
+  }
+})
 
 test('packaged app persists 85 real IPC imports and subtitle mapping in isolated temporary userData', async () => {
   const userData = await mkdtemp(join(tmpdir(), 'short-drama-packaged-business-data-'))
