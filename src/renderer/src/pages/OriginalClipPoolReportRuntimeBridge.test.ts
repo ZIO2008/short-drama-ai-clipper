@@ -13,6 +13,112 @@ const settle = async (): Promise<void> => { await Promise.resolve(); await Promi
 const selectForExport = async (document: Document, id: string): Promise<void> => { await vi.waitFor(() => expect(document.querySelector(`[data-clip-export-candidate="${id}"]`)).not.toBeNull()); document.querySelector<HTMLInputElement>(`[data-clip-export-candidate="${id}"]`)!.click() }
 
 describe('bindOriginalClipPoolReportRuntime', () => {
+  it.each([
+    { state: 'completed', message: '导出完成 1 / 1', closed: true },
+    { state: 'failed', message: '导出未全部成功', closed: false },
+    { state: 'cancelled', message: '导出已取消', closed: false }
+  ] as const)('shows the $state export outcome instead of a running label', async ({ state, message, closed }) => {
+    const testDocument = fixture()
+    Object.assign(window, { desktopApi: api({
+      getClipExportProgress: vi.fn().mockResolvedValue({ exportId: 'export-1', total: 1, completed: 1, status: state, results: [] }),
+      listClipCandidates: vi.fn().mockResolvedValue([candidate('candidate-1', state === 'completed' ? 'exported' : 'confirmed')])
+    }) })
+    bindOriginalClipPoolReportRuntime({ document: testDocument, dramaId: 'd1', episodes: [episode], onOpenCandidate: vi.fn() })
+    await selectForExport(testDocument, 'candidate-1')
+    testDocument.querySelector<HTMLButtonElement>('[data-clip-export-open]')!.click()
+    testDocument.getElementById('saveExport')!.click()
+    await vi.waitFor(() => expect(testDocument.querySelector('#exportModal .modal-head .meta')?.textContent).toContain(message))
+    expect(testDocument.getElementById('exportModal')?.getAttribute('aria-hidden')).toBe(String(closed))
+  })
+
+  it('uses the actual completed result when cancellation races with finishing', async () => {
+    const testDocument = fixture()
+    const pending = new Promise<never>(() => undefined)
+    Object.assign(window, { desktopApi: api({
+      getClipExportProgress: vi.fn().mockReturnValue(pending),
+      cancelClipExport: vi.fn().mockResolvedValue({ exportId: 'export-1', total: 1, completed: 1, status: 'completed', results: [] })
+    }) })
+    bindOriginalClipPoolReportRuntime({ document: testDocument, dramaId: 'd1', episodes: [episode], onOpenCandidate: vi.fn() })
+    await selectForExport(testDocument, 'candidate-1')
+    testDocument.querySelector<HTMLButtonElement>('[data-clip-export-open]')!.click()
+    testDocument.getElementById('saveExport')!.click()
+    await vi.waitFor(() => expect(testDocument.querySelector('#exportModal .modal-head .meta')?.textContent).toContain('正在导出'))
+    testDocument.getElementById('cancelExport')!.click()
+    await vi.waitFor(() => expect(testDocument.querySelector('#exportModal .modal-head .meta')?.textContent).toContain('导出完成'))
+    expect(testDocument.getElementById('exportModal')?.getAttribute('aria-hidden')).toBe('true')
+  })
+
+  it('does not let an earlier batch close a newer export dialog after refresh', async () => {
+    const testDocument = fixture()
+    let releaseRefresh!: (value: ClipCandidate[]) => void
+    const delayedRefresh = new Promise<ClipCandidate[]>((resolve) => { releaseRefresh = resolve })
+    const listClipCandidates = vi.fn().mockResolvedValueOnce([candidate()]).mockReturnValueOnce(delayedRefresh)
+    const startClipExport = vi.fn()
+      .mockResolvedValueOnce({ exportId: 'first', total: 1, completed: 0, status: 'running', results: [] })
+      .mockResolvedValueOnce({ exportId: 'second', total: 1, completed: 0, status: 'running', results: [] })
+    const never = new Promise<never>(() => undefined)
+    const getClipExportProgress = vi.fn()
+      .mockResolvedValueOnce({ exportId: 'first', total: 1, completed: 1, status: 'completed', results: [] })
+      .mockReturnValue(never)
+    Object.assign(window, { desktopApi: api({ listClipCandidates, startClipExport, getClipExportProgress }) })
+    bindOriginalClipPoolReportRuntime({ document: testDocument, dramaId: 'd1', episodes: [episode], onOpenCandidate: vi.fn() })
+    await selectForExport(testDocument, 'candidate-1')
+    testDocument.querySelector<HTMLButtonElement>('[data-clip-export-open]')!.click()
+    testDocument.getElementById('saveExport')!.click()
+    await vi.waitFor(() => expect(listClipCandidates).toHaveBeenCalledTimes(2))
+    const nextChoice = testDocument.createElement('input')
+    nextChoice.type = 'checkbox'; nextChoice.dataset.clipExportCandidate = 'candidate-1'; nextChoice.checked = true
+    testDocument.body.append(nextChoice)
+    nextChoice.dispatchEvent(new Event('change', { bubbles: true }))
+    testDocument.querySelector<HTMLButtonElement>('[data-clip-export-open]')!.click()
+    testDocument.getElementById('saveExport')!.click()
+    await vi.waitFor(() => expect(startClipExport).toHaveBeenCalledTimes(2))
+    await settle()
+    releaseRefresh([candidate('candidate-1', 'exported')])
+    await settle()
+    expect(testDocument.getElementById('exportModal')?.getAttribute('aria-hidden')).toBe('false')
+    expect(testDocument.querySelector('#exportModal .modal-head .meta')?.textContent).toContain('正在导出 0 / 1')
+  })
+
+  it('keeps a newly reopened configuration dialog when the prior batch refresh finishes', async () => {
+    const testDocument = fixture()
+    let releaseRefresh!: (value: ClipCandidate[]) => void
+    const delayedRefresh = new Promise<ClipCandidate[]>((resolve) => { releaseRefresh = resolve })
+    const listClipCandidates = vi.fn().mockResolvedValueOnce([candidate()]).mockReturnValueOnce(delayedRefresh)
+    Object.assign(window, { desktopApi: api({ listClipCandidates }) })
+    bindOriginalClipPoolReportRuntime({ document: testDocument, dramaId: 'd1', episodes: [episode], onOpenCandidate: vi.fn() })
+    await selectForExport(testDocument, 'candidate-1')
+    testDocument.querySelector<HTMLButtonElement>('[data-clip-export-open]')!.click()
+    testDocument.getElementById('saveExport')!.click()
+    await vi.waitFor(() => expect(listClipCandidates).toHaveBeenCalledTimes(2))
+    expect(testDocument.querySelector('#exportModal .modal-head .meta')?.textContent).toContain('导出完成')
+    testDocument.getElementById('closeExport')!.click()
+    testDocument.querySelector<HTMLButtonElement>('[data-clip-export-open]')!.click()
+    expect(testDocument.getElementById('exportModal')?.getAttribute('aria-hidden')).toBe('false')
+    releaseRefresh([candidate('candidate-1', 'exported')])
+    await settle()
+    expect(testDocument.getElementById('exportModal')?.getAttribute('aria-hidden')).toBe('false')
+    expect(testDocument.querySelector('#exportModal .modal-head .meta')?.textContent).toContain('请先在候选池勾选')
+  })
+
+  it.each([
+    { state: 'completed', outcome: '导出完成' },
+    { state: 'failed', outcome: '导出未全部成功' },
+    { state: 'cancelled', outcome: '导出已取消' }
+  ] as const)('keeps the $state outcome visible when refreshing candidate status fails', async ({ state, outcome }) => {
+    const testDocument = fixture()
+    const listClipCandidates = vi.fn().mockResolvedValueOnce([candidate()]).mockRejectedValueOnce(new Error('刷新失败'))
+    const getClipExportProgress = vi.fn().mockResolvedValue({ exportId: 'export-1', total: 1, completed: 1, status: state, results: [] })
+    Object.assign(window, { desktopApi: api({ listClipCandidates, getClipExportProgress }) })
+    bindOriginalClipPoolReportRuntime({ document: testDocument, dramaId: 'd1', episodes: [episode], onOpenCandidate: vi.fn() })
+    await selectForExport(testDocument, 'candidate-1')
+    testDocument.querySelector<HTMLButtonElement>('[data-clip-export-open]')!.click()
+    testDocument.getElementById('saveExport')!.click()
+    await vi.waitFor(() => expect(listClipCandidates).toHaveBeenCalledTimes(2))
+    await vi.waitFor(() => expect(testDocument.querySelector('#exportModal .modal-head .meta')?.textContent).toContain('候选刷新失败'))
+    expect(testDocument.querySelector('#exportModal .modal-head .meta')?.textContent).toContain(outcome)
+    expect(testDocument.getElementById('exportModal')?.getAttribute('aria-hidden')).toBe('false')
+  })
   it('never exports unselected historical results and keeps explicit selection across filters', async () => {
     const preflight = vi.fn().mockResolvedValue({ blocked: [] })
     const testDocument = fixture()

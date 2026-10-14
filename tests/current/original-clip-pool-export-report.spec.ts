@@ -148,6 +148,7 @@ test('CLIP-REAL-005 to CLIP-REAL-008 closes the isolated Electron pool, export, 
   await frame.locator('#exportDirectory').fill(outputDirectory)
   await frame.locator('#saveExport').click()
   await expect.poll(() => candidateStatus(candidateId), { timeout: 60_000 }).toBe('exported')
+  await expect(frame.locator('#exportModal')).toHaveAttribute('aria-hidden', 'true')
   const materialPath = await page.evaluate(async (id) => {
     const drama = (await window.desktopApi.listDramas()).find((item) => item.name === '原剧切片闭环隔离剧目')
     if (!drama) return null
@@ -162,7 +163,6 @@ test('CLIP-REAL-005 to CLIP-REAL-008 closes the isolated Electron pool, export, 
   })
   expect(firstBatch?.candidateIds).toEqual([candidateId])
   expect(createHash('sha256').update(await readFile(sourcePath)).digest('hex')).toBe(sourceSha256)
-  await frame.locator('#closeExport').click()
   await expect(exportChoice).not.toBeChecked()
   await exportChoice.check()
   await frame.locator('[data-clip-export-open]').first().click()
@@ -173,6 +173,7 @@ test('CLIP-REAL-005 to CLIP-REAL-008 closes the isolated Electron pool, export, 
     const drama = (await window.desktopApi.listDramas()).find((item) => item.name === '原剧切片闭环隔离剧目')!
     return (await window.desktopApi.listMaterials(drama.id)).length
   }), { timeout: 60_000 }).toBe(2)
+  await expect(frame.locator('#exportModal')).toHaveAttribute('aria-hidden', 'true')
   await expect(exportChoice).not.toBeChecked()
   const secondBatch = await page.evaluate(async () => {
     const drama = (await window.desktopApi.listDramas()).find((item) => item.name === '原剧切片闭环隔离剧目')!
@@ -182,8 +183,6 @@ test('CLIP-REAL-005 to CLIP-REAL-008 closes the isolated Electron pool, export, 
   expect(secondBatch?.candidateIds).toEqual([candidateId])
   expect(secondBatch?.config?.qualityMode).toBe('bitrate')
   expect(createHash('sha256').update(await readFile(materialPath!)).digest('hex')).toBe(firstOutputHash)
-  await frame.locator('#closeExport').click()
-
   await frame.locator('#screen-clip-pool [data-r5-open="clip-report"]').first().click()
   frame = page.frameLocator('iframe[title="原剧切片完成报告"]')
   await expect(frame.locator('#screen-clip-report')).toBeVisible()
