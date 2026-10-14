@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 2,
+  "sourceCommit": "ffd7562a5ae6a415f7edac7f51aa2b7b202f40ae",
+  "sourceInputsSha256": "c2b472b0dcc6d85d11c3765407b46ca3647c298e44b6aa99cd65462b08c6a3cd",
+  "sourceDirty": false,
+  "designContractSha256": "d759a4bc7b6a72cb36d2abbc73bb03f15db8a4817a82f75ee341f7330aece613",
+  "check": "typecheck",
+  "command": "pnpm run typecheck",
+  "exitCode": 0,
+  "signal": null,
+  "startedAt": "2026-10-14T03:10:08.344Z",
+  "completedAt": "2026-10-14T03:10:10.750Z",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "outputPath": "checks/typecheck.log",
+  "outputSha256": "f59ce890d385a7d8a9be97a754c6b0476c071f3aea02e9258e8819bb1756a449"
+}

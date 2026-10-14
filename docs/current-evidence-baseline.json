@@ -1,7 +1,7 @@
 {
   "domain": "evidence",
-  "currentId": "evidence-candidate-0.1.94-verified",
+  "currentId": "evidence-candidate-0.1.95-verified",
   "registry": "docs/baseline-registry.json",
-  "sha256": "B9E18DD4AAF67785851BA71E7E2A41202675C1751AB8D071E30BEC1EBFAC9AEB",
+  "sha256": "116367DC575F6E46B20465E36C0B25872C18E283A33546097F20809368D544E2",
   "policy": "This pointer records the latest immutable verification evidence. It is not a formal candidate or release claim."
 }

@@ -162,7 +162,7 @@
       "domain": "evidence",
       "path": "docs/release-evidence/v0.1.94-p1-internal-trial.json",
       "sha256": "B9E18DD4AAF67785851BA71E7E2A41202675C1751AB8D071E30BEC1EBFAC9AEB",
-      "status": "current",
+      "status": "superseded",
       "supersedes": "evidence-verification-0.1.92-p1-visual-unverified",
       "createdAt": "2026-10-13",
       "allowedUse": [
@@ -183,6 +183,38 @@
       "createdAt": "2026-10-14",
       "allowedUse": [
         "tooling-context"
+      ]
+    },
+    {
+      "id": "release-candidate-0.1.95-p1-internal-trial",
+      "snapshotId": "v0.1.95-p1-internal-trial",
+      "domain": "release",
+      "path": "docs/release-evidence/v0.1.95-p1-internal-trial.json",
+      "sha256": "116367DC575F6E46B20465E36C0B25872C18E283A33546097F20809368D544E2",
+      "status": "candidate",
+      "supersedes": "release-candidate-0.1.94-p1-internal-trial",
+      "createdAt": "2026-10-14",
+      "allowedUse": [
+        "candidate-traceability",
+        "internal-trial",
+        "scoped-visual-gate",
+        "source-bound-verification"
+      ]
+    },
+    {
+      "id": "evidence-candidate-0.1.95-verified",
+      "snapshotId": "v0.1.95-p1-internal-trial",
+      "domain": "evidence",
+      "path": "docs/release-evidence/v0.1.95-p1-internal-trial.json",
+      "sha256": "116367DC575F6E46B20465E36C0B25872C18E283A33546097F20809368D544E2",
+      "status": "current",
+      "supersedes": "evidence-candidate-0.1.94-verified",
+      "createdAt": "2026-10-14",
+      "allowedUse": [
+        "candidate-verification",
+        "package-smoke",
+        "privacy-audit",
+        "command-evidence"
       ]
     }
   ]
