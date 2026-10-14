@@ -22,6 +22,8 @@
 
 2026-10-14 用户已从新固定入口完成实际使用验收并反馈“没有问题”。这项确认补足了此前隔离烟测之外的日常入口验收；不扩大为跨机发布或旧版替换授权。
 
-早期尝试备份时，Codex 桌面环境把 `%LOCALAPPDATA%` 映射到自身 LocalCache，留下两个同内容、未脱敏的验证副本：`C:/Users/ZIO/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/ShortDramaMaterialStudio/full-backups/v0.1.95-before-parallel-20261014-164735-24681750/` 和 `.../v0.1.95-before-parallel-20261014-164942-608bc930/`。两者权限仅当前用户，数据库 SHA-256 与 D 盘受控备份相同。自动审批以 `blocked by policy` 拒绝清理操作，未提供更具体理由；未绕过，副本目前仍在。它们不作为长期恢复锚点，应在允许的手动清理流程中处理。
+早期尝试备份时，Codex 桌面环境把 `%LOCALAPPDATA%` 映射到自身 LocalCache，留下两个同内容、未脱敏的验证副本：`C:/Users/ZIO/AppData/Local/Packages/OpenAI.Codex_2p2nqsd0c76g0/LocalCache/Local/ShortDramaMaterialStudio/full-backups/v0.1.95-before-parallel-20261014-164735-24681750/` 和 `.../v0.1.95-before-parallel-20261014-164942-608bc930/`。两者权限仅当前用户，数据库 SHA-256 与 D 盘受控备份相同。自动审批以 `blocked by policy` 拒绝清理操作，未提供更具体理由；没有绕过。它们不作为长期恢复锚点。
+
+后续用户确认已手动删除上述两个 LocalCache 副本。2026-10-14 只读复核两个精确目录均不存在；D 盘受控备份的数据库和 manifest 仍存在，数据库 SHA-256 与 manifest 一致。先前自动审批拒绝的操作没有被工具绕过。
 
 未向 GitHub push、merge、tag 或创建公开 Release；未改旧正式版、旧工程、用户媒体或正式数据库。此结果限定本机并行使用，后续如需真正跨机交付，另做安装器、媒体可达性和异机恢复验收。
