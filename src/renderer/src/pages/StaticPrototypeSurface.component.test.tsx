@@ -42,6 +42,25 @@ const setFrameDocument = (frame: HTMLIFrameElement, contentDocument: Document): 
 }
 
 describe('StaticPrototypeSurface loading guard', () => {
+  it('keeps local return-to-settings actions on their surface callback', async () => {
+    const globalNavigate = vi.fn()
+    const localNavigate = vi.fn()
+    window.addEventListener('shortdrama:global-navigation', globalNavigate)
+    const { container } = render(<StaticPrototypeSurface screen="clip" onBack={vi.fn()} onNavigate={localNavigate} />)
+    const fixture = readyClipFixtureDocument()
+    const button = fixture.createElement('button')
+    button.dataset.open = 'settings'
+    fixture.querySelector('#screen-clip')!.append(button)
+    setFrameDocument(container.querySelector<HTMLIFrameElement>('iframe')!, fixture)
+    fireEvent.load(container.querySelector('iframe')!)
+    await act(async () => { await Promise.resolve() })
+    try {
+      button.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+      expect(localNavigate).toHaveBeenCalledWith('settings')
+      expect(globalNavigate).not.toHaveBeenCalled()
+    } finally { window.removeEventListener('shortdrama:global-navigation', globalNavigate) }
+  })
+
   it('leaves static-fixture sidebar behavior inside the prototype', async () => {
     const navigate = vi.fn()
     window.addEventListener('shortdrama:global-navigation', navigate)

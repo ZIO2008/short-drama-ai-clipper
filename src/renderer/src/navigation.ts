@@ -23,8 +23,8 @@ export const isRouteId = (value: string): value is RouteId =>
 /** Keep prototype sidebar demo handlers from navigating inside a runtime iframe. */
 export const bindPrototypeGlobalNavigation = (document: Document): (() => void) => {
   const navigate = (click: MouseEvent): void => {
-    const trigger = (click.target as Element).closest<HTMLElement>('[data-screen], [data-open], [data-r5-open]')
-    const target = trigger?.dataset.screen ?? trigger?.dataset.r5Open ?? trigger?.dataset.open
+    const trigger = (click.target as Element).closest<HTMLElement>('.nav-btn[data-screen]')
+    const target = trigger?.dataset.screen
     if (!target || !isRouteId(target)) return
     click.preventDefault()
     click.stopImmediatePropagation()
