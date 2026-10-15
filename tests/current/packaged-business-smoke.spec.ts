@@ -7,6 +7,34 @@ import { _electron as electron, expect, test } from '@playwright/test'
 
 test.skip(!process.env.SHORTDRAMA_PACKAGED_EXE, 'Requires SHORTDRAMA_PACKAGED_EXE for an explicit packaged candidate.')
 
+test('packaged preflight automatically accepts local OCR islands without changing subtitles', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'short-drama-local-windows-'))
+  const source = join(root, '01.mp4')
+  const ffmpeg = createRequire(import.meta.url)('ffmpeg-static') as string
+  expect(spawnSync(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-f', 'lavfi', '-i', 'color=c=black:s=128x72:r=2:d=90', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', source], { windowsHide: true }).status).toBe(0)
+  const app = await electron.launch({ executablePath: resolve(process.env.SHORTDRAMA_PACKAGED_EXE!), args: ['--packaged-smoke', '--packaged-smoke-user-data', root], env: { ...process.env, SHORTDRAMA_MATERIAL_CHANNEL: 'packaged-smoke' } })
+  try {
+    const page = await app.firstWindow()
+    await expect(page.getByRole('heading', { name: '剧目库' })).toBeVisible()
+    const result = await page.evaluate(async (path) => {
+      const drama = await window.desktopApi.createDrama('局部字幕预检')
+      await window.desktopApi.importEpisodes(drama.id, [path])
+      const episode = (await window.desktopApi.getDrama(drama.id)).episodes[0]!
+      const track = await window.desktopApi.createSubtitleEvidenceTrack({ dramaId: drama.id, episodeId: episode.id, sourceKind: 'ocr', label: '局部OCR', cues: [0, 5, 60, 65].map((startSeconds, index) => ({ index: index + 1, startSeconds, endSeconds: startSeconds + 3, text: `句子${index}` })) })
+      const before = await window.desktopApi.listSubtitleEvidenceCues(track.id)
+      const preflight = await window.desktopApi.preflightClipGeneration(drama.id, { episodeIds: [episode.id], candidatesPerEpisode: 2, targetDurationSeconds: 8, maxOverlapRatio: 0.08, allowRepeat: false })
+      const after = await window.desktopApi.listSubtitleEvidenceCues(track.id)
+      return { estimated: preflight.estimatedCandidates, skipped: preflight.skipped.length, unchanged: JSON.stringify(before) === JSON.stringify(after) }
+    }, source)
+    expect(result).toEqual({ estimated: 2, skipped: 0, unchanged: true })
+  } finally {
+    const pid = app.process()?.pid
+    await app.close().catch(() => undefined)
+    if (pid && process.platform === 'win32') spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], { windowsHide: true })
+    await rm(root, { recursive: true, force: true })
+  }
+})
+
 test('packaged clip subtitle preflight failure returns to real global pages instead of prototype demos', async () => {
   test.setTimeout(120_000)
   const root = await mkdtemp(join(tmpdir(), 'short-drama-packaged-navigation-'))

@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { anchorCandidateRanges, type CandidateAnchorRange, type CutAnchor } from './clip-anchor-readiness.js'
+import { anchorCandidateRanges, hasLongAnchorGap, type CandidateAnchorRange, type CutAnchor } from './clip-anchor-readiness.js'
 import type { ClipSemanticSelection } from './clip-candidate-intelligence-service.js'
 import { ClipEvidencePackagePublication } from './clip-evidence-package-publication.js'
 
@@ -36,13 +36,13 @@ export class ClipEvidencePackageService extends ClipEvidencePackagePublication {
   /** Complete semantic runs are grouped before candidate count or duration filters. */
   semanticWindows(packageRecord: ClipEvidencePackage): Array<{ evidenceIds: string[]; contextBeforeIds: string[]; contextAfterIds: string[] }> {
     if (packageRecord.status !== 'ready') return []
-    const rows = this.database.prepare("SELECT kind, start_seconds AS startSeconds, end_seconds AS endSeconds, source_ids_json AS sourceIdsJson FROM clip_evidence_units WHERE package_id = ? AND kind IN ('semantic-event', 'scene-anchor') AND (qualification = 'A' OR qualification = 'B') ORDER BY start_seconds, end_seconds, id").all(packageRecord.id) as Array<{ kind: string; startSeconds: number; endSeconds: number; sourceIdsJson: string }>
+    const rows = this.database.prepare("SELECT kind, start_seconds AS startSeconds, end_seconds AS endSeconds, source_ids_json AS sourceIdsJson FROM clip_evidence_units WHERE package_id = ? AND ((kind = 'semantic-event' AND qualification = 'A') OR (kind = 'scene-anchor' AND qualification IN ('A', 'B'))) ORDER BY start_seconds, end_seconds, id").all(packageRecord.id) as Array<{ kind: string; startSeconds: number; endSeconds: number; sourceIdsJson: string }>
     const units = rows.flatMap((row) => { try { const ids: unknown = JSON.parse(row.sourceIdsJson); return Array.isArray(ids) && ids.length === 1 && typeof ids[0] === 'string' ? [{ id: ids[0], kind: row.kind, startSeconds: row.startSeconds, endSeconds: row.endSeconds }] : [] } catch { return [] } })
     const semanticIndexes = units.map((unit, index) => ({ unit, index })).filter(({ unit }) => unit.kind === 'semantic-event')
     if (!semanticIndexes.length) return units.map((unit, index) => ({ evidenceIds: [unit.id], contextBeforeIds: index > 0 ? [units[index - 1]!.id] : [], contextAfterIds: index + 1 < units.length ? [units[index + 1]!.id] : [] }))
     const hasSceneSeparator = (left: number, right: number): boolean => units.some((unit) => unit.kind === 'scene-anchor' && unit.startSeconds >= units[left]!.endSeconds && unit.endSeconds <= units[right]!.startSeconds)
     const groups: Array<{ first: number; last: number }> = []
-    for (const { index } of semanticIndexes) { const current = groups.at(-1); if (!current || hasSceneSeparator(current.last, index)) groups.push({ first: index, last: index }); else current.last = index }
+    for (const { index } of semanticIndexes) { const current = groups.at(-1); if (!current || hasSceneSeparator(current.last, index) || hasLongAnchorGap(units.slice(current.first, index + 1), units[current.first]!.startSeconds, units[index]!.endSeconds)) groups.push({ first: index, last: index }); else current.last = index }
     return groups.map(({ first, last }) => ({ evidenceIds: units.slice(first, last + 1).filter((unit) => semanticIndexes.some(({ index }) => units[index]!.id === unit.id)).map((unit) => unit.id), contextBeforeIds: first > 0 ? [units[first - 1]!.id] : [], contextAfterIds: last + 1 < units.length ? [units[last + 1]!.id] : [] }))
   }
 
@@ -54,6 +54,7 @@ export class ClipEvidencePackageService extends ClipEvidencePackagePublication {
     const selectedRows = selection.evidenceIds.map((id) => ({ id, row: byEvidenceId.get(id) })).filter((value): value is { id: string; row: UnitRow } => Boolean(value.row))
     const start = byEvidenceId.get(selection.startEvidenceId); const end = byEvidenceId.get(selection.endEvidenceId)
     if (selectedRows.length !== selection.evidenceIds.length || !start || !end || end.endSeconds <= start.startSeconds) return null
+    if (hasLongAnchorGap(rows.filter((row) => row.kind === 'semantic-event' || row.kind === 'scene-anchor'), start.startSeconds, end.endSeconds)) return null
     return { startSeconds: Number(start.startSeconds.toFixed(3)), endSeconds: Number(end.endSeconds.toFixed(3)), semanticEventIds: selectedRows.filter(({ row }) => row.kind === 'semantic-event').map(({ id }) => id), sceneAnchorIds: selectedRows.filter(({ row }) => row.kind === 'scene-anchor').map(({ id }) => id) }
   }
 
@@ -64,6 +65,8 @@ export class ClipEvidencePackageService extends ClipEvidencePackagePublication {
     for (const row of rows) { try { const ids: unknown = JSON.parse(row.sourceIdsJson); if (Array.isArray(ids)) for (const id of ids) if (typeof id === 'string') evidence.set(id, row) } catch { /* unusable frozen unit */ } }
     const selected = selection.evidenceIds.map((id) => evidence.get(id)); const start = evidence.get(selection.startEvidenceId); const end = evidence.get(selection.endEvidenceId)
     if (!start || !end || selected.some((item) => !item)) return { qualification: 'blocked', reason: '候选起止或核心事件缺少当前证据包中的可核验证据。', needsMultimodalReview: false, claims: [] }
+    const anchors = rows.filter((row) => (row.kind === 'semantic-event' && row.qualification === 'A') || (row.kind === 'scene-anchor' && (row.qualification === 'A' || row.qualification === 'B')))
+    if (hasLongAnchorGap(anchors, start.startSeconds, end.endSeconds)) return { qualification: 'blocked', reason: '候选跨越没有合格证据支撑的长空档；系统只生成局部可用区间。', needsMultimodalReview: false, claims: [] }
     const selectedRows = selected.filter((item): item is UnitRow & { reason: string | null } => Boolean(item))
     const claim = (kind: ClipCandidateClaim['kind'], evidenceIds: string[], units: Array<UnitRow & { reason: string | null }>, reason: string): ClipCandidateClaim => ({ kind, evidenceIds, qualification: units.every((item) => item.qualification === 'A') ? 'A' : units.some((item) => item.qualification === 'C') ? 'C' : units.some((item) => item.qualification === 'B') ? 'B' : 'D', reason })
     const claims = [claim('start-boundary', [selection.startEvidenceId], [start], '候选入点由冻结证据包中的起始锚点解析。'), claim('end-boundary', [selection.endEvidenceId], [end], '候选出点由冻结证据包中的结束锚点解析。'), claim('core-event', [...selection.evidenceIds], selectedRows, '候选核心事件仅引用当前证据包中的已选证据单元。'), claim('narrative-closure', [selection.endEvidenceId], [end], selection.beat === 'setup' || selection.beat === 'entry' || selection.beat === 'escalation' ? '模型将结束节拍判为未收束状态，不能作为完整候选。' : '结束锚点承载已声明的反转、高点、反应或余韵节拍。')]

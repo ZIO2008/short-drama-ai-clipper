@@ -4,8 +4,9 @@ import { z } from 'zod'
 import { fingerprintMediaSource } from '../media/media-source-fingerprint.js'
 import { isSourceFramePtsRange, readSourceVideoFramePts, SCENE_ANCHOR_PTS_VERIFIER_VERSION, type SourceVideoFramePts } from '../media/scene-anchor-pts-verifier.js'
 import { alignSemanticEvents, type SemanticEvent, type SemanticEvidenceCue } from './semantic-event-alignment-service.js'
-import { analyzeSubtitleTimeQuality, isSafeSubtitleAnchor, type SubtitleTimeQuality, type SubtitleTimeQualitySource } from './subtitle-time-quality.js'
+import { analyzeSubtitleTimeQuality, type SubtitleTimeQuality, type SubtitleTimeQualitySource } from './subtitle-time-quality.js'
 import { overlapRatio } from './clip-service-utils.js'
+import { selectSubtitleAnchorWindows } from './subtitle-anchor-windows.js'
 
 type CutAnchorSourceKind = Exclude<SubtitleTimeQualitySource, 'resolved'>
 export type CutAnchor = { startSeconds: number; endSeconds: number; semanticEventId?: string; sceneAnchorId?: string; blocksAutomaticCandidate?: boolean }
@@ -43,7 +44,8 @@ export const readAnchorReadiness = (database: Database.Database, ptsCache: Map<s
     const cues = database.prepare('SELECT id, cue_index AS `index`, start_seconds AS startSeconds, end_seconds AS endSeconds, text FROM subtitle_cues WHERE track_id = ? ORDER BY cue_index').all(row.id) as SemanticEvidenceCue[]
     const quality = analyzeSubtitleTimeQuality({ sourceKind: row.sourceKind, cues, durationSeconds, cost })
     const eligible = row.sourceKind === 'ocr' ? row.acquisition === 'generated' && row.evidenceNature === 'visual_aligned' : row.sourceKind === 'asr' ? row.acquisition === 'generated' && row.evidenceNature === 'audio_aligned' : row.acquisition === 'imported' && (row.evidenceNature === 'visual_aligned' || row.evidenceNature === 'audio_aligned')
-    if (isSafeSubtitleAnchor(quality) && eligible) qualified.push({ sourceKind: row.sourceKind, quality, cues: cues.filter((cue) => Number.isFinite(cue.startSeconds) && Number.isFinite(cue.endSeconds) && cue.startSeconds >= 0 && cue.endSeconds > cue.startSeconds).map((cue) => ({ ...cue, trackId: row.id, sourceKind: row.sourceKind, evidenceNature: row.evidenceNature })) })
+    const local = selectSubtitleAnchorWindows({ sourceKind: row.sourceKind, cues, durationSeconds, cost })
+    if (local.cues.length > 0 && eligible) qualified.push({ sourceKind: row.sourceKind, quality, cues: local.cues.map((cue) => ({ ...cue, trackId: row.id, sourceKind: row.sourceKind, evidenceNature: row.evidenceNature })) })
     else if (row.sourceKind === 'import' && !eligible) firstReason ??= '导入字幕尚未完成可追溯的画面对齐或声音对齐核验，当前仅可作文本参考，不能自动生成切点。'
     else firstReason ??= subtitleQualityReason(row.sourceKind, quality.reasonCode)
   }
@@ -56,10 +58,11 @@ export const readAnchorReadiness = (database: Database.Database, ptsCache: Map<s
   const episode = database.prepare('SELECT source_path AS sourcePath, source_fingerprint AS sourceFingerprint FROM episodes WHERE id = ? AND drama_id = ?').get(episodeId, dramaId) as { sourcePath: string; sourceFingerprint: string | null } | undefined
   const fingerprint = episode ? fingerprintMediaSource(episode.sourcePath) : null
   if (!episode || !episode.sourceFingerprint || !fingerprint || fingerprint !== episode.sourceFingerprint) return subtitleAnchors.length > 0 ? subtitle : { ...subtitle, reason: [subtitle.reason, '当前源媒体身份未验证或已变化，旧镜头/场景锚点不能用于自动候选；请重新关联并完成验证。'].join('；') }
+  const sceneRows = database.prepare("SELECT id, start_seconds AS startSeconds, end_seconds AS endSeconds, details_json AS detailsJson FROM ai_evidence WHERE drama_id = ? AND episode_id = ? AND source_type = 'scene' ORDER BY created_at, id").all(dramaId, episodeId) as Array<{ id: string; startSeconds: number | null; endSeconds: number | null; detailsJson: string }>
+  if (!sceneRows.length) return subtitleAnchors.length > 0 ? subtitle : { ...subtitle, reason: [subtitle.reason, '没有质量合格的字幕端点，也没有同集、源媒体 PTS 已验证的镜头/场景转场锚点。'].join('；') }
   const cached = ptsCache.get(fingerprint); const framePts = cached === undefined ? readSourceVideoFramePts(episode.sourcePath) : cached
   if (cached === undefined) ptsCache.set(fingerprint, framePts)
   if (!framePts) return subtitleAnchors.length > 0 ? subtitle : { ...subtitle, reason: [subtitle.reason, '无法读取当前源媒体的视频帧 PTS，镜头/场景锚点不能用于自动候选。'].join('；') }
-  const sceneRows = database.prepare("SELECT id, start_seconds AS startSeconds, end_seconds AS endSeconds, details_json AS detailsJson FROM ai_evidence WHERE drama_id = ? AND episode_id = ? AND source_type = 'scene' ORDER BY created_at, id").all(dramaId, episodeId) as Array<{ id: string; startSeconds: number | null; endSeconds: number | null; detailsJson: string }>
   let rejected = 0; const anchors: CutAnchor[] = []
   for (const row of sceneRows) { let details: unknown; try { details = JSON.parse(row.detailsJson) } catch { rejected += 1; continue }; const verification = verifiedSceneAnchorSchema.safeParse(details && typeof details === 'object' && !Array.isArray(details) ? (details as Record<string, unknown>).sourceMediaVerification : undefined); if (!verification.success || verification.data.sourceMediaFingerprint !== fingerprint || row.startSeconds === null || row.endSeconds === null || !Number.isFinite(row.startSeconds) || !Number.isFinite(row.endSeconds) || row.startSeconds < 0 || row.endSeconds <= row.startSeconds || row.endSeconds > durationSeconds + 0.05 || !isSourceFramePtsRange(framePts, row.startSeconds, row.endSeconds)) { rejected += 1; continue }; anchors.push({ startSeconds: row.startSeconds, endSeconds: Math.min(row.endSeconds, durationSeconds), sceneAnchorId: row.id }) }
   if (anchors.length > 0) return { sourceKind: subtitleAnchors.length > 0 ? 'multi' : 'scene', quality: subtitle.quality, reason: subtitleAnchors.length > 0 ? conflictReason : '未找到合格字幕端点，已改用同集且经源媒体 PTS 验证的镜头/场景转场锚点。', anchors: [...subtitleAnchors, ...conflictAnchors, ...anchors].sort((left, right) => left.startSeconds - right.startSeconds || left.endSeconds - right.endSeconds) }
@@ -80,11 +83,28 @@ const rangesForAnchorSource = (anchors: readonly CutAnchor[], episodeDurationSec
   for (const startAnchor of anchors) { const desiredEnd = Math.min(episodeDurationSeconds, startAnchor.startSeconds + target); const endings = anchors.filter((endAnchor) => endAnchor.endSeconds >= startAnchor.startSeconds + 3 && endAnchor.endSeconds <= Math.min(episodeDurationSeconds, startAnchor.startSeconds + maximumEndOffset)); if (!endings.length) continue; const bestEnd = endings.reduce((best, candidate) => Math.abs(candidate.endSeconds - desiredEnd) < Math.abs(best.endSeconds - desiredEnd) ? candidate : best); const startSeconds = Number(startAnchor.startSeconds.toFixed(3)); const endSeconds = Number(bestEnd.endSeconds.toFixed(3)); ranges.set(`${startSeconds}:${endSeconds}`, { startSeconds, endSeconds, semanticEventIds: [...new Set(anchors.filter((anchor) => anchor.endSeconds >= startSeconds && anchor.startSeconds <= endSeconds).map((anchor) => anchor.semanticEventId).filter((id): id is string => Boolean(id)))], sceneAnchorIds: [...new Set(anchors.filter((anchor) => anchor.endSeconds >= startSeconds && anchor.startSeconds <= endSeconds).map((anchor) => anchor.sceneAnchorId).filter((id): id is string => Boolean(id)))] }) }
   return [...ranges.values()]
 }
+const anchorIslands = (anchors: readonly CutAnchor[]): CutAnchor[][] => {
+  const islands: CutAnchor[][] = []
+  let coveredEnd = 0
+  for (const anchor of [...anchors].sort((a, b) => a.startSeconds - b.startSeconds)) {
+    if (!islands.length || anchor.startSeconds - coveredEnd > 20) { islands.push([]); coveredEnd = anchor.endSeconds }
+    islands.at(-1)!.push(anchor); coveredEnd = Math.max(coveredEnd, anchor.endSeconds)
+  }
+  return islands
+}
 export const anchorCandidateRanges = (anchors: readonly CutAnchor[], episodeDurationSeconds: number, targetDurationSeconds: number): CandidateAnchorRange[] => {
   const semantic = anchors.filter((anchor) => anchor.semanticEventId); const scene = anchors.filter((anchor) => anchor.sceneAnchorId); const conflicts = anchors.filter((anchor) => anchor.blocksAutomaticCandidate)
   const touchesConflict = (range: CandidateAnchorRange): boolean => conflicts.some((anchor) => anchor.endSeconds >= range.startSeconds && anchor.startSeconds <= range.endSeconds)
-  const semanticRanges = rangesForAnchorSource(semantic, episodeDurationSeconds, targetDurationSeconds).filter((range) => !touchesConflict(range))
-  const sceneRanges = rangesForAnchorSource(scene, episodeDurationSeconds, targetDurationSeconds).filter((range) => !touchesConflict(range) && !semantic.some((anchor) => anchor.endSeconds >= range.startSeconds && anchor.startSeconds <= range.endSeconds))
+  const semanticRanges = anchorIslands(semantic).flatMap((island) => rangesForAnchorSource(island, episodeDurationSeconds, targetDurationSeconds)).filter((range) => !touchesConflict(range))
+  const sceneRanges = anchorIslands(scene).flatMap((island) => rangesForAnchorSource(island, episodeDurationSeconds, targetDurationSeconds)).filter((range) => !touchesConflict(range) && !semantic.some((anchor) => anchor.endSeconds >= range.startSeconds && anchor.startSeconds <= range.endSeconds))
   return [...semanticRanges, ...sceneRanges].sort((left, right) => left.startSeconds - right.startSeconds || left.endSeconds - right.endSeconds)
+}
+export const hasLongAnchorGap = (anchors: readonly { startSeconds: number; endSeconds: number }[], start: number, end: number): boolean => {
+  let coveredEnd = start
+  for (const anchor of [...anchors].filter((item) => item.endSeconds > start && item.startSeconds < end).sort((a, b) => a.startSeconds - b.startSeconds)) {
+    if (anchor.startSeconds - coveredEnd > 20) return true
+    coveredEnd = Math.max(coveredEnd, Math.min(end, anchor.endSeconds))
+  }
+  return end - coveredEnd > 20
 }
 export const selectAnchorRanges = (ranges: ReadonlyArray<CandidateAnchorRange>, requested: number, occupiedInput: ReadonlyArray<{ start: number; end: number }>, maxOverlapRatio: number, allowRepeat: boolean): CandidateAnchorRange[] => { const occupied = [...occupiedInput]; const selected: CandidateAnchorRange[] = []; for (const candidate of spreadRanges(ranges, requested)) { if (selected.length >= requested) break; if (!allowRepeat && occupied.some((other) => overlapRatio(candidate.startSeconds, candidate.endSeconds, other.start, other.end) > maxOverlapRatio)) continue; selected.push(candidate); occupied.push({ start: candidate.startSeconds, end: candidate.endSeconds }) }; return selected }
