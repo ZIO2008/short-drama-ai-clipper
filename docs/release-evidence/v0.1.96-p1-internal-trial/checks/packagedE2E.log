@@ -1,0 +1,16 @@
+
+Running 6 tests using 1 worker
+
+(node:20060) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [current] › tests\current\original-clip-pool-export-report.spec.ts:66:1 › CLIP-REAL-005 to CLIP-REAL-008 closes the isolated Electron pool, export, and report path (15.9s)
+  ok 2 [current] › tests\current\packaged-business-smoke.spec.ts:10:1 › packaged clip subtitle preflight failure returns to real global pages instead of prototype demos (4.7s)
+  ok 3 [current] › tests\current\packaged-business-smoke.spec.ts:51:1 › packaged app persists 85 real IPC imports and subtitle mapping in isolated temporary userData (8.3s)
+PACKAGED_REAL_DPI { devicePixelRatio: 1, scrollWidth: 1418, innerWidth: 1418 }
+  ok 4 [current] › tests\current\packaged-real-dpi.spec.ts:10:37 › packaged app starts at 100% DPI without clipping (1.9s)
+PACKAGED_REAL_DPI { devicePixelRatio: 1.25, scrollWidth: 1423, innerWidth: 1423 }
+  ok 5 [current] › tests\current\packaged-real-dpi.spec.ts:10:37 › packaged app starts at 125% DPI without clipping (2.0s)
+PACKAGED_REAL_DPI { devicePixelRatio: 1.5, scrollWidth: 1426, innerWidth: 1426 }
+  ok 6 [current] › tests\current\packaged-real-dpi.spec.ts:10:37 › packaged app starts at 150% DPI without clipping (1.9s)
+
+  6 passed (39.3s)
