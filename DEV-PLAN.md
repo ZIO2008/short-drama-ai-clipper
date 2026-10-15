@@ -2,9 +2,9 @@
 
 > 本文件记录当前可执行开发单元，以及原剧切片的完整候选路线图。只有“当前队列”中标为已排期的 Phase 获得执行授权；后续路线图用于说明依赖、交付和工期，不能自动启动。Phase 1–20 的完整原文已归档，不再作为当前队列、设计源或验收门禁。
 
-## 当前状态（2026-10-14）
+## 当前状态（2026-10-15）
 
-- 日常使用发现切片工作区侧栏落入原型演示页，启动定点修复，见 `docs/release-readiness/2026-10-14-prototype-navigation-fix.md`；本机替换的实际任务观察暂不判为通过，修复后补验该导航路径。
+- 切片工作区侧栏落入原型演示页已在 0.1.96 修复，完整单测 779 通过、current Electron 14 通过、实际安装包 6/6 通过；默认入口已更新，用户确认返回真实页面。见 `docs/v0.1.96-p1-internal-trial-closure.md` 与 `docs/release-readiness/2026-10-15-navigation-fix-install.md`。第 1 集 ASR 无锚点空档仍为独立待核实项；后续真实任务观察未宣称完成。
 
 - 本机旧版替换的执行计划见 `docs/release-readiness/2026-10-14-legacy-replacement-plan.md`。目标是新平台成为默认工具、旧版保留备用；按旧版依赖盘点、接管验证、具体切换清单、入口切换、实际使用观察推进。
 - 用户已启动该计划并确认旧版只需备用。默认入口已指向素材平台 0.1.95，旧版固定备用入口和切换前备份已建立；默认 BAT 实际启动固定安装的 0.1.95 EXE，用户确认剧目和分集正常，见 `docs/release-readiness/2026-10-14-legacy-dependency-inventory.md` 与 `docs/release-readiness/2026-10-14-legacy-switch-result.md`。后续实际工作观察待完成。
