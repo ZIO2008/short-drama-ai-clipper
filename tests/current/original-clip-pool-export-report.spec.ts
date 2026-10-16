@@ -21,7 +21,7 @@ let sourcePath: string
 let sourceSha256: string
 
 const createFixture = (path: string): Promise<void> => new Promise((resolveFixture, reject) => {
-  const child = spawn(ffmpegPath, ['-hide_banner', '-loglevel', 'error', '-f', 'lavfi', '-i', 'color=c=0x191310:s=320x180:d=90', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-y', path], { windowsHide: true })
+  const child = spawn(ffmpegPath, ['-hide_banner', '-loglevel', 'error', '-f', 'lavfi', '-i', 'testsrc2=size=320x180:rate=25:duration=90', '-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=44100:duration=90', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-y', path], { windowsHide: true })
   child.once('error', reject)
   child.once('exit', (code) => code === 0 ? resolveFixture() : reject(new Error(`fixture ffmpeg exited ${code}`)))
 })
@@ -86,10 +86,10 @@ test('CLIP-REAL-005 to CLIP-REAL-008 closes sparse local evidence, pool, export,
       label: '原剧切片闭环 ASR 夹具',
       cost: { resultFormat: 3, sentenceMaxLength: 40 },
       cues: [
-        { index: 1, startSeconds: 1, endSeconds: 2, text: '闭环候选起点', confidence: 0.9 },
-        { index: 2, startSeconds: 3, endSeconds: 4, text: '闭环候选终点', confidence: 0.9 },
-        { index: 3, startSeconds: 60, endSeconds: 61, text: '第二段起点', confidence: 0.9 },
-        { index: 4, startSeconds: 62, endSeconds: 63, text: '第二段终点', confidence: 0.9 }
+        { index: 1, startSeconds: 1.1, endSeconds: 2.1, text: '闭环候选起点', confidence: 0.9 },
+        { index: 2, startSeconds: 3.1, endSeconds: 4.28, text: '闭环候选终点', confidence: 0.9 },
+        { index: 3, startSeconds: 60.1, endSeconds: 61.1, text: '第二段起点', confidence: 0.9 },
+        { index: 4, startSeconds: 62.1, endSeconds: 63.28, text: '第二段终点', confidence: 0.9 }
       ]
     })
     await window.desktopApi.generateClipCandidates(drama.id, { episodeIds: [episode.id], candidatesPerEpisode: 1, targetDurationSeconds: 3, maxOverlapRatio: 0.25, allowRepeat: false })
