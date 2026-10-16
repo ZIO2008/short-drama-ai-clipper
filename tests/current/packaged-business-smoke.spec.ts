@@ -18,6 +18,9 @@ test('packaged preflight automatically accepts local OCR islands without changin
     await expect(page.getByRole('heading', { name: '剧目库' })).toBeVisible()
     const result = await page.evaluate(async (path) => {
       const drama = await window.desktopApi.createDrama('局部字幕预检')
+      // Preflight checks capability configuration before inspecting subtitles.
+      // A local profile requires no secret and preflight must not call its endpoint.
+      await window.desktopApi.saveProviderProfile({ capability: 'text-analysis', region: 'local', provider: 'Isolated preflight fixture', endpoint: 'http://127.0.0.1:1', model: 'fixture', secretRef: null, timeoutMs: 1000 })
       await window.desktopApi.importEpisodes(drama.id, [path])
       const episode = (await window.desktopApi.getDrama(drama.id)).episodes[0]!
       const track = await window.desktopApi.createSubtitleEvidenceTrack({ dramaId: drama.id, episodeId: episode.id, sourceKind: 'ocr', label: '局部OCR', cues: [0, 5, 60, 65].map((startSeconds, index) => ({ index: index + 1, startSeconds, endSeconds: startSeconds + 3, text: `句子${index}` })) })

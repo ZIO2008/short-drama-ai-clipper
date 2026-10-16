@@ -1,6 +1,7 @@
 import hashlib
 import json
 import os
+import re
 import sqlite3
 import sys
 from datetime import datetime, timezone
@@ -17,7 +18,7 @@ def sha256(path: Path) -> str:
 
 root = Path(sys.argv[1]).resolve()
 controlled = (Path(__file__).resolve().parents[5] / "05_material_studio_backups").resolve()
-if root.parent != controlled or not root.name.startswith("v0.1.95-before-parallel-") or not root.is_dir():
+if root.parent != controlled or not re.fullmatch(r"v\d+\.\d+\.\d+-before-(?:parallel|update)-[A-Za-z0-9-]+", root.name) or not root.is_dir():
     raise SystemExit("Backup target is not the precreated controlled directory")
 if list(root.iterdir()):
     raise SystemExit("Backup target must start empty")
@@ -55,7 +56,7 @@ temporary.rename(target)
 manifest = {
     "schemaVersion": 1,
     "createdAtUtc": datetime.now(timezone.utc).isoformat(),
-    "purpose": "reversible local parallel activation of material studio 0.1.95",
+    "purpose": "reversible local activation or update of material studio",
     "sourceMode": "read-only SQLite backup API, WAL-consistent",
     "databaseFilename": target.name,
     "databaseSha256": sha256(target),
