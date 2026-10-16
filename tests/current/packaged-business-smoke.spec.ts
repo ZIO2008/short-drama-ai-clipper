@@ -52,7 +52,7 @@ test('packaged semantic selection repairs an unfinished proposal once without su
     }, { path: source, endpoint: `http://127.0.0.1:${address.port}` })
     const generate = (allowRepeat: boolean) => page.evaluate(async ({ dramaId, episodeId, repeat }) => window.desktopApi.generateClipCandidates(dramaId, { episodeIds: [episodeId], candidatesPerEpisode: 1, targetDurationSeconds: 8, maxOverlapRatio: 0.08, allowRepeat: repeat }), { ...prepared, repeat: allowRepeat })
     const first = await generate(false)
-    await expect.poll(async () => page.evaluate(async (id) => (await window.desktopApi.listTasks()).find(t => t.id === id)?.status, first.taskId), { timeout: 60000 }).toBe('completed')
+    await expect.poll(async () => page.evaluate(async (id) => (await window.desktopApi.listTasks()).find(t => t.id === id)?.status, first.taskId), { timeout: 60000 }).toBe('reviewing')
     expect(calls).toBe(2)
     const candidates = await page.evaluate(async id => window.desktopApi.listClipCandidates(id), prepared.dramaId)
     expect(candidates).toHaveLength(1)
