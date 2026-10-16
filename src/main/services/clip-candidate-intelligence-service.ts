@@ -59,7 +59,7 @@ export class ClipSemanticValidationError extends Error {
 
 const validationCodeFor = (reason: string): ClipSemanticValidationCode => {
   if (/结构合同|Invalid input|Too small|Too big|Unrecognized key|expected/i.test(reason)) return 'schema'
-  if (/接缝|连续性/i.test(reason)) return 'continuity'
+  if (/接缝|连续性|未收束/i.test(reason)) return 'continuity'
   if (/时间顺序|起止锚点|倒置|起止.*无效/i.test(reason)) return 'time-order'
   if (/窗口外|当前证据包之外|不属于当前证据包|候选引用.*分析窗口/i.test(reason)) return 'window'
   if (/叙事事件|事件地图|事件来源|核心单元|核心范围|冻结窗口/i.test(reason)) return 'event-map'
@@ -106,6 +106,7 @@ export class ClipCandidateIntelligenceService {
     if (normalized.some((proposal) => !proposal.evidenceIds.length || [...proposal.evidenceIds, ...proposal.contextBeforeIds, ...proposal.contextAfterIds].some((id) => !allowedIds.has(id)))) throw new Error('候选语义窗口包含不属于当前证据包的锚点，系统已拒绝生成。')
 
     let repair: { invalidResult: string } | undefined
+    let unfinishedRanges = new Set<string>()
     let attemptProposals = normalized
     for (let attempt = 0; attempt < 2; attempt += 1) {
       const raw = await this.adapter.select({ package: packageRecord, profile, proposals: attemptProposals, candidateLimit, repair, signal })
@@ -115,13 +116,15 @@ export class ClipCandidateIntelligenceService {
       // packaged evidence summary; persist only this fixed failure category.
       const validation = parsed.success ? this.validate(parsed.data.selections, attemptProposals, allowedEvidence, candidateLimit) : { ok: false as const, reason: '文本语义分析输出不满足结构合同。' }
       if (validation.ok) {
+        if (parsed.success && parsed.data.selections.some((selection) => unfinishedRanges.has(`${selection.startEvidenceId}:${selection.endEvidenceId}`))) throw new ClipSemanticValidationError('未收束候选的修正只改变了标签，起止证据范围没有变化，已停止生成。', 'continuity')
         this.persistNarrativeEvents(packageRecord, profile, validation.narrativeEvents, attemptProposals, allowedEvidence)
         return validation.selections.map((selection) => repair ? { ...selection, repairApplied: true, repairReason: repair.invalidResult } : selection)
       }
-      if (attempt === 1) throw new ClipSemanticValidationError(`文本语义分析返回的结构化结果无效，已停止生成候选：${validation.reason}`, validationCodeFor(validation.reason))
+      if (attempt === 1) throw new ClipSemanticValidationError(/未收束/.test(validation.reason) ? `一次自动修正后仍没有已收束候选，已停止生成：${validation.reason}` : `文本语义分析返回的结构化结果无效，已停止生成候选：${validation.reason}`, validationCodeFor(validation.reason))
       // One repair is allowed for every invalid response, including syntactically
       // valid but snapshot-escaping IDs or illegal start/end relationships.
       repair = { invalidResult: validation.reason }
+      if (parsed.success && /未收束/.test(validation.reason)) unfinishedRanges = new Set(parsed.data.selections.filter((selection) => selection.beat === 'setup' || selection.beat === 'entry' || selection.beat === 'escalation').map((selection) => `${selection.startEvidenceId}:${selection.endEvidenceId}`))
       // An unclear seam is never silently accepted. The one permitted repair
       // re-analyses a window expanded by one whole unit on both sides; these
       // are already frozen in the first attempt's protected contexts.
@@ -141,6 +144,7 @@ export class ClipCandidateIntelligenceService {
       if (!sourceWindow) return { ok: false, reason: '候选引用了当前证据包之外的分析窗口。' }
       const hasProtectedContext = Boolean(sourceWindow.contextBeforeIds?.length || sourceWindow.contextAfterIds?.length)
       if (selectedWindows.has(selection.proposalId)) return { ok: false, reason: '同一冻结窗口只能生成一个叙事事件候选。' }
+      if (selection.beat === 'setup' || selection.beat === 'entry' || selection.beat === 'escalation') return { ok: false, reason: '候选结尾未收束；请从给定冻结窗口重选有反转、高点、反应或余韵依据的区间，不得仅修改节拍标签。' }
       if (selection.seamStatus === 'unclear') return { ok: false, reason: '叙事事件接缝连续性未闭合，不能生成自动候选。' }
       if (!evidenceIds.every((id) => sourceWindow.evidenceIds.includes(id)) || !sourceWindow.evidenceIds.includes(selection.startEvidenceId) || !sourceWindow.evidenceIds.includes(selection.endEvidenceId)) return { ok: false, reason: '候选证据超出其冻结窗口核心范围。' }
       if ([selection.startEvidenceId, selection.endEvidenceId, ...evidenceIds].some((id) => !allowedEvidence.has(id))) return { ok: false, reason: '返回了当前证据包之外的 ID。' }

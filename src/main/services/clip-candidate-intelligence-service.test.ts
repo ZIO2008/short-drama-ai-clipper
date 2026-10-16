@@ -23,6 +23,45 @@ const setup = (adapter: ClipSemanticAdapter, profiles: () => typeof profile[] = 
 }
 
 describe('ClipCandidateIntelligenceService', () => {
+  it('does not accept relabeling the same unfinished boundaries as climax', async () => {
+    let calls = 0
+    const { database, service } = setup({ select: async () => { calls += 1; return calls === 1 ? { selections: [{ ...selection(), beat: 'escalation' }] } : result() } })
+    try {
+      await expect(service.select(packageRecord, [{ evidenceIds: ids, summary: 'unfinished' }], undefined, 1)).rejects.toThrow('只改变了标签')
+      expect(calls).toBe(2)
+      expect(database.prepare('SELECT COUNT(*) AS count FROM clip_narrative_events').get()).toEqual({ count: 0 })
+    } finally { database.close() }
+  })
+  it('repairs an unfinished proposal once and can choose a different frozen window', async () => {
+    let calls = 0
+    const other = [randomUUID(), randomUUID()]
+    const adapter: ClipSemanticAdapter = { select: async ({ repair, proposals }) => {
+      calls += 1
+      if (calls === 1) return { selections: [{ ...selection(), beat: 'escalation', narrative: { ...selection().narrative, state: 'escalation' } }] }
+      expect(repair?.invalidResult).toContain('未收束')
+      expect(proposals).toHaveLength(2)
+      return result(selection(other, 'window-2'))
+    } }
+    const { database, service } = setup(adapter)
+    const now = new Date().toISOString()
+    other.forEach((id, index) => database.prepare('INSERT INTO clip_evidence_units (id, package_id, kind, start_seconds, end_seconds, source_ids_json, qualification, reason, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, ?)').run(randomUUID(), 'package', 'semantic-event', index + 5, index + 6, JSON.stringify([id]), 'A', now, now))
+    try {
+      const selected = await service.select(packageRecord, [{ evidenceIds: ids, summary: 'setup' }, { evidenceIds: other, summary: 'climax' }], undefined, 1)
+      expect(calls).toBe(2)
+      expect(selected).toEqual([expect.objectContaining({ evidenceIds: other, beat: 'climax', repairApplied: true })])
+      expect(database.prepare('SELECT COUNT(*) AS count FROM clip_narrative_events').get()).toEqual({ count: 1 })
+    } finally { database.close() }
+  })
+
+  it.each(['setup', 'entry', 'escalation'] as const)('stops after one repair for persistent %s without blaming subtitles', async (beat) => {
+    let calls = 0
+    const { database, service } = setup({ select: async () => { calls += 1; return { selections: [{ ...selection(), beat }] } } })
+    try {
+      await expect(service.select(packageRecord, [{ evidenceIds: ids, summary: 'unfinished' }], undefined, 1)).rejects.toThrow('未收束')
+      expect(calls).toBe(2)
+      expect(database.prepare('SELECT COUNT(*) AS count FROM clip_narrative_events').get()).toEqual({ count: 0 })
+    } finally { database.close() }
+  })
   it('requires a configured text semantic provider instead of falling back to anchor rules', () => {
     const database = new Database(':memory:')
     const service = new ClipCandidateIntelligenceService(database, { list: () => [] }, () => false, { select: async () => ({ selections: [] }) })

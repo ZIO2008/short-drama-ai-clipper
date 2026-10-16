@@ -64,6 +64,7 @@ export class OpenAiCompatibleClipSemanticAdapter implements ClipSemanticAdapter 
         '不得输出 narrativeEvents、narrativeEventId、coreEvidenceIds 或 sourceEvidenceIds。',
         '每个 selections 项的 evidenceIds、startEvidenceId、endEvidenceId 必须只来自 proposalId 对应窗口的 coreEvidenceIds，且起止 ID 都必须出现在 evidenceIds 中。',
         '只有 narrative.continuity 为 continuous 或 limited，且 seamStatus 为 closed 或 expanded-closed 的窗口才可进入 selections；无法闭合的窗口必须省略，不得把 unclear 作为候选。',
+        '候选结尾必须有可回链的反转、高点、反应或余韵依据；setup、entry、escalation 不得作为候选结尾。若首次选择未收束，应重新选择其他可用区间，不得只改节拍标签伪造收束。',
         'selections 的长度不得超过 candidateLimit。'
       ],
       output: { selections: [{ proposalId: 'one supplied windowId only', startEvidenceId: 'existing core ID only', endEvidenceId: 'existing core ID only', evidenceIds: ['existing core ID only'], beat: 'setup|entry|escalation|reversal|climax|reaction|aftermath', purpose: 'hook|conflict|reveal|emotion|transition', context: 'standalone|limited', narrative: { state: 'entry|escalation|reversal|completion|reaction', characters: ['role only'], relationship: 'brief factual relationship', conflict: 'brief factual conflict', continuity: 'continuous|limited' }, seamStatus: 'closed|expanded-closed' }] }

@@ -191,7 +191,7 @@ export class OriginalClipService {
               continue
             }
           }
-          if (qualification.qualification === 'blocked') { recordBlocked(`${qualification.reason ?? '关键证据不足。'} 前往字幕资产。`); continue }
+          if (qualification.qualification === 'blocked') { recordBlocked(qualification.reason ?? '关键证据不足。'); continue }
           selectedRanges.push({ episodeId: item.episodeId, startSeconds: range.startSeconds, endSeconds: range.endSeconds, ...(range.semanticEventIds.length ? { semanticEventIds: range.semanticEventIds } : {}), ...(range.sceneAnchorIds.length ? { sceneAnchorIds: range.sceneAnchorIds } : {}), packageRecord: item.packageRecord, selection, qualification: qualification.qualification, qualificationReason: qualification.reason, claims: qualification.claims, reviewStatus: 'not-required', reviewReason: null })
         }
         this.generationLifecycle.persistCheckpoint(generationTaskId, taskRound, startedAt, 'text-semantics', `已完成 ${itemIndex + 1}/${prepared.length} 个分集的文本语义分析。`, itemIndex + 1, prepared.length, immutableInput.resourceBudget, resourceUsage)
@@ -241,7 +241,7 @@ export class OriginalClipService {
   }
   private blockedRecovery(blocked: ReadonlyArray<{ reason: string; count: number }>): 'assets' | 'subtitles' | null {
     const reason = blocked.map((item) => item.reason).join(' ')
-    return /素材|视频|视觉|PTS|帧|媒体/.test(reason) ? 'assets' : /字幕|文本|时间轴|语义/.test(reason) ? 'subtitles' : null
+    return /素材|视频|视觉|PTS|帧|媒体/.test(reason) ? 'assets' : /字幕|OCR|ASR|时间轴|时间码/.test(reason) ? 'subtitles' : null
   }
   private estimateQueueWaitMs(queuePosition: number, timeoutMs: number | null): number { return Math.max(0, queuePosition) * Math.max(1_000, timeoutMs ?? 60_000) }
   private formatWait(waitMs: number): string { return waitMs >= 60_000 ? `${Math.ceil(waitMs / 60_000)} 分钟` : `${Math.ceil(waitMs / 1_000)} 秒` }
