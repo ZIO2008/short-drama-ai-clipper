@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 2,
+  "sourceCommit": "9f4fa32576aef8b384510ad33f7687c94bdcea81",
+  "sourceInputsSha256": "7ec20519c270f483bbe881d6c6d0fe83fd0d8be3bc4f818920e9b8c400dae76b",
+  "sourceDirty": false,
+  "designContractSha256": "d759a4bc7b6a72cb36d2abbc73bb03f15db8a4817a82f75ee341f7330aece613",
+  "check": "build",
+  "command": "pnpm run build",
+  "exitCode": 0,
+  "signal": null,
+  "startedAt": "2026-10-16T04:07:58.856Z",
+  "completedAt": "2026-10-16T04:08:02.868Z",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "outputPath": "checks/build.log",
+  "outputSha256": "316465d4ddf9bf07822b0ed169aab72c179b585880d65866c8164c30410bbd66"
+}
