@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 2,
+  "sourceCommit": "b2fc6b3c8d1b227d0f9772530327c62271bb3851",
+  "sourceInputsSha256": "2bc74763adcd652cee8ebfe23544efd9b1b9a9cfac2ad84344e1afba17619490",
+  "sourceDirty": false,
+  "designContractSha256": "d759a4bc7b6a72cb36d2abbc73bb03f15db8a4817a82f75ee341f7330aece613",
+  "check": "localProbe",
+  "command": "node test-results/local-anchor/probe.mjs",
+  "exitCode": 0,
+  "signal": null,
+  "startedAt": "2026-10-15T20:24:16.442Z",
+  "completedAt": "2026-10-15T20:24:18.544Z",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "outputPath": "checks/localProbe.log",
+  "outputSha256": "7c7bb453d6e0a206c0eabf52fd002741d871a6202e33a3fb3f8bceb3bfa177da"
+}
