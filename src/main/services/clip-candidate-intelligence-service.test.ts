@@ -23,6 +23,16 @@ const setup = (adapter: ClipSemanticAdapter, profiles: () => typeof profile[] = 
 }
 
 describe('ClipCandidateIntelligenceService', () => {
+  it('also rejects new evidence IDs that alias the same unfinished time range', async () => {
+    let calls = 0; const aliases = [randomUUID(), randomUUID()]
+    const { database, service } = setup({ select: async () => { calls += 1; return calls === 1 ? { selections: [{ ...selection(), beat: 'escalation' }] } : result(selection(aliases, 'window-2')) } })
+    const now = new Date().toISOString()
+    aliases.forEach((id, index) => database.prepare('INSERT INTO clip_evidence_units (id, package_id, kind, start_seconds, end_seconds, source_ids_json, qualification, reason, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, ?)').run(randomUUID(), 'package', 'semantic-event', index + 1, index + 2, JSON.stringify([id]), 'A', now, now))
+    try {
+      await expect(service.select(packageRecord, [{ evidenceIds: ids, summary: 'unfinished' }, { evidenceIds: aliases, summary: 'same time range' }], undefined, 1)).rejects.toThrow('起止证据范围没有变化')
+      expect(calls).toBe(2)
+    } finally { database.close() }
+  })
   it('does not accept relabeling the same unfinished boundaries as climax', async () => {
     let calls = 0
     const { database, service } = setup({ select: async () => { calls += 1; return calls === 1 ? { selections: [{ ...selection(), beat: 'escalation' }] } : result() } })

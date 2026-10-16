@@ -99,6 +99,7 @@ export class ClipCandidateIntelligenceService {
     if (expectedProvider && !clipGenerationProviderMatches(profile, expectedProvider)) throw new Error('文本语义供应商配置已在排队期间变化；冻结任务不会静默切换供应商，请重新生成。')
     const candidateLimit = Math.max(1, Math.min(50, Math.floor(requestedCandidateLimit)))
     const allowedEvidence = this.packageEvidence(packageRecord.id)
+    const boundaryKey = (selection: Pick<ProviderSelection, 'startEvidenceId' | 'endEvidenceId'>): string => JSON.stringify([allowedEvidence.get(selection.startEvidenceId)?.startSeconds, allowedEvidence.get(selection.endEvidenceId)?.endSeconds])
     const allowedIds = new Set(allowedEvidence.keys())
     // Proposal order is package timeline order. Never UUID-sort it: lexical UUID
     // order is unrelated to PTS and would turn a valid model boundary backwards.
@@ -116,7 +117,7 @@ export class ClipCandidateIntelligenceService {
       // packaged evidence summary; persist only this fixed failure category.
       const validation = parsed.success ? this.validate(parsed.data.selections, attemptProposals, allowedEvidence, candidateLimit) : { ok: false as const, reason: '文本语义分析输出不满足结构合同。' }
       if (validation.ok) {
-        if (parsed.success && parsed.data.selections.some((selection) => unfinishedRanges.has(`${selection.startEvidenceId}:${selection.endEvidenceId}`))) throw new ClipSemanticValidationError('未收束候选的修正只改变了标签，起止证据范围没有变化，已停止生成。', 'continuity')
+        if (parsed.success && parsed.data.selections.some((selection) => unfinishedRanges.has(boundaryKey(selection)))) throw new ClipSemanticValidationError('未收束候选的修正只改变了标签，起止证据范围没有变化，已停止生成。', 'continuity')
         this.persistNarrativeEvents(packageRecord, profile, validation.narrativeEvents, attemptProposals, allowedEvidence)
         return validation.selections.map((selection) => repair ? { ...selection, repairApplied: true, repairReason: repair.invalidResult } : selection)
       }
@@ -124,7 +125,7 @@ export class ClipCandidateIntelligenceService {
       // One repair is allowed for every invalid response, including syntactically
       // valid but snapshot-escaping IDs or illegal start/end relationships.
       repair = { invalidResult: validation.reason }
-      if (parsed.success && /未收束/.test(validation.reason)) unfinishedRanges = new Set(parsed.data.selections.filter((selection) => selection.beat === 'setup' || selection.beat === 'entry' || selection.beat === 'escalation').map((selection) => `${selection.startEvidenceId}:${selection.endEvidenceId}`))
+      if (parsed.success && /未收束/.test(validation.reason)) unfinishedRanges = new Set(parsed.data.selections.filter((selection) => selection.beat === 'setup' || selection.beat === 'entry' || selection.beat === 'escalation').map(boundaryKey))
       // An unclear seam is never silently accepted. The one permitted repair
       // re-analyses a window expanded by one whole unit on both sides; these
       // are already frozen in the first attempt's protected contexts.
