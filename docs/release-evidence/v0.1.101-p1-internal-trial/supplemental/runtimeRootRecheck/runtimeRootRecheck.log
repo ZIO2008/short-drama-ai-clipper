@@ -1,0 +1,9 @@
+
+ RUN  v4.1.10 D:/个人工作/短剧AI切片工具/02_开发源码/short-drama-ai-material-platform
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 22 skipped (23)
+   Start at  17:32:36
+   Duration  25.85s (transform 655ms, setup 0ms, import 842ms, tests 24.72s, environment 0ms)
+

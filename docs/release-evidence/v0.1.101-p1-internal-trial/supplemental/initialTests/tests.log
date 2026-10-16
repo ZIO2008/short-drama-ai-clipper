@@ -1,0 +1,75 @@
+
+ RUN  v4.1.10 D:/个人工作/短剧AI切片工具/02_开发源码/short-drama-ai-material-platform
+
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/v1.0.0-p1-internal-trial-closure.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+ ❯ src/main/services/original-clip-service.test.ts (23 tests | 1 failed) 32111ms
+     × exports with the runtime-root FFmpeg when PATH and explicit overrides are unavailable 30017ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/main/services/original-clip-service.test.ts > OriginalClipService > exports with the runtime-root FFmpeg when PATH and explicit overrides are unavailable
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ src/main/services/original-clip-service.test.ts:277:3
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 138 passed | 5 skipped (144)
+      Tests  1 failed | 812 passed | 5 skipped (818)
+   Start at  17:28:22
+   Duration  245.00s (transform 7.49s, setup 0ms, import 23.50s, tests 139.88s, environment 36.66s)
+

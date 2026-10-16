@@ -1,0 +1,2 @@
+$ node tools/visual-fidelity-report.mjs
+FIDELITY_AUDIT_OK completed=6 incomplete=0 report=test-results/fidelity/fidelity-report.json
