@@ -3,7 +3,7 @@ import type { TaskSummary } from '../../../shared/contracts.js'
 export type ClipWorkspaceTaskNotice = { message: string; recovery?: 'assets' | 'subtitles'; deadlineTaskId?: string }
 
 const recoveryFromReason = (reason: string): 'assets' | 'subtitles' | undefined =>
-  /素材|视频|视觉|PTS|帧|媒体/.test(reason) ? 'assets' : /字幕|文本|语义|时间轴/.test(reason) ? 'subtitles' : undefined
+  /素材|视频|视觉|PTS|帧|媒体/.test(reason) ? 'assets' : /字幕|OCR|ASR|时间轴|时间码/.test(reason) ? 'subtitles' : undefined
 
 const terminalFallback = (status: string): string => status === 'cancelled'
   ? '候选生成已取消；此前稳定候选未被覆盖。'
