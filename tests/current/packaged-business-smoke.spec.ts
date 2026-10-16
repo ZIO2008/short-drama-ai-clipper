@@ -65,6 +65,7 @@ test('packaged semantic selection repairs an unfinished proposal once without su
     expect(reason).toContain('未收束')
     expect(reason).not.toContain('字幕资产')
     expect(await page.evaluate(async id => (await window.desktopApi.listClipCandidates(id)).length, prepared.dramaId)).toBe(1)
+    await page.getByRole('button', { name: '剧目库', exact: true }).click()
     await page.getByRole('button', { name: '打开剧目：自动重选候选' }).click()
     await page.getByRole('tab', { name: '素材生产' }).click()
     await page.getByRole('button', { name: '进入工作区' }).click()
