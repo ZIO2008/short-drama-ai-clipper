@@ -7,6 +7,104 @@ import { api, candidate, episodes, settle, statuses, surface } from './original-
 const deferred = <T>() => { let resolve!: (value: T) => void; const promise = new Promise<T>((done) => { resolve = done }); return { promise, resolve } }
 
 describe('OriginalClipWorkspaceRuntimeBridge async isolation', () => {
+  it.each(['loading', 'error'])('publishes completed generation while a %s recovery read is pending', async (state) => {
+    vi.useFakeTimers()
+    try {
+      const pending = deferred<ClipCandidate[]>(); const fresh = candidate('fresh-02')
+      const listClipCandidates = vi.fn().mockReturnValueOnce(state === 'loading' ? pending.promise : Promise.reject(new Error('read failed'))).mockResolvedValue([fresh])
+      const listTasks = vi.fn().mockResolvedValue([{ id: 'generation-default', status: 'reviewing' }])
+      const testDocument = surface(); Object.assign(window, { desktopApi: api({ listClipCandidates, listTasks }) })
+      bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes }); await settle()
+      if (state === 'error') { listClipCandidates.mockReturnValueOnce(pending.promise); refreshOriginalClipWorkspace(testDocument) }
+      testDocument.querySelector<HTMLButtonElement>('[data-r5-open="generate"]')!.click()
+      await vi.advanceTimersByTimeAsync(1)
+      expect(testDocument.querySelector('.r5-candidate-id')?.textContent).toContain('fresh-02')
+      expect(testDocument.querySelector<HTMLButtonElement>('[data-r5-confirm]')?.disabled).toBe(false)
+      pending.resolve([]); await settle()
+      expect(testDocument.querySelector('.r5-candidate-id')?.textContent).toContain('fresh-02')
+      expect(testDocument.querySelector('.r5-episodes')?.textContent).not.toContain('正在读取')
+    } finally { vi.clearAllTimers(); vi.useRealTimers() }
+  })
+
+  it('keeps a loaded candidate visible while a background refresh is pending', async () => {
+    const pending = deferred<ClipCandidate[]>()
+    const listClipCandidates = vi.fn().mockResolvedValueOnce([candidate()]).mockReturnValueOnce(pending.promise)
+    const testDocument = surface(); Object.assign(window, { desktopApi: api({ listClipCandidates }) })
+    bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes }); await settle()
+    refreshOriginalClipWorkspace(testDocument)
+    expect(testDocument.querySelector('.r5-candidate-id')?.textContent).toContain('候选 candidat')
+    expect(testDocument.querySelector('.r5-candidate-id')?.textContent).not.toContain('暂无可编辑候选')
+    pending.resolve([candidate()]); await settle()
+  })
+
+  it('keeps an empty result stable during refresh and reports a real refresh failure', async () => {
+    let reject!: (reason: Error) => void
+    const pending = new Promise<ClipCandidate[]>((_, fail) => { reject = fail })
+    const listClipCandidates = vi.fn().mockResolvedValueOnce([]).mockReturnValueOnce(pending)
+    const testDocument = surface(); Object.assign(window, { desktopApi: api({ listClipCandidates }) })
+    bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes }); await settle()
+    const stable = testDocument.querySelector('.r5-note')?.textContent
+    refreshOriginalClipWorkspace(testDocument)
+    expect(testDocument.querySelector('.r5-note')?.textContent).toBe(stable)
+    reject(new Error('read failed')); await settle()
+    expect(testDocument.querySelector('.r5-note')?.textContent).toContain('候选读取失败')
+    expect(testDocument.querySelector<HTMLButtonElement>('[data-r5-confirm]')?.disabled).toBe(true)
+  })
+
+  it('keeps the stable candidate during generation polling and background reads', async () => {
+    vi.useFakeTimers()
+    try {
+      const pending = deferred<ClipCandidate[]>()
+      const listClipCandidates = vi.fn().mockResolvedValue([candidate()])
+      const testDocument = surface(); Object.assign(window, { desktopApi: api({ listClipCandidates, listTasks: vi.fn().mockResolvedValue([{ id: 'generation-default', status: 'running' }]) }) })
+      bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes }); await settle()
+      testDocument.querySelector<HTMLButtonElement>('[data-r5-open="generate"]')!.click()
+      await vi.advanceTimersByTimeAsync(1)
+      expect(testDocument.querySelector('.r5-note')?.textContent).toContain('正在生成候选')
+      listClipCandidates.mockReturnValueOnce(pending.promise)
+      refreshOriginalClipWorkspace(testDocument)
+      expect(testDocument.querySelector('.r5-candidate-id')?.textContent).toContain('候选 candidat')
+      await vi.advanceTimersByTimeAsync(700)
+      expect(testDocument.querySelector('.r5-candidate-id')?.textContent).toContain('候选 candidat')
+      expect(testDocument.querySelector('.r5-note')?.textContent).toContain('正在生成候选')
+      pending.resolve([candidate()]); await settle()
+    } finally { vi.clearAllTimers(); vi.useRealTimers() }
+  })
+
+  it('does not let a background read restore old candidates after generation completes', async () => {
+    vi.useFakeTimers()
+    try {
+      const pending = deferred<ClipCandidate[]>()
+      const fresh = candidate('fresh-02')
+      const listClipCandidates = vi.fn().mockResolvedValue([candidate()])
+      const listTasks = vi.fn().mockResolvedValue([{ id: 'generation-default', status: 'running' }])
+      const testDocument = surface(); Object.assign(window, { desktopApi: api({ listClipCandidates, listTasks }) })
+      bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes }); await settle()
+      testDocument.querySelector<HTMLButtonElement>('[data-r5-open="generate"]')!.click()
+      await vi.advanceTimersByTimeAsync(1)
+      listClipCandidates.mockReturnValueOnce(pending.promise)
+      refreshOriginalClipWorkspace(testDocument)
+      listClipCandidates.mockResolvedValue([candidate(), fresh])
+      listTasks.mockResolvedValue([{ id: 'generation-default', status: 'reviewing' }])
+      await vi.advanceTimersByTimeAsync(350)
+      expect(testDocument.querySelector('.r5-candidate-id')?.textContent).toContain('fresh-02')
+      pending.resolve([candidate()]); await settle()
+      expect(testDocument.querySelector('.r5-candidate-id')?.textContent).toContain('fresh-02')
+    } finally { vi.clearAllTimers(); vi.useRealTimers() }
+  })
+
+  it('disables a loaded candidate after refresh failure and restores it after recovery', async () => {
+    const listClipCandidates = vi.fn().mockResolvedValueOnce([candidate()]).mockRejectedValueOnce(new Error('read failed')).mockResolvedValueOnce([candidate()])
+    const testDocument = surface(); Object.assign(window, { desktopApi: api({ listClipCandidates }) })
+    bindOriginalClipWorkspaceRuntime({ document: testDocument, dramaId: 'd1', episodes }); await settle()
+    refreshOriginalClipWorkspace(testDocument); await settle()
+    expect(testDocument.querySelector('.r5-note')?.textContent).toContain('候选读取失败')
+    expect(testDocument.querySelector<HTMLButtonElement>('[data-r5-confirm]')?.disabled).toBe(true)
+    refreshOriginalClipWorkspace(testDocument); await settle()
+    expect(testDocument.querySelector('.r5-candidate-id')?.textContent).toContain('候选 candidat')
+    expect(testDocument.querySelector<HTMLButtonElement>('[data-r5-confirm]')?.disabled).toBe(false)
+  })
+
   it('discards an older refresh that resolves after the newer refresh', async () => {
     const first = deferred<ClipCandidate[]>(); const newest = candidate('newest-02'); const listClipCandidates = vi.fn().mockReturnValueOnce(first.promise).mockResolvedValue([newest])
     const testDocument = surface(); Object.assign(window, { desktopApi: api({ listClipCandidates }) })

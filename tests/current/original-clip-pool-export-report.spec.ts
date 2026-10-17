@@ -119,6 +119,18 @@ test('CLIP-REAL-005 to CLIP-REAL-008 closes sparse local evidence, pool, export,
   await page.getByRole('button', { name: '进入工作区' }).click()
   let frame = page.frameLocator('iframe[title="原剧切片工作区"]')
   await expect(frame.locator('#screen-clip')).toBeVisible()
+  await expect(frame.locator('.r5-candidate-id')).toContainText(candidateId.slice(0, 8))
+  const refreshSamples = await frame.locator('#screen-clip').evaluate(async (screen) => {
+    const samples: string[] = []
+    for (let index = 0; index < 5; index += 1) {
+      screen.ownerDocument.dispatchEvent(new Event('shortdrama:refresh-original-clip-workspace'))
+      samples.push(screen.querySelector('.r5-candidate-id')?.textContent ?? '')
+      await new Promise<void>((done) => setTimeout(done, 120))
+      samples.push(screen.querySelector('.r5-candidate-id')?.textContent ?? '')
+    }
+    return samples
+  })
+  expect(refreshSamples.every((text) => text.includes(candidateId.slice(0, 8)) && !text.includes('暂无可编辑候选'))).toBe(true)
   await frame.locator('[data-r5-confirm]').click()
   await expect.poll(() => candidateStatus(candidateId)).toBe('confirmed')
 

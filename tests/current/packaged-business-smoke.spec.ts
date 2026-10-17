@@ -26,7 +26,9 @@ test('packaged semantic selection repairs an unfinished proposal once without su
         const ids = window.coreEvidenceIds
         const selection = { proposalId: window.windowId, startEvidenceId: ids[0], endEvidenceId: ids.at(-1), evidenceIds: ids, beat: closed ? 'climax' : 'escalation', purpose: 'hook', context: 'standalone', narrative: { state: closed ? 'completion' : 'escalation', characters: [], relationship: 'fixture', conflict: 'fixture', continuity: 'continuous' }, seamStatus: 'closed' }
         response.setHeader('Content-Type', 'application/json')
-        response.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ selections: [selection] }) } }] }))
+        const result = JSON.stringify({ choices: [{ message: { content: JSON.stringify({ selections: [selection] }) } }] })
+        if (mode === 'reject') setTimeout(() => response.end(result), 3000)
+        else response.end(result)
       } catch { response.statusCode = 500; response.end('fixture request invalid') }
     })
   })
@@ -57,25 +59,42 @@ test('packaged semantic selection repairs an unfinished proposal once without su
     const candidates = await page.evaluate(async id => window.desktopApi.listClipCandidates(id), prepared.dramaId)
     expect(candidates).toHaveLength(1)
     expect(candidates[0]!.startSeconds).toBeGreaterThanOrEqual(60)
-    calls = 0; mode = 'reject'
-    const second = await generate(true)
-    await expect.poll(async () => page.evaluate(async (id) => (await window.desktopApi.listTasks()).find(t => t.id === id)?.status, second.taskId), { timeout: 60000 }).toBe('failed')
-    expect(calls).toBe(2)
-    const reason = await page.evaluate(async (id) => (await window.desktopApi.listTasks()).find(t => t.id === id)?.checkpointReason, second.taskId)
-    expect(reason).toContain('未收束')
-    expect(reason).not.toContain('字幕资产')
-    expect(await page.evaluate(async id => (await window.desktopApi.listClipCandidates(id)).length, prepared.dramaId)).toBe(1)
     await page.getByRole('button', { name: '剧目库', exact: true }).click()
     await page.getByRole('button', { name: '打开剧目：自动重选候选' }).click()
     await page.getByRole('tab', { name: '素材生产' }).click()
     await page.getByRole('button', { name: '进入工作区' }).click()
     const frame = page.frameLocator('iframe[title="原剧切片工作区"]')
+    await expect(frame.locator('.r5-candidate-id')).toContainText(candidates[0]!.id.slice(0, 8))
+    calls = 0; mode = 'reject'
+    await frame.locator('[data-r5-open="generate"]').click()
+    await expect(frame.locator('#screen-clip .r5-inspector .r5-note')).toContainText('正在生成候选')
+    const samples = await frame.locator('#screen-clip').evaluate(async (screen) => {
+      const samples: string[] = []
+      for (let index = 0; index < 20; index += 1) {
+        if (index % 4 === 0) screen.ownerDocument.dispatchEvent(new Event('shortdrama:refresh-original-clip-workspace'))
+        samples.push(screen.querySelector('.r5-candidate-id')?.textContent ?? '')
+        await new Promise<void>((done) => setTimeout(done, 100))
+      }
+      return samples
+    })
+    expect(samples.every(text => text.includes(candidates[0]!.id.slice(0, 8)) && !text.includes('暂无可编辑候选'))).toBe(true)
+    const second = await page.evaluate(async (firstId) => (await window.desktopApi.listTasks()).find(t => t.type === 'original_clip' && t.id !== firstId), first.taskId)
+    expect(second).toBeTruthy()
+    await expect.poll(async () => page.evaluate(async (id) => (await window.desktopApi.listTasks()).find(t => t.id === id)?.status, second!.id), { timeout: 60000 }).toBe('failed')
+    expect(calls).toBe(2)
+    const reason = await page.evaluate(async (id) => (await window.desktopApi.listTasks()).find(t => t.id === id)?.checkpointReason, second!.id)
+    expect(reason).toContain('未收束')
+    expect(reason).not.toContain('字幕资产')
+    expect(await page.evaluate(async id => (await window.desktopApi.listClipCandidates(id)).length, prepared.dramaId)).toBe(1)
+    await expect(frame.locator('.r5-candidate-id')).toContainText(candidates[0]!.id.slice(0, 8))
     await expect(frame.locator('#screen-clip')).toContainText('未收束')
     await expect(frame.locator('[data-clip-recovery="subtitles"]')).toHaveCount(0)
   } finally {
-    await app?.close().catch(() => undefined)
+    const pid = app?.process()?.pid
+    await Promise.race([app?.close().catch(() => undefined), new Promise<void>((done) => setTimeout(done, 5000))])
+    if (pid && process.platform === 'win32') spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], { windowsHide: true })
     server.closeAllConnections(); await new Promise<void>(resolveClose => server.close(() => resolveClose()))
-    await rm(root, { recursive: true, force: true })
+    await rm(root, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 })
   }
 })
 

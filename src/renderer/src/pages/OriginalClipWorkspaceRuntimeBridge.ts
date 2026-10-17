@@ -71,6 +71,7 @@ export const bindOriginalClipWorkspaceRuntime = ({ document, dramaId, episodes: 
   let mediaFailedFor: string | null = null
   let actionError: { candidateId: string | null; episodeId: string; message: string; recovery?: 'assets' | 'subtitles'; deadlineTaskId?: string } | null = null
   let request = 0
+  let candidateRevision = 0
   let candidatePage = 0
 
   const watchGeneration = (episodeId: string, taskId: string): void => {
@@ -84,7 +85,11 @@ export const bindOriginalClipWorkspaceRuntime = ({ document, dramaId, episodes: 
           window.setTimeout(() => { void poll() }, 350)
           return
         }
+        // A terminal generation result is newer than any background read
+        // started before it; that read must not restore its older candidate list.
+        candidateRevision += 1
         candidates = nextCandidates
+        candidatesState = 'loaded'
         generating.delete(episodeId); generationTaskIds = new Map(generationTaskIds); generationTaskIds.delete(episodeId)
         if (task?.status === 'reviewing' || task?.status === 'completed') {
           const created = nextCandidates.filter((item) => item.episodeId === episodeId).at(-1)
@@ -198,12 +203,19 @@ export const bindOriginalClipWorkspaceRuntime = ({ document, dramaId, episodes: 
     void refresh()
   })
   const refresh = async (): Promise<void> => {
-    const id = ++request; candidatesState = 'loading'; statusesState = 'loading'; render()
+    const id = ++request; const revision = candidateRevision
+    // Background reads must not replace a stable candidate/empty state with
+    // the initial loading surface while their asynchronous results are pending.
+    if (candidatesState !== 'loaded') candidatesState = 'loading'
+    if (statusesState !== 'loaded') statusesState = 'loading'
+    render()
     const [candidateResult, statusResult, taskResult] = await Promise.allSettled([window.desktopApi.listClipCandidates(dramaId), window.desktopApi.listClipEpisodeStatuses(dramaId), window.desktopApi.listTasks()])
     if (id !== request) return
-    if (candidateResult.status === 'fulfilled') { candidates = candidateResult.value; candidatesState = 'loaded' } else candidatesState = 'error'
+    if (revision === candidateRevision) {
+      if (candidateResult.status === 'fulfilled') { candidates = candidateResult.value; candidatesState = 'loaded' } else candidatesState = 'error'
+    }
     if (statusResult.status === 'fulfilled') { statuses = new Map(statusResult.value.map((item) => [item.episodeId, item])); statusesState = 'loaded' } else statusesState = 'error'
-    if (taskResult.status === 'fulfilled') {
+    if (taskResult.status === 'fulfilled' && revision === candidateRevision) {
       const currentEpisodeId = selectedEpisodeId ?? ''
       const taskNotice = latestClipWorkspaceTaskNotice(taskResult.value, currentEpisodeId, generating.has(currentEpisodeId))
       if (taskNotice) actionError = { candidateId: null, episodeId: currentEpisodeId, ...taskNotice }
