@@ -1,0 +1,8 @@
+{
+  "purpose": "old installed package rejected by same real generation-period candidate stability assertion; supplemental only",
+  "releaseId": "v0.1.101-p1-internal-trial",
+  "executableSha256": "0b99246d2748971bfc2e5e5e6e8c6fdc37aef649f65ed6da633f6c367fc0de4d",
+  "appAsarSha256": "0fb9762a39f8035a3c485587a3f6bcd4d6398cd1000b684dd31091d6909ef868",
+  "testSourceCommit": "8f1141022ce01ad703b6c3cf761a3027de5a5937",
+  "contextSha256": "01e2202a70cf721ebe18fcf26cc27e07bb9373d0068e5e1c3dc200c8f5250365"
+}

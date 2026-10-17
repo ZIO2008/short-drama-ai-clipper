@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 2,
+  "sourceCommit": "8f1141022ce01ad703b6c3cf761a3027de5a5937",
+  "sourceInputsSha256": "ec2f7878bdf6ee56d065e65f1f88913391c8582fcb486ba8093eb5fdfee4e27e",
+  "sourceDirty": false,
+  "designContractSha256": "d759a4bc7b6a72cb36d2abbc73bb03f15db8a4817a82f75ee341f7330aece613",
+  "check": "tests",
+  "command": "node node_modules/vitest/vitest.mjs run --maxWorkers=1",
+  "exitCode": 0,
+  "signal": null,
+  "startedAt": "2026-10-17T10:56:40.611Z",
+  "completedAt": "2026-10-17T10:59:14.255Z",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "outputPath": "checks/tests.log",
+  "outputSha256": "5d24ecf382dbfd6ca28279326f5f70603d86698ce6a1e4f06370ee417f8712c0"
+}

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 2,
+  "sourceCommit": "8f1141022ce01ad703b6c3cf761a3027de5a5937",
+  "sourceInputsSha256": "ec2f7878bdf6ee56d065e65f1f88913391c8582fcb486ba8093eb5fdfee4e27e",
+  "sourceDirty": false,
+  "designContractSha256": "d759a4bc7b6a72cb36d2abbc73bb03f15db8a4817a82f75ee341f7330aece613",
+  "candidateManifestSha256": "4040af875ef453463471d7b950653ffdbde0f19a6a5b4eb4fc9aac6cb42ca199",
+  "check": "packagedE2E",
+  "command": "node node_modules/@playwright/test/cli.js test tests/current/packaged-real-dpi.spec.ts tests/current/packaged-business-smoke.spec.ts tests/current/original-clip-pool-export-report.spec.ts --workers=1 --timeout=240000",
+  "exitCode": 0,
+  "signal": null,
+  "startedAt": "2026-10-17T11:02:45.079Z",
+  "completedAt": "2026-10-17T11:03:43.015Z",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "outputPath": "checks/packagedE2E.log",
+  "outputSha256": "6230f30c2e0a1a523d12003c7f7e6a7cda7378a5d9c10459613b3f0f441bd00a"
+}
