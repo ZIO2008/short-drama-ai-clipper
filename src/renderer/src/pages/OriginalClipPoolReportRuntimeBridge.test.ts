@@ -167,8 +167,17 @@ describe('bindOriginalClipPoolReportRuntime', () => {
     expect(directory.value).toBe('D:\\切片')
     expect(directory.readOnly).toBe(false)
     directory.value = 'D:\\custom'; directory.dispatchEvent(new Event('input', { bubbles: true }))
+    const naming = testDocument.querySelector<HTMLInputElement>('#exportNamingPattern')!
+    naming.value = '../escape'; naming.dispatchEvent(new Event('input'))
     testDocument.getElementById('saveExport')!.click(); await settle()
-    expect(preflight).toHaveBeenCalledWith('d1', expect.objectContaining({ outputDirectory: 'D:\\custom' }))
+    expect(preflight).not.toHaveBeenCalled()
+    expect(testDocument.querySelector('#exportNamingError')?.textContent).toContain('非法字符')
+    naming.value = '素材_{episode}_{candidate}'; naming.dispatchEvent(new Event('input'))
+    testDocument.getElementById('cancelExport')!.click()
+    testDocument.querySelector<HTMLButtonElement>('[data-clip-export-open]')!.click()
+    expect(naming.value).toBe('素材_{episode}_{candidate}')
+    testDocument.getElementById('saveExport')!.click(); await settle()
+    expect(preflight).toHaveBeenCalledWith('d1', expect.objectContaining({ outputDirectory: 'D:\\custom', namingPattern: '素材_{episode}_{candidate}' }))
   })
   it('filters real candidate statuses through the production bridge', async () => {
     const items = [candidate('pending-1', 'pending_review'), candidate('editing-1', 'editing'), candidate('confirmed-1', 'confirmed'), candidate('exported-1', 'exported')]

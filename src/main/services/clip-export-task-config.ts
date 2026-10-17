@@ -36,18 +36,39 @@ export const persistClipExportConfig = (database: Database.Database, config: Cli
   database.transaction(() => taskRows.forEach((task) => {
     let snapshot: Record<string, unknown> = {}
     try { const parsed: unknown = JSON.parse(task.configSnapshot); if (parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)) snapshot = parsed as Record<string, unknown> } catch { /* Preserve a usable retry snapshot even if an old task stored malformed metadata. */ }
-    update.run(JSON.stringify({ ...snapshot, exportConfig: storedConfig }), new Date().toISOString(), task.id)
+    const existing = snapshot.exportConfigsByCandidate
+    const byCandidate: Record<string, unknown> = existing !== null && typeof existing === 'object' && !Array.isArray(existing) ? { ...existing } : {}
+    for (const candidateId of config.candidateIds) {
+      const owner = database.prepare('SELECT task_id AS taskId FROM task_items WHERE id = ?').get(candidateId) as { taskId: string } | undefined
+      if (owner?.taskId === task.id) byCandidate[candidateId] = storedConfig
+    }
+    update.run(JSON.stringify({ ...snapshot, exportConfig: storedConfig, exportConfigsByCandidate: byCandidate }), new Date().toISOString(), task.id)
   }))()
 }
 
-export const readClipExportConfig = (database: Database.Database, taskId: string): StoredClipExportConfig => {
+export const readClipExportConfig = (database: Database.Database, taskId: string, candidateId?: string): StoredClipExportConfig => {
   const row = database.prepare("SELECT config_snapshot AS configSnapshot FROM production_tasks WHERE id = ? AND type = 'original_clip'").get(taskId) as { configSnapshot: string } | undefined
   if (!row) throw new Error('原剧切片任务不存在或已被删除。')
   try {
     const snapshot: unknown = JSON.parse(row.configSnapshot)
-    const exportConfig = snapshot !== null && typeof snapshot === 'object' && !Array.isArray(snapshot) ? (snapshot as Record<string, unknown>).exportConfig : undefined
+    const record = snapshot !== null && typeof snapshot === 'object' && !Array.isArray(snapshot) ? snapshot as Record<string, unknown> : {}
+    const byCandidate = record.exportConfigsByCandidate
+    const exportConfig = candidateId && byCandidate !== undefined
+      ? byCandidate !== null && typeof byCandidate === 'object' && !Array.isArray(byCandidate) && Object.hasOwn(byCandidate, candidateId) ? (byCandidate as Record<string, unknown>)[candidateId] : undefined
+      : record.exportConfig
     const parsed = storedConfigSchema.safeParse(exportConfig)
     if (parsed.success) return parsed.data
   } catch { /* Historical snapshots are handled by the same actionable error below. */ }
   throw new Error(legacyRetryMessage)
+}
+
+export const readClipExportRetryGroups = (database: Database.Database, taskId: string, candidateIds: readonly string[]): ClipExportConfig[] => {
+  const groups = new Map<string, ClipExportConfig>()
+  for (const candidateId of candidateIds) {
+    const stored = readClipExportConfig(database, taskId, candidateId); const key = JSON.stringify(stored)
+    const group = groups.get(key)
+    if (group) group.candidateIds.push(candidateId)
+    else groups.set(key, { ...stored, candidateIds: [candidateId] })
+  }
+  return [...groups.values()]
 }

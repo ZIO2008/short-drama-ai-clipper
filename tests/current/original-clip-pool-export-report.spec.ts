@@ -63,7 +63,7 @@ test.afterAll(async () => {
   await Promise.all([rm(dataDirectory, { recursive: true, force: true }), rm(mediaDirectory, { recursive: true, force: true }), rm(outputDirectory, { recursive: true, force: true })])
 })
 
-test('CLIP-REAL-005 to CLIP-REAL-008 closes sparse local evidence, pool, export, and report path', async () => {
+test('CLIP-REAL-005 to CLIP-REAL-008 closes sparse local evidence, pool, export, and report path', async ({}, testInfo) => {
   test.setTimeout(120_000)
   await page.getByRole('button', { name: '创建剧目' }).first().click()
   const dialog = page.getByRole('dialog', { name: '创建剧目' })
@@ -160,6 +160,36 @@ test('CLIP-REAL-005 to CLIP-REAL-008 closes sparse local evidence, pool, export,
   await frame.locator('[data-clip-export-open]').first().click()
   await expect(frame.locator('#exportModal')).toHaveAttribute('aria-hidden', 'false')
   await frame.locator('#exportDirectory').fill(outputDirectory)
+  const naming = frame.locator('#exportNamingPattern')
+  await expect(naming).toHaveValue('clip_{episode}_{candidate}')
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 1280, height: 720 }]) {
+    await page.setViewportSize(viewport)
+    await naming.scrollIntoViewIfNeeded()
+    await expect(naming).toBeInViewport({ ratio: 1 })
+    await page.screenshot({ path: testInfo.outputPath(`naming-${viewport.width}.png`) })
+    await naming.fill('长'.repeat(150))
+    expect(await frame.locator('#exportNamingHint').evaluate((hint) => {
+      const bounds = hint.getBoundingClientRect(); return bounds.right <= hint.ownerDocument.defaultView!.innerWidth + 1
+    })).toBe(true)
+    await page.screenshot({ path: testInfo.outputPath(`naming-${viewport.width}-long.png`) })
+    await frame.locator('#saveExport').scrollIntoViewIfNeeded()
+    await expect(frame.locator('#saveExport')).toBeInViewport({ ratio: 0.99 })
+    expect(await frame.locator('#saveExport').evaluate((button) => {
+      const bounds = button.getBoundingClientRect(); const view = button.ownerDocument.defaultView!
+      return bounds.top >= -1 && bounds.left >= -1 && bounds.right <= view.innerWidth + 1 && bounds.bottom <= view.innerHeight + 1
+    })).toBe(true)
+    await page.screenshot({ path: testInfo.outputPath(`naming-${viewport.width}-footer.png`) })
+    await naming.fill('clip_{episode}_{candidate}')
+  }
+  await naming.fill('{unknown}')
+  await frame.locator('#saveExport').click()
+  await expect(frame.locator('#exportNamingError')).toContainText('仅支持')
+  expect(await page.evaluate(async () => {
+    const drama = (await window.desktopApi.listDramas()).find(item => item.name === '原剧切片闭环隔离剧目')!
+    return window.desktopApi.getLatestClipExportBatch(drama.id)
+  })).toBeNull()
+  await naming.fill('素材_{episode}_{candidate}')
+  await page.setViewportSize({ width: 1440, height: 900 })
   await frame.locator('#saveExport').click()
   await expect.poll(() => candidateStatus(candidateId), { timeout: 60_000 }).toBe('exported')
   await expect(frame.locator('#exportModal')).toHaveAttribute('aria-hidden', 'true')
@@ -170,16 +200,19 @@ test('CLIP-REAL-005 to CLIP-REAL-008 closes sparse local evidence, pool, export,
   }, candidateId)
   expect(materialPath).toContain(outputDirectory)
   expect(materialPath).not.toBeNull()
+  expect(materialPath).toContain(`素材_01_${candidateId.slice(0, 8)}.mp4`)
   const firstOutputHash = createHash('sha256').update(await readFile(materialPath!)).digest('hex')
   const firstBatch = await page.evaluate(async () => {
     const drama = (await window.desktopApi.listDramas()).find((item) => item.name === '原剧切片闭环隔离剧目')!
     return window.desktopApi.getLatestClipExportBatch(drama.id)
   })
   expect(firstBatch?.candidateIds).toEqual([candidateId])
+  expect(firstBatch?.config?.namingPattern).toBe('素材_{episode}_{candidate}')
   expect(createHash('sha256').update(await readFile(sourcePath)).digest('hex')).toBe(sourceSha256)
   await expect(exportChoice).not.toBeChecked()
   await exportChoice.check()
   await frame.locator('[data-clip-export-open]').first().click()
+  await expect(naming).toHaveValue('素材_{episode}_{candidate}')
   await frame.locator('#exportModal [data-quality-mode="bitrate"]').click()
   await frame.locator('#exportBitrate').fill('1500')
   await frame.locator('#saveExport').click()
@@ -196,6 +229,8 @@ test('CLIP-REAL-005 to CLIP-REAL-008 closes sparse local evidence, pool, export,
   expect(secondBatch?.id).not.toBe(firstBatch?.id)
   expect(secondBatch?.candidateIds).toEqual([candidateId])
   expect(secondBatch?.config?.qualityMode).toBe('bitrate')
+  expect(secondBatch?.config?.namingPattern).toBe('素材_{episode}_{candidate}')
+  expect(secondBatch?.items[0]?.outputPath).toContain(`素材_01_${candidateId.slice(0, 8)}_02.mp4`)
   expect(createHash('sha256').update(await readFile(materialPath!)).digest('hex')).toBe(firstOutputHash)
   await frame.locator('#screen-clip-pool [data-r5-open="clip-report"]').first().click()
   frame = page.frameLocator('iframe[title="原剧切片完成报告"]')
