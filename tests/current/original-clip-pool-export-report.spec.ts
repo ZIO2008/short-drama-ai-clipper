@@ -230,7 +230,12 @@ test('CLIP-REAL-005 to CLIP-REAL-008 closes sparse local evidence, pool, export,
   expect(secondBatch?.candidateIds).toEqual([candidateId])
   expect(secondBatch?.config?.qualityMode).toBe('bitrate')
   expect(secondBatch?.config?.namingPattern).toBe('素材_{episode}_{candidate}')
-  expect(secondBatch?.items[0]?.outputPath).toContain(`素材_01_${candidateId.slice(0, 8)}_02.mp4`)
+  const secondMaterial = await page.evaluate(async ({ candidateId, previousPath }) => {
+    const drama = (await window.desktopApi.listDramas()).find(item => item.name === '原剧切片闭环隔离剧目')!
+    return (await window.desktopApi.listMaterials(drama.id)).find(item => item.taskItemId === candidateId && item.path !== previousPath)
+  }, { candidateId, previousPath: materialPath })
+  expect(secondMaterial?.id).toBe(secondBatch?.items[0]?.materialId)
+  expect(secondMaterial?.path).toContain(`素材_01_${candidateId.slice(0, 8)}_02.mp4`)
   expect(createHash('sha256').update(await readFile(materialPath!)).digest('hex')).toBe(firstOutputHash)
   await frame.locator('#screen-clip-pool [data-r5-open="clip-report"]').first().click()
   frame = page.frameLocator('iframe[title="原剧切片完成报告"]')
