@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "v0.1.103-p1-internal-trial",
+  "sourceCommit": "b1d72626b452bf1ffac2d0e57fd799eacd0696bc",
+  "sourceInputsSha256": "7694959a66b2c546cd4fc468a93c8e6c36f434596fbfc221acae2c645f48ebc0",
+  "candidateManifestSha256": "ae242590791b39adfab21a25960b5d1e8718ad21e99145468d3419229c34d733",
+  "executableSha256": "73710b6b4924140f08c9a53d917e866c85114aaffbdf815f42c49660c7725a7f",
+  "appAsarSha256": "71f50e33d193b9664f64b0bc841f77d2ef257b012c009ae889f13d442255769c",
+  "commands": {
+    "visualStatic": {
+      "record": "visualStatic.json",
+      "sha256": "36cb96b78ca8273ec6d4a5cbd6e3646206f1d6a08cef297e63615b2daf7c49b1",
+      "command": "node test-results/naming-static-visual.mjs",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "win32",
+        "arch": "x64"
+      },
+      "exitCode": 0
+    },
+    "packagedE2E": {
+      "record": "packagedE2E.json",
+      "sha256": "8dc7ba4aca1309ec02f8a24277cff037b39dcec12d14a4ca84fe6d299169db47",
+      "command": "node node_modules/@playwright/test/cli.js test tests/current/packaged-real-dpi.spec.ts tests/current/packaged-business-smoke.spec.ts tests/current/original-clip-pool-export-report.spec.ts --workers=1 --timeout=240000",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "win32",
+        "arch": "x64"
+      },
+      "exitCode": 0
+    }
+  },
+  "images": {
+    "static-1280-after.png": "bccf8d3c09843052fc08933418c423c4b6f27740f7bb5fcf4979fd2ca94b58d1",
+    "static-1280-before.png": "3821d4c564aed115c225e087c9ab0b12d2128b4c7f0423a465145377c7bd6061",
+    "static-1280-error.png": "dc44caa0bed77a033645f74b8f1b72b0d450e2245fb1b6544e1e9662249e3a42",
+    "static-1440-after.png": "de610ded37db4ba0cd6efa7a005073e33c66ba310cbdbfc685c00f9d771a6419",
+    "static-1440-before.png": "c2cc8f2887da49aa96c8b5c767ee8ee73aeaabace9e2bc015724861e18a867dd",
+    "static-1440-error.png": "46b7d115f4956a2a13f12f78099f7ada3c5ce0f9d6374ade7727a7aff0b0c781",
+    "installed-naming-1280-footer.png": "f60d180bf53e2301758ad391258e9294e8ee38ac2e4566890be2014c1e3b0014",
+    "installed-naming-1280-long.png": "bddb7af01d40a2a3bd62fd05bb846dd8121976f19cfca44d76251c64f1ef7760",
+    "installed-naming-1280.png": "6acdabdd412d98bf69a35a4c39c1be9ad5bd725027f20645e4c0b03c07be585b",
+    "installed-naming-1440-footer.png": "3e2c7f1579c7c0bbc72284819524bd524a311771d475a0e371b7a0a8e22cc7fa",
+    "installed-naming-1440-long.png": "3e2c7f1579c7c0bbc72284819524bd524a311771d475a0e371b7a0a8e22cc7fa",
+    "installed-naming-1440.png": "d0d6403f3852652540b4698f46e4b065372eced5be968e47d7ddb2318a42b649"
+  },
+  "fixtureFiles": {
+    "fixture-source.mjs": "37a5cf7895362fefffa7adb7c4d5b6ef4fc9b7b9eeff461ec8fd91c5ac6b9081",
+    "fixture-bundle.js": "c35a35e53526ba05f9098241e746b47607c90feb21a21049a04f4d553327d6d2"
+  },
+  "scope": "export naming field only; static before/after/error and installed default/long/scroll-to-footer at 1440x900 and 1280x720; other pages not visually reaccepted"
+}

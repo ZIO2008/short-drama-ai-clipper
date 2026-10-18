@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 2,
+  "sourceCommit": "b1d72626b452bf1ffac2d0e57fd799eacd0696bc",
+  "sourceInputsSha256": "7694959a66b2c546cd4fc468a93c8e6c36f434596fbfc221acae2c645f48ebc0",
+  "sourceDirty": false,
+  "designContractSha256": "d759a4bc7b6a72cb36d2abbc73bb03f15db8a4817a82f75ee341f7330aece613",
+  "check": "visualStatic",
+  "command": "node test-results/naming-static-visual.mjs",
+  "exitCode": 0,
+  "signal": null,
+  "startedAt": "2026-10-17T11:45:06.815Z",
+  "completedAt": "2026-10-17T11:45:10.205Z",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "outputPath": "checks/visualStatic.log",
+  "outputSha256": "045f8cf00aa3a9118948fe4847da8671bfc7f9f22edb05b6a7124d05b84c24ac"
+}

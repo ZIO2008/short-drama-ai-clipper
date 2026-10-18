@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 2,
+  "sourceCommit": "b1d72626b452bf1ffac2d0e57fd799eacd0696bc",
+  "sourceInputsSha256": "7694959a66b2c546cd4fc468a93c8e6c36f434596fbfc221acae2c645f48ebc0",
+  "sourceDirty": false,
+  "designContractSha256": "d759a4bc7b6a72cb36d2abbc73bb03f15db8a4817a82f75ee341f7330aece613",
+  "releaseId": "v0.1.103-p1-internal-trial",
+  "appVersion": "0.1.103",
+  "scope": "P1",
+  "channel": "internal-trial",
+  "packageKind": "formal-candidate",
+  "visualFidelity": "passed",
+  "notFormalCandidate": false,
+  "nativeBuildPathRedactions": 1,
+  "executableSha256": "73710b6b4924140f08c9a53d917e866c85114aaffbdf815f42c49660c7725a7f",
+  "appAsarSha256": "71f50e33d193b9664f64b0bc841f77d2ef257b012c009ae889f13d442255769c",
+  "createdAt": "2026-10-17T11:50:56.501Z",
+  "artifactAvailability": "local-only",
+  "originalManifestSha256": "ae242590791b39adfab21a25960b5d1e8718ad21e99145468d3419229c34d733"
+}
