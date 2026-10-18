@@ -1,3 +1,4 @@
+import { prepareClipModuleFixture, type ClipModuleFixtureState } from './clip-module-prototype-host.js'
 import { useLayoutEffect, useMemo, useRef, useState, type ReactElement } from 'react'
 import { bindPrototypeGlobalNavigation } from '../navigation.js'
 import prototypeHtml from '../../../../design/open-design/v2026-07-30-open-design-final/short-drama-material-studio.html?raw'
@@ -9,7 +10,7 @@ import subtitleRegionCalibrationPrototypeHtml from '../../../../design/open-desi
 export type StaticPrototypeScreen = 'clip' | 'clip-pool' | 'clip-report' | 'subtitles' | 'settings' | 'provider-asr' | 'provider-text-analysis' | 'provider-multimodal-review'
 type Screen = StaticPrototypeScreen
 export type StaticPrototypeSurfaceMode = 'runtime' | 'static-fixture'
-export type ClipStaticFixtureState = 'default' | 'context-speed' | 'missing'
+export type ClipStaticFixtureState = ClipModuleFixtureState | 'context-speed'
 type Props = { screen: Screen; mode?: StaticPrototypeSurfaceMode; fixtureState?: ClipStaticFixtureState; onBack: () => void; onOpenResults?: () => void; onNavigate?: (target: string) => void; onReady?: (document: Document) => void | (() => void); onPrepared?: (screen: Screen) => void }
 
 const screenIds: Record<Screen, string> = {
@@ -36,8 +37,8 @@ export const preparePrototypeHead = (sourceHead: string, screen: Screen): string
   screen === 'subtitles' ? sourceHead : remapClipHeightMediaQueries(sourceHead)
 )
 
-export const prototypeSourceForScreen = (screen: Screen): string => (
-  screen === 'clip' ? clipMonitorReviewPrototypeHtml
+export const prototypeSourceForScreen = (screen: Screen, mode: StaticPrototypeSurfaceMode = 'runtime'): string => (
+  screen === 'clip' || (mode === 'static-fixture' && (screen === 'clip-pool' || screen === 'clip-report')) ? clipMonitorReviewPrototypeHtml
     : screen === 'subtitles' ? subtitleRegionCalibrationPrototypeHtml
     : screen === 'provider-asr' ? asrDefaultConfigurationPrototypeHtml
     : screen === 'provider-text-analysis' || screen === 'provider-multimodal-review' ? textAnalysisConnectivityPrototypeHtml
@@ -56,7 +57,6 @@ const titles: Record<Screen, string> = {
 }
 
 type IsolationState = 'ready' | 'missing' | 'rewritten'
-
 const applyClipFixtureState = (document: Document, state: ClipStaticFixtureState): boolean => {
   if (state === 'default') return true
   if (state === 'context-speed') {
@@ -74,6 +74,7 @@ const applyClipFixtureState = (document: Document, state: ClipStaticFixtureState
 }
 
 export const isolatePrototypeScreen = (document: Document, screen: Screen, mode: StaticPrototypeSurfaceMode = 'runtime', fixtureState: ClipStaticFixtureState = 'default'): IsolationState => {
+  if (mode === 'static-fixture' && (screen === 'clip-pool' || screen === 'clip-report')) return prepareClipModuleFixture(document, screen, fixtureState === 'context-speed' ? 'default' : fixtureState)
   if (screen === 'clip') {
     const target = document.getElementById(screenIds[screen])
     if (!target || !document.querySelector('[data-od-id="clip-monitor-media"]') || !document.querySelector('[data-od-id="clip-monitor-transport"]') || !document.querySelector('[data-od-id="clip-review-range"]') || !document.querySelector('[data-od-id="clip-boundary-nudges"]')) return 'missing'
@@ -178,7 +179,7 @@ export const isolatePrototypeScreen = (document: Document, screen: Screen, mode:
 export const StaticPrototypeSurface = ({ screen, mode = 'runtime', fixtureState = 'default', onBack, onOpenResults, onNavigate, onReady, onPrepared }: Props): ReactElement => {
   // Each provider-screen source is isolated so a provider-specific prototype
   // change cannot alter the other settings surfaces.
-  const sourceDocument = useMemo(() => prototypeSourceForScreen(screen), [screen])
+  const sourceDocument = useMemo(() => prototypeSourceForScreen(screen, mode), [screen, mode])
   const runtimeCleanup = useRef<(() => void) | null>(null)
   const currentFrame = useRef<HTMLIFrameElement | null>(null)
   const preparationTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null)

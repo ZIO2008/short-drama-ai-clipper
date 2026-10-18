@@ -1,0 +1,38 @@
+# 完成报告完整V49迁移卡
+
+分类：全屏迁移；依赖共同静态基线与候选池验收。该卡不宣称报告迁移完成。
+
+来源：docs/current-design-baseline.json指向的完整V49 HTML，design/open-design/v2026-08-11-v49-clip-monitor-review/short-drama-material-studio-v49-clip-review.html，SHA256 C95820F2FCE372E9BBA3A2A1062495D418951025C1A7C65A73429F5C0FFD563D。同源manifest/handoff/reuse matrix已读取。完整快照统一生效，不拼接July30或旧阶段的候选池/报告。
+
+目标：DramaWorkspacePage的clip-report；固定1440×900、1280×720，DPR1。继承screen-clip已验收全壳策略，保留.app/sidebar/topbar及原始页面坐标；现有旧宿主裁剪和高度覆盖不属于本轮基线。
+
+| 原型节点 | DOM归属 | 真实绑定与边界 |
+| --- | --- | --- |
+| .app/sidebar/topbar/content | V49完整壳 | 真实版本/剧名和全局导航，禁止双侧栏和原型演示跳转 |
+| .clip-module-stage/.clip-task-summary | V49结构 | 保留0.1.106四槽批次统计，不用库当前状态或异常筛选作为分母 |
+| .clip-report-episode-rail/.clip-report-episode-scroll | V49 | 按批次真实分集显示，未知归属诚实显示，不造额外分集 |
+| #clipReportTitle/#clipReportMeta/#clipReportSummary | V49数据槽 | 当前批次、配置、成功/失败/取消/未输出，不显示静态总数 |
+| #clipReportRows/.clip-report-results-head/.clip-report-columns | V49结构 | 完整列头，候选号/源时码与实际文件/时长/状态/操作对齐 |
+| .clip-report-list-row | V49行结构 | 永久编号与历史路径保留，删除候选仍留批次事实；不存在成果/候选不给无效操作 |
+
+原型默认及仅异常状态用原型现有按钮分别固定；完整应用壳、统计/左栏/结果列头与滚动边界进入首轮双视口静态对照，尚不绑定desktopApi。运行时原型演示监听必须被隔离，不能覆盖真实批次或回到示例页面。
+
+| 最终状态 | 数据前置及验收 |
+| --- | --- |
+| 全成功 | 至少两项exported，顶部1/2/2/0，下方2/0/0/0，真实路径 |
+| 部分失败 | exported+failed，失败原因保留，统计守恒 |
+| 取消/未输出 | 部分成功+cancelled/not_output，既有成功成果保留 |
+| 无批次 | 独立空态，统计0，不借静态示例填充 |
+| 读取中 | 独立加载态，不露上个剧目或演示行 |
+| 读取失败 | 未知统计/具体错误，已有事实不伪改成功 |
+| 候选已删除 | 批次冻结编号、时码、分集、成果回链仍可读，缺信息诚实显示 |
+| 长路径/长结果 | 文件文字可阅读、列不撑破，结果独立滚动，键盘可达 |
+
+允许差异仅真实数据和已验收业务行为/文字（永久编号、统计、结果动作）；不改原型空间结构、不新增字幕或别的页面。假数据只用于隔离静态夹具，禁止进入正式库。仅异常筛选只改可见行，不改全批汇总。
+
+当前：迁移卡建立；原型默认/异常双视口静态夹具验证执行中；真实状态和最终视觉待Phase33实施。证据命令、设计身份、截图和结果按候选池卡的同一生命周期要求记录，静态基线通过不等于真实报告已验收。
+
+## 共同静态前置验收（2026-10-18）
+
+6个原型原生状态×1440/1280共12对完整画面对照通过；逐对comparison JSON记录changedRatio=0、meanDelta=0。真实React组件与独立加载的原型原文全画面对照，不裁图或掩膜，kind明确为static-fixture。3文件30定向单测、typecheck/build退出0；fresh独立复审Stage1/2 PASS。301行问题已收敛到300行，测试窗口URL识别与异常清理已修复。仅共同静态前置完成，所有真实状态及Phase32/33完整视觉验收仍待后续实施。
+
