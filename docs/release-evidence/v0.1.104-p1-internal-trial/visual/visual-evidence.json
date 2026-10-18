@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "v0.1.104-p1-internal-trial",
+  "sourceCommit": "ba541097ed2ea4303df571fb5f4697c5eb32acf2",
+  "sourceInputsSha256": "554873a098811ac2be99f895ec92877aee14cdab290fd75122cd61d842ed4cfa",
+  "candidateManifestSha256": "026b11cb5549552e114ec5ed1dd23fcc510b36f685a2ae3887542784f02fb4fc",
+  "executableSha256": "937e6a8bdbc71b55c1bd6999bfb32687cb59a151eea1611af57efa562e470ec4",
+  "appAsarSha256": "4b013d09f03c596d96c4704e20ef597907e9f587733ba93a773012565442618d",
+  "commands": {
+    "visualStatic": {
+      "record": "visualStatic.json",
+      "sha256": "c9630d548bbd019c788e3f88e16daa6e9c2d2a5f9ced96d29375c1f27cbe9f6f",
+      "command": "node test-results/naming-cn-static-visual.mjs",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "win32",
+        "arch": "x64"
+      },
+      "exitCode": 0
+    },
+    "packagedE2E": {
+      "record": "packagedE2E.json",
+      "sha256": "23f254baec9d6970cffe5dbf710134cc0375da0ee41fa3091c845e6ddb8e060f",
+      "command": "node node_modules/@playwright/test/cli.js test tests/current/packaged-real-dpi.spec.ts tests/current/packaged-business-smoke.spec.ts tests/current/original-clip-pool-export-report.spec.ts --workers=1 --timeout=240000",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "win32",
+        "arch": "x64"
+      },
+      "exitCode": 0
+    }
+  },
+  "images": {
+    "static-1280-after.png": "a1d25e4326a52bfe7f7b3c48c88b84ce2b4077d2b361d2f648b092bf3c2ab4a5",
+    "static-1280-before.png": "3821d4c564aed115c225e087c9ab0b12d2128b4c7f0423a465145377c7bd6061",
+    "static-1280-error.png": "be7cf31eb4916dcb781cf7f3739c62cf4f773a7048ded4d07e9b1ea4d7a3de8a",
+    "static-1280-prefix.png": "78aa69a826bc609f2490d8f133d4ba825c09f54203efd69d41d7699ac5c84484",
+    "static-1440-after.png": "7587bdad43c1af72dc3de70f2474f713fda19567e3f28dc01f240249c40f413c",
+    "static-1440-before.png": "2911696e6f09e5766974fa6f80919fa6eab12e38242b4cfa03457b347c64b9a3",
+    "static-1440-error.png": "bb990d95f214d2b75b8ded70839b8754ed3efedc7224b0493bfb4c1912f5ad85",
+    "static-1440-prefix.png": "49a084b92f9ffb02470cb68c20e108d9b1240fcbaa1de8c7800806b5b70c28e4",
+    "installed-naming-1280-footer.png": "adf01010d992fd52c14bb1cc0555e945edc6d59b7c1de23ae752ff9e96081afc",
+    "installed-naming-1280-long.png": "8ab35be7087479138c8f4c15d41d28a43bda7ea1a216efcd33d5b258a8a9f7d8",
+    "installed-naming-1280-prefix.png": "1d140949b13477e41069d2f29e007bd30d5af6b235b030fdfe1d3c55f8d218a8",
+    "installed-naming-1280.png": "567610aa975211c342b8b8953acc805068d01ac9a23e49d690581f49aa7bce19",
+    "installed-naming-1440-footer.png": "d14632a9ea88670d8d7adc888ae2a9d4879c47e352ace83575423b082115f143",
+    "installed-naming-1440-long.png": "d14632a9ea88670d8d7adc888ae2a9d4879c47e352ace83575423b082115f143",
+    "installed-naming-1440-prefix.png": "07228c27f585ad988d188f1fbd29eaf8f9c4184ac9dff6d8c8ca6fd2d01df05a",
+    "installed-naming-1440.png": "6a4e6d8a82674840d4fd84c33f6323d39ff01fe1399092ab3da2b67ba45fc52c"
+  },
+  "fixtureFiles": {
+    "fixture-source.mjs": "dc2cec37a0c7a8d2d70270b878df85b44c9e2fc3151174642472c630c774b072",
+    "fixture-bundle.js": "d65c7655ee3cb98b864655bc53b42939e9531282e4a31c173f82d0d70b197250"
+  },
+  "scope": "Chinese naming field only; static before/default/prefix/error and installed default/prefix/long/scroll-to-footer at 1440x900 and1280x720"
+}

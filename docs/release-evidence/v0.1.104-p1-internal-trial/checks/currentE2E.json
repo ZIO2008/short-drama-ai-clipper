@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 2,
+  "sourceCommit": "ba541097ed2ea4303df571fb5f4697c5eb32acf2",
+  "sourceInputsSha256": "554873a098811ac2be99f895ec92877aee14cdab290fd75122cd61d842ed4cfa",
+  "sourceDirty": false,
+  "designContractSha256": "d759a4bc7b6a72cb36d2abbc73bb03f15db8a4817a82f75ee341f7330aece613",
+  "check": "currentE2E",
+  "command": "node node_modules/@playwright/test/cli.js test --workers=2",
+  "exitCode": 0,
+  "signal": null,
+  "startedAt": "2026-10-18T05:40:12.307Z",
+  "completedAt": "2026-10-18T05:41:14.412Z",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "outputPath": "checks/currentE2E.log",
+  "outputSha256": "9ffd92cf39fda9130e11eaf0804c2c000cffe4f24d24dc9f6fbddfe039ff2c1a"
+}

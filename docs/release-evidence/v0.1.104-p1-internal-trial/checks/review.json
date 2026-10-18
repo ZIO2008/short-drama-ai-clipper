@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 2,
+  "sourceCommit": "ba541097ed2ea4303df571fb5f4697c5eb32acf2",
+  "sourceInputsSha256": "554873a098811ac2be99f895ec92877aee14cdab290fd75122cd61d842ed4cfa",
+  "sourceDirty": false,
+  "designContractSha256": "d759a4bc7b6a72cb36d2abbc73bb03f15db8a4817a82f75ee341f7330aece613",
+  "check": "review",
+  "command": "node test-results/review-0.1.104/verify-review.mjs",
+  "exitCode": 0,
+  "signal": null,
+  "startedAt": "2026-10-18T05:37:22.462Z",
+  "completedAt": "2026-10-18T05:37:23.476Z",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "outputPath": "checks/review.log",
+  "outputSha256": "2dd2c27d9656bb66278b24ed91ff2a84f78670bae60c0dbc03c7541e487a3c1a"
+}
