@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "v0.1.105-p1-internal-trial",
+  "sourceCommit": "718b86f0d54e1650deaceae2ee8cefe352ff5add",
+  "sourceInputsSha256": "d642d5303127176a08e00847642e277c9edaf56837bc81ac93136a5ca9a560f1",
+  "candidateManifestSha256": "fef03e063c5056d3059aa945bab1fc799e4658e49b16e2b6e921843922647ee6",
+  "executableSha256": "db287c64939d33218958206b49c23d25eb5824cd89852557fa6921d99687d21a",
+  "appAsarSha256": "bc9ec9b30b425615db2bf06f42c2d21e26184d56a934fd90d91c0c4dc2f1d1e5",
+  "commands": {
+    "visualStatic": {
+      "record": "visualStatic.json",
+      "sha256": "4829ff339795cb6599ed2fc351ffffc8db57ef2652937cc6083639827c48f1d6",
+      "command": "node test-results/naming-cn-static-visual.mjs",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "win32",
+        "arch": "x64"
+      },
+      "exitCode": 0
+    },
+    "packagedE2E": {
+      "record": "packagedE2E.json",
+      "sha256": "840a9318752334b6b23ab2de0e70bb004a7768c2b7d7130d96c139f83a6a2ee8",
+      "command": "node node_modules/@playwright/test/cli.js test tests/current/packaged-real-dpi.spec.ts tests/current/packaged-business-smoke.spec.ts tests/current/original-clip-pool-export-report.spec.ts --workers=1 --timeout=240000",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "win32",
+        "arch": "x64"
+      },
+      "exitCode": 0
+    },
+    "migrationProbe": {
+      "record": "migrationProbe.json",
+      "sha256": "9c90fc23475a438d33f4a076a4fd77930a081e8d8490bbfe8c93d104450a2a62",
+      "command": "node test-results/clip-numbering-migration-probe.mjs",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "win32",
+        "arch": "x64"
+      },
+      "exitCode": 0
+    }
+  },
+  "images": {
+    "static-1280-after.png": "d159e0fa5ecfa2cfdd49788cbb2c669f8fa11292a3acbaa0be44f6f27e9592ff",
+    "static-1280-before.png": "3821d4c564aed115c225e087c9ab0b12d2128b4c7f0423a465145377c7bd6061",
+    "static-1280-error.png": "7638417b76a3aa978471d841c23b234b0ac0af1d6b68bdcb5182768a8b6fb436",
+    "static-1280-prefix.png": "f60cce9abf447f0f4b3e7b237281248f364bf2f82791977044a0d9b9d0cdf277",
+    "static-1440-after.png": "16cf45ab1fcef0a957e59ebef0ae06f26d9c81fce38859880e8425fec749178c",
+    "static-1440-before.png": "6ec8d30111c0a8147fea9ea4413d046818075c2a79738b04c2b23494788f1da3",
+    "static-1440-error.png": "93f36210d9b5660cbc981bc2e69f866a821a97de9d9e30531bc55cc81d17a367",
+    "static-1440-prefix.png": "162b602934a3d85f27815df579ce5f974a87e07015ec07f5cfce9cdfd0249c4c",
+    "installed-naming-1280-footer.png": "ee23371db978c541aad4cb4648e00149e52c16b5d780adedc1010dd72c489e93",
+    "installed-naming-1280-long.png": "1842b84bc9075e828baeb09aa1edf26d6bf70ff1db45014cda5811281857eece",
+    "installed-naming-1280-prefix.png": "e7ffb13e738b09097db6da19191a935337f3556812bfc8ec1f8918e13bfef967",
+    "installed-naming-1280.png": "328e6c3ae5a1abedde25cfe0ab5eafe84937c23e86d149756e372ab48570498e",
+    "installed-naming-1440-footer.png": "ca9524047096168bd7105967530a21a96e6b8cd481e17d5a0c08f98a7808e7a2",
+    "installed-naming-1440-long.png": "ca9524047096168bd7105967530a21a96e6b8cd481e17d5a0c08f98a7808e7a2",
+    "installed-naming-1440-prefix.png": "f94b83eae73bef2f577e9546dfb3e3bb521bd2faa1f46f5f08ae02d4f9e6320e",
+    "installed-naming-1440.png": "28a97230e84caaaace7556534a5d98c34edcc0dddb0d16752218b0708023fd54",
+    "installed-number-pool-1280.png": "17cd505c5b60546f97f82d0271e6c8edc7fe67ffca216a50fc9cb00d67690120",
+    "installed-number-pool-1440.png": "e71c08ed38e69995f17b7209dec704696efea2d8c14f83b2fe9aef0fe5afb43b",
+    "installed-number-report-1280.png": "56e3cf6072bade2c7bf28a250fefacc7a749e5373b3615d4f3596dfc032e8b49",
+    "installed-number-report-1440.png": "eb38ccbe0df5cee758487c41cef5475fc8414b13c6c4f08e839d14aad6aee1c7",
+    "installed-number-workspace-1280.png": "afd70d8772d719531ce82700ee8a6d7e3326c05c811031667344ca5a0b057280",
+    "installed-number-workspace-1440.png": "26bc14d42098fd98a1eedaa936aa387e9de207574707bb47b87fdbc0fabe3426"
+  },
+  "scope": "Existing data text slots and Chinese naming field, 1440x900 and 1280x720. Not full-page product visual acceptance.",
+  "supportingFiles": {
+    "migration-probe.ts": "cd099482170a9a9b112de324e20cbc30339279760da0e207309a73196dc3a51c",
+    "static-fixture-capture.mjs": "dc2cec37a0c7a8d2d70270b878df85b44c9e2fc3151174642472c630c774b072",
+    "static-naming-fixture.js": "75cb1f2a50cd82b4f73b5767173429dfa9f7896d0f749cdc23e437ec10f19cf3"
+  }
+}
