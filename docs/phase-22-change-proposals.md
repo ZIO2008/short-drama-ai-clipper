@@ -22,6 +22,8 @@
 
 ## 提案 P22-02：补齐原剧切片导出配置合同
 
+> 2026-10-18追溯覆盖：命名已独立交付；字幕三方式为最终设计未沿用的早期Agent建议，不作为当前待补需求。以下保留原提案，不能视为授权或下一任务。见 release-readiness/2026-10-18-subtitle-export-provenance.md。
+
 **拟改位置**：待用户先确认交互落点后再确定；可能涉及：
 
 - `src/renderer/src/pages/OriginalClipPoolReportRuntimeBridge.ts`
