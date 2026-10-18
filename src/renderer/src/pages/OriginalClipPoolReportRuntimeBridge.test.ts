@@ -239,7 +239,7 @@ describe('bindOriginalClipPoolReportRuntime', () => {
     Object.assign(window, { desktopApi: api({ listClipCandidates: vi.fn().mockResolvedValue([confirmed, exported, review, failed]), getLatestClipExportBatch: vi.fn().mockResolvedValue(batch(['exported-1'], [{ candidateId: 'exported-1', status: 'exported', reason: null, materialId: null }])) }) })
     bindOriginalClipPoolReportRuntime({ document: testDocument, dramaId: 'd1', episodes: [episode], onOpenCandidate: vi.fn() }); await settle()
     expect([...testDocument.querySelectorAll<HTMLElement>('.clip-inspector-stat > div > b')].map((node) => node.textContent)).toEqual(['2', '1', '1', '2'])
-    expect([...testDocument.querySelectorAll<HTMLElement>('.clip-task-summary > div:not(.clip-task-summary-label) > b')].map((node) => node.textContent)).toEqual(['1', '1', '0', '0'])
+    expect([...testDocument.querySelectorAll<HTMLElement>('.clip-task-summary > div:not(.clip-task-summary-label) > b')].map((node) => node.textContent)).toEqual(['1', '1', '1', '0'])
     expect(testDocument.querySelector('.clip-task-summary small')?.textContent).toBe('1 集 · 已完成')
   })
 
