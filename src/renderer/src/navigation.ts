@@ -2,6 +2,8 @@ import type { IconName } from './components/UiIcon.js'
 
 export type RouteId = 'library' | 'tasks' | 'tags' | 'settings'
 export const GLOBAL_NAVIGATION_EVENT = 'shortdrama:global-navigation'
+export const PROTOTYPE_SHELL_READY_EVENT = 'shortdrama:prototype-shell-ready'
+export const OPEN_NOTIFICATIONS_EVENT = 'shortdrama:open-notifications'
 
 export type NavigationItem = {
   id: RouteId
@@ -23,6 +25,7 @@ export const isRouteId = (value: string): value is RouteId =>
 /** Keep prototype sidebar demo handlers from navigating inside a runtime iframe. */
 export const bindPrototypeGlobalNavigation = (document: Document): (() => void) => {
   const navigate = (click: MouseEvent): void => {
+    if ((click.target as Element).closest('#notifBtn')) { click.preventDefault(); click.stopImmediatePropagation(); window.dispatchEvent(new Event(OPEN_NOTIFICATIONS_EVENT)); return }
     const trigger = (click.target as Element).closest<HTMLElement>('.nav-btn[data-screen]')
     const target = trigger?.dataset.screen
     if (!target || !isRouteId(target)) return
@@ -31,6 +34,7 @@ export const bindPrototypeGlobalNavigation = (document: Document): (() => void) 
     window.dispatchEvent(new CustomEvent(GLOBAL_NAVIGATION_EVENT, { detail: target }))
   }
   document.addEventListener('click', navigate, true)
+  window.dispatchEvent(new CustomEvent(PROTOTYPE_SHELL_READY_EVENT, { detail: document }))
   return () => document.removeEventListener('click', navigate, true)
 }
 

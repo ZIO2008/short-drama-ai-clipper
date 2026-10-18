@@ -23,11 +23,11 @@ const removeHarnessDirectory = async (directory: string): Promise<void> => {
 type ModuleScreen = 'clip-pool' | 'clip-report'
 export type ModuleState = 'default' | 'filtered' | 'generating' | 'missing' | 'exception'
 
-export const openModuleStaticHarness = async (screen: ModuleScreen): Promise<{ app: ElectronApplication; page: Page; reference: Page; directory: string; close: () => Promise<void> }> => {
+export const openModuleStaticHarness = async (screen: ModuleScreen, entry: 'static' | 'runtime' = 'static'): Promise<{ app: ElectronApplication; page: Page; reference: Page; directory: string; close: () => Promise<void> }> => {
   const directory = await mkdtemp(join(tmpdir(), 'short-drama-v49-module-fixture-'))
   let runningApp: ElectronApplication | undefined
   try {
-    await esbuild.build({ entryPoints: [join(root, 'tests/fixtures/clip-module-static.tsx')], bundle: true, platform: 'browser', format: 'iife', jsx: 'automatic', define: { 'process.env.NODE_ENV': '"production"' }, outfile: join(directory, 'fixture.js'), plugins: [{ name: 'source-raw', setup(build) {
+    await esbuild.build({ entryPoints: [join(root, `tests/fixtures/clip-module-${entry}.tsx`)], bundle: true, platform: 'browser', format: 'iife', jsx: 'automatic', define: { 'process.env.NODE_ENV': '"production"' }, outfile: join(directory, 'fixture.js'), plugins: [{ name: 'source-raw', setup(build) {
       build.onResolve({ filter: /\?raw$/ }, args => ({ path: resolve(args.resolveDir, args.path.slice(0, -4)), namespace: 'source-raw' }))
       build.onLoad({ filter: /.*/, namespace: 'source-raw' }, async args => ({ contents: `export default ${JSON.stringify(await readFile(args.path, 'utf8'))}`, loader: 'js' }))
     } }] })

@@ -1,8 +1,9 @@
+import { hydratePrototypeShell } from '../prototype-shell-context.js'
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactElement } from 'react'
 import type { NotificationSnapshot } from '../../../shared/contracts.js'
 import { NotificationDrawer } from '../components/NotificationDrawer.js'
 import { UiIcon } from '../components/UiIcon.js'
-import { GLOBAL_NAVIGATION_EVENT, NAVIGATION_ITEMS, isRouteId, type RouteId } from '../navigation.js'
+import { GLOBAL_NAVIGATION_EVENT, PROTOTYPE_SHELL_READY_EVENT, OPEN_NOTIFICATIONS_EVENT, NAVIGATION_ITEMS, isRouteId, type RouteId } from '../navigation.js'
 import { RouteContent, type RouteContentProps } from './RouteContent.js'
 
 type AppShellProps = Partial<Omit<RouteContentProps, 'route' | 'title' | 'description'>> & {
@@ -27,7 +28,14 @@ export const AppShell = (props: AppShellProps): ReactElement => {
     window.addEventListener(GLOBAL_NAVIGATION_EVENT, navigateFromSurface)
     return () => window.removeEventListener(GLOBAL_NAVIGATION_EVENT, navigateFromSurface)
   }, [props.onNavigate])
-  useEffect(() => { if (wasOpen.current && !props.notificationsOpen) notificationButtonRef.current?.focus(); wasOpen.current = props.notificationsOpen }, [props.notificationsOpen])
+  useEffect(() => {
+    if (wasOpen.current && !props.notificationsOpen) {
+      const surface = document.querySelector<HTMLIFrameElement>('iframe[data-v49-runtime-shell="true"]')?.contentDocument
+      const trigger = surface?.querySelector<HTMLButtonElement>('#notifBtn')
+      if (trigger) trigger.focus(); else notificationButtonRef.current?.focus()
+    }
+    wasOpen.current = props.notificationsOpen
+  }, [props.notificationsOpen])
   useEffect(() => {
     const defaultContext = `全局 / ${activeItem.label}`
     const updateContext = (value: string | null): void => { const crumb = document.querySelector<HTMLElement>('.topbar .crumb'); if (crumb) crumb.textContent = value ?? defaultContext }
@@ -36,6 +44,15 @@ export const AppShell = (props: AppShellProps): ReactElement => {
     window.addEventListener('shortdrama:topbar-context', handleContext)
     return () => window.removeEventListener('shortdrama:topbar-context', handleContext)
   }, [activeItem.label])
+  useEffect(() => {
+    const hydrate = (surface: Document): void => hydratePrototypeShell(surface, { appVersion: props.appVersion, releaseLabel: props.releaseLabel, unreadCount: props.notificationSnapshot?.unreadCount ?? 0, notificationsOpen: props.notificationsOpen })
+    const ready = (event: Event): void => { const surface = (event as CustomEvent<Document>).detail; if (surface?.nodeType === 9 && typeof surface.querySelector === 'function') hydrate(surface) }
+    const open = (): void => props.onOpenNotifications()
+    window.addEventListener(PROTOTYPE_SHELL_READY_EVENT, ready)
+    window.addEventListener(OPEN_NOTIFICATIONS_EVENT, open)
+    document.querySelectorAll<HTMLIFrameElement>('iframe[data-v49-runtime-shell="true"]').forEach(frame => { if (frame.contentDocument) hydrate(frame.contentDocument) })
+    return () => { window.removeEventListener(PROTOTYPE_SHELL_READY_EVENT, ready); window.removeEventListener(OPEN_NOTIFICATIONS_EVENT, open) }
+  }, [props.appVersion, props.releaseLabel, props.notificationSnapshot, props.notificationsOpen, props.onOpenNotifications])
   const scrollContentFromKeyboard = (event: KeyboardEvent<HTMLElement>): void => {
     if (!['PageDown', 'PageUp', 'Home', 'End'].includes(event.key)) return
     const content = event.currentTarget

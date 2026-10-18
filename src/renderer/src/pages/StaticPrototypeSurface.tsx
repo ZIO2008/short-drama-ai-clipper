@@ -1,4 +1,4 @@
-import { prepareClipModuleFixture, type ClipModuleFixtureState } from './clip-module-prototype-host.js'
+import { prepareClipModuleFixture, prepareClipModuleRuntime, type ClipModuleFixtureState } from './clip-module-prototype-host.js'
 import { useLayoutEffect, useMemo, useRef, useState, type ReactElement } from 'react'
 import { bindPrototypeGlobalNavigation } from '../navigation.js'
 import prototypeHtml from '../../../../design/open-design/v2026-07-30-open-design-final/short-drama-material-studio.html?raw'
@@ -24,7 +24,6 @@ const screenIds: Record<Screen, string> = {
   'provider-multimodal-review': 'screen-multimodalReview'
 }
 
-const clipScreenIds = ['screen-clip', 'screen-clip-pool', 'screen-clip-export', 'screen-clip-report', 'exportModal', 'packagingModal', 'toast']
 const prototypeTopbarHeight = 56
 const prototypeCompactHeight = 760
 const isolatedCompactHeight = prototypeCompactHeight - prototypeTopbarHeight
@@ -38,7 +37,7 @@ export const preparePrototypeHead = (sourceHead: string, screen: Screen): string
 )
 
 export const prototypeSourceForScreen = (screen: Screen, mode: StaticPrototypeSurfaceMode = 'runtime'): string => (
-  screen === 'clip' || (mode === 'static-fixture' && (screen === 'clip-pool' || screen === 'clip-report')) ? clipMonitorReviewPrototypeHtml
+  screen === 'clip' || screen === 'clip-pool' || screen === 'clip-report' ? clipMonitorReviewPrototypeHtml
     : screen === 'subtitles' ? subtitleRegionCalibrationPrototypeHtml
     : screen === 'provider-asr' ? asrDefaultConfigurationPrototypeHtml
     : screen === 'provider-text-analysis' || screen === 'provider-multimodal-review' ? textAnalysisConnectivityPrototypeHtml
@@ -75,6 +74,7 @@ const applyClipFixtureState = (document: Document, state: ClipStaticFixtureState
 
 export const isolatePrototypeScreen = (document: Document, screen: Screen, mode: StaticPrototypeSurfaceMode = 'runtime', fixtureState: ClipStaticFixtureState = 'default'): IsolationState => {
   if (mode === 'static-fixture' && (screen === 'clip-pool' || screen === 'clip-report')) return prepareClipModuleFixture(document, screen, fixtureState === 'context-speed' ? 'default' : fixtureState)
+  if (screen === 'clip-pool' || screen === 'clip-report') return prepareClipModuleRuntime(document, screen)
   if (screen === 'clip') {
     const target = document.getElementById(screenIds[screen])
     if (!target || !document.querySelector('[data-od-id="clip-monitor-media"]') || !document.querySelector('[data-od-id="clip-monitor-transport"]') || !document.querySelector('[data-od-id="clip-review-range"]') || !document.querySelector('[data-od-id="clip-boundary-nudges"]')) return 'missing'
@@ -99,8 +99,6 @@ export const isolatePrototypeScreen = (document: Document, screen: Screen, mode:
   // The prototype creates pool/report screens and their `clip-r5-style` stylesheet
   // in separate inline-script turns. Extracting the screen first leaves it with
   // browser default controls, so wait until its original stylesheet exists.
-  const requiresClipRuntimeStyle = screen === 'clip-pool' || screen === 'clip-report'
-  if (requiresClipRuntimeStyle && !document.getElementById('clip-r5-style')) return 'missing'
   if (screen === 'subtitles') {
     if (document.querySelectorAll('[data-subtitle-method]').length !== 3 || !document.querySelector('[data-subtitle-region-setting]')) return 'missing'
   }
@@ -109,7 +107,7 @@ export const isolatePrototypeScreen = (document: Document, screen: Screen, mode:
     ? [screenIds[screen], 'subtitleAssetModal', 'subtitleRecognitionSettingsModal', 'toast']
     : screen === 'settings' || isProviderScreen
       ? [screenIds[screen], 'toast']
-      : clipScreenIds
+      : [screenIds[screen], 'toast']
   const targets = ids.map((id) => document.getElementById(id)).filter((target): target is HTMLElement => target !== null)
   const target = targets.find((item) => item.id === screenIds[screen])
   const subtitleModalReady = screen !== 'subtitles' || (
@@ -253,7 +251,7 @@ export const StaticPrototypeSurface = ({ screen, mode = 'runtime', fixtureState 
   return <iframe
     key={`${screen}:${mode}:${fixtureState}:${loadAttempt}`}
     className="static-prototype-surface"
-    data-v49-runtime-shell={screen === 'clip' && mode === 'runtime' ? 'true' : undefined}
+    data-v49-runtime-shell={(screen === 'clip' || screen === 'clip-pool' || screen === 'clip-report') && mode === 'runtime' ? 'true' : undefined}
     data-prototype-ready="false"
     title={titles[screen]}
     srcDoc={sourceDocument}

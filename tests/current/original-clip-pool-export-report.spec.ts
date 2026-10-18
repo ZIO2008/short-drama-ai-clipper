@@ -1,3 +1,4 @@
+import { checkClipModuleHeader } from '../helpers/clip-module-flow-checks.js'
 import { captureClipNumberingSurface, checkDefaultClipNamingViews, checkPrefixClipNamingViews } from '../helpers/clip-numbering-visual.js'
 import { createHash } from 'node:crypto'
 import { mkdtemp, readFile, rm } from 'node:fs/promises'
@@ -148,6 +149,7 @@ test('CLIP-REAL-005 to CLIP-REAL-008 closes sparse local evidence, pool, export,
   await expect(frame.locator('body')).toHaveAttribute('data-clip-pool-report-runtime-bound', 'true')
   await expect(frame.locator('#clipCandidateRows')).toContainText('切片01')
   await expect(frame.locator('#clipCandidateRows')).toContainText('切片02')
+  await checkClipModuleHeader(page, frame)
   await captureClipNumberingSurface(page, testInfo, 'pool')
   await expect(frame.locator('.clip-inspector-stat > div > b')).toHaveText(['2', '0', '2', '0'])
 

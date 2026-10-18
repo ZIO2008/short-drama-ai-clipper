@@ -163,12 +163,12 @@ export const DramaWorkspacePage = (props: Props): ReactElement => {
       if (target === 'clip-report') { requestStaticScreen('clip-report'); return }
       if (target === 'production') setWorkspace('production')
     }} />}</div>
-    <div className={`static-prototype-slot${activeStaticScreen === 'clip-pool' ? ' active' : ''}`} aria-hidden={activeStaticScreen !== 'clip-pool'} inert={activeStaticScreen !== 'clip-pool'}>{activeStaticScreen === 'clip-pool' && <StaticPrototypeSurface screen="clip-pool" onBack={() => requestStaticScreen('clip')} onReady={(document) => bindOriginalClipPoolReportRuntime({ document, dramaId: props.drama.id, episodes: detail.episodes, onOpenCandidate: openCandidateInClipWorkspace })} onNavigate={(target) => {
+    <div className={`static-prototype-slot${activeStaticScreen === 'clip-pool' ? ' active' : ''}`} aria-hidden={activeStaticScreen !== 'clip-pool'} inert={activeStaticScreen !== 'clip-pool'}>{activeStaticScreen === 'clip-pool' && <StaticPrototypeSurface screen="clip-pool" onBack={() => requestStaticScreen('clip')} onReady={(document) => bindOriginalClipPoolReportRuntime({ document, dramaId: props.drama.id, dramaName: detail.name, episodes: detail.episodes, onOpenCandidate: openCandidateInClipWorkspace })} onNavigate={(target) => {
       if (target === 'clip') { requestStaticScreen('clip'); return }
       if (target === 'production') { setWorkspace('production'); return }
       if (target === 'clip-report') requestStaticScreen('clip-report')
     }} />}</div>
-    <div className={`static-prototype-slot${activeStaticScreen === 'clip-report' ? ' active' : ''}`} aria-hidden={activeStaticScreen !== 'clip-report'} inert={activeStaticScreen !== 'clip-report'}>{activeStaticScreen === 'clip-report' && <StaticPrototypeSurface screen="clip-report" onBack={() => setWorkspace('production')} onReady={(document) => bindOriginalClipPoolReportRuntime({ document, dramaId: props.drama.id, episodes: detail.episodes, onOpenCandidate: openCandidateInClipWorkspace })} onOpenResults={() => { setTab('results'); setWorkspace('production') }} onNavigate={(target) => {
+    <div className={`static-prototype-slot${activeStaticScreen === 'clip-report' ? ' active' : ''}`} aria-hidden={activeStaticScreen !== 'clip-report'} inert={activeStaticScreen !== 'clip-report'}>{activeStaticScreen === 'clip-report' && <StaticPrototypeSurface screen="clip-report" onBack={() => setWorkspace('production')} onReady={(document) => bindOriginalClipPoolReportRuntime({ document, dramaId: props.drama.id, dramaName: detail.name, episodes: detail.episodes, onOpenCandidate: openCandidateInClipWorkspace })} onOpenResults={() => { setTab('results'); setWorkspace('production') }} onNavigate={(target) => {
       if (target === 'clip') { requestStaticScreen('clip'); return }
       if (target === 'clip-pool') { requestStaticScreen('clip-pool'); return }
       if (target === 'assets') { setTab('assets'); setWorkspace('production'); return }

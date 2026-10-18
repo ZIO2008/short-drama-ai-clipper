@@ -47,3 +47,17 @@ current指针docs/current-design-baseline.json，实体design-v49-clip-monitor-r
 
 6个原型原生状态×1440/1280共12对完整画面对照通过；逐对comparison JSON记录changedRatio=0、meanDelta=0。真实React组件与独立加载的原型原文全画面对照，不裁图或掩膜，kind明确为static-fixture。3文件30定向单测、typecheck/build退出0；fresh独立复审Stage1/2 PASS。301行问题已收敛到300行，测试窗口URL识别与异常清理已修复。仅共同静态前置完成，所有真实状态及Phase32/33完整视觉验收仍待后续实施。
 
+
+### 真实宿主接入策略
+
+### 包装交互回归修复
+
+独立审查发现移除演示脚本后，包装控件值没有同步预览。先恢复独立的包装预览、比例推荐位置和弹窗键盘/焦点行为，不接回演示候选脚本；以真实运行时的比例、输入、关闭重开及导出配置一致性测试验收。
+
+## Phase32自动验收通过（2026-10-19）
+
+候选池10种真实renderer/模拟IPC状态×两个视口共20对全画面对照均为changedRatio=0、meanDelta=0；不是实际后端证据。5000条只挂20行，End/Home/PageDown/PageUp、跨集显式勾选、打开和删除ID断言通过。包装1条桌面回归验证即时预览、比例、文本、Tab/Escape/焦点及实际预检参数一致。真实后端Electron/IPC/FFmpeg闭环1 passed（27.8秒），包括源文件与旧成果哈希保护、01/02及再次导出、报告统计。共同静态6 passed。原始截图见test-results/v49-pool-runtime、v49-packaging-green、v49-static-baseline、v49-integration。
+
+fresh pool_preview_final_review两阶段PASS，无HIGH/MEDIUM；修复后全量vitest 147文件/874测试通过、5跳过（176.37秒），typecheck/build退出0。Phase32自动验收完成，最终安装与用户整体验收仍在Phase34；默认0.1.106保持。
+
+共同静态基线已通过后，两页共同宿主切换至完整V49。在原型完成动态DOM构建后，将完整文档序列化重建，保留所有布局、style及最终节点，只移除原型script/内联事件，防止演示监听覆盖真实数据。React外壳复用已验收full-shell隐藏策略。原型顶部通知按钮接已有AppShell通知抽屉，徽标取真实通知数；真实剧名替换breadcrumb。均为原有按钮/数据槽绑定，不新增业务入口或IPC。候选行继续使用原型5列及状态包裹层，显式checkbox是既有批准差异。

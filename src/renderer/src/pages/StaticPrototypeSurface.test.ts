@@ -84,7 +84,7 @@ describe('isolatePrototypeScreen', () => {
     expect(prototypeSourceForScreen('clip')).toBe(clipMonitorReviewPrototypeHtml)
     expect(prototypeSourceForScreen('clip')).toContain('clip-monitor-transport')
     expect(prototypeSourceForScreen('clip')).toContain('data-clip-review')
-    expect(prototypeSourceForScreen('clip-pool')).toBe(prototypeHtml)
+    expect(prototypeSourceForScreen('clip-pool')).toBe(clipMonitorReviewPrototypeHtml)
   })
 
   it('uses the Open Design subtitle region calibration prototype as the subtitle source', () => {
@@ -138,41 +138,12 @@ describe('isolatePrototypeScreen', () => {
     expect(subtitlePrototype.match(/max-height:760px/g)).toHaveLength(originalQueries.length)
   })
 
-  it('retains prototype stylesheet nodes injected in the body for clip pool and report screens', () => {
-    const testDocument = document.implementation.createHTMLDocument('clip-surface')
-    testDocument.head.innerHTML = '<style id="base-style">.screen{display:none}</style>'
-    testDocument.body.innerHTML = [
-      '<style id="clip-module-board-style">.clip-module-board{display:grid}</style>',
-      '<section id="screen-clip" class="screen"></section>',
-      '<section id="screen-clip-pool" class="screen clip-r5 active"><div class="clip-module-board">候选池</div></section>',
-      '<section id="screen-clip-export" class="screen"></section>',
-      '<section id="screen-clip-report" class="screen clip-r5"></section>',
-      '<section id="exportModal" aria-hidden="true">导出设置</section>',
-      '<section id="packagingModal" aria-hidden="true">包装设置</section>',
-      '<div id="toast"></div>',
-      '<style id="clip-r5-style">.clip-r5{color:white}@media(max-height:760px){.clip-r5{color:orange}}</style>'
-    ].join('')
-
-    expect(isolatePrototypeScreen(testDocument, 'clip-pool')).toBe('rewritten')
-    expect(testDocument.getElementById('base-style')).not.toBeNull()
-    expect(testDocument.getElementById('clip-r5-style')).not.toBeNull()
-    expect(testDocument.getElementById('clip-r5-style')?.textContent).toContain('@media(max-height:704px)')
-    expect(testDocument.getElementById('clip-r5-style')?.textContent).not.toContain('@media(max-height:760px)')
-    expect(testDocument.getElementById('clip-module-board-style')?.textContent).toContain('display:grid')
-    expect(testDocument.getElementById('exportModal')?.textContent).toBe('导出设置')
-    expect(testDocument.getElementById('packagingModal')?.textContent).toBe('包装设置')
-    expect(testDocument.getElementById('toast')).not.toBeNull()
-    const clipIsolationStyle = testDocument.getElementById('static-prototype-clip-isolation-layout')?.textContent
-    expect(clipIsolationStyle).toContain('html,body,#content{height:100%;min-height:0;overflow:hidden}')
-    expect(clipIsolationStyle).toContain('#content>.screen.active{height:100%;min-height:0;overflow:hidden;animation:none!important}')
-    expect(clipIsolationStyle).toContain('#screen-clip .r5-shell{height:calc(100dvh - 216px)}')
-    expect(clipIsolationStyle).toContain('#screen-clip-pool .clip-module-board{height:calc(100dvh - 192px)}')
-    expect(clipIsolationStyle).toContain('#screen-clip-report .clip-report-board{height:calc(100dvh - 258px)}')
-    expect(clipIsolationStyle).toContain('@media(max-height:704px){#screen-clip .r5-shell{height:calc(100dvh - 196px)}')
-    expect(clipIsolationStyle).toContain('@media(max-width:680px){#screen-clip-pool .clip-module-board{height:calc(100dvh - 156px)}}')
-    expect(clipIsolationStyle).not.toContain('@media(max-height:704px){#screen-clip .r5-shell{height:calc(100dvh - 196px)}#screen-clip-pool')
+  it('rejects legacy cropped module documents instead of injecting layout overrides', () => {
+    const document = window.document.implementation.createHTMLDocument('cropped-pool')
+    document.body.innerHTML = '<style id="clip-r5-style"></style><section id="screen-clip-pool"><div id="clipCandidateRows"></div></section>'
+    expect(isolatePrototypeScreen(document, 'clip-pool')).toBe('missing')
+    expect(document.getElementById('static-prototype-clip-isolation-layout')).toBeNull()
   })
-
   it('restores only the subtitle isolation height chain and retains the prototype list scroll contract', () => {
     const testDocument = subtitleSurface()
 
