@@ -1,0 +1,4 @@
+# Preserve raw command logs and metadata bytes used by verification hashes.
+*.json -text
+*.log -text
+*.txt -text

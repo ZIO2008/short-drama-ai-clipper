@@ -1,0 +1,18 @@
+{
+  "advisories": {},
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 0,
+      "high": 0,
+      "critical": 0
+    },
+    "dependencies": 47,
+    "devDependencies": 0,
+    "optionalDependencies": 13,
+    "totalDependencies": 60
+  }
+}
+(node:3064) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)

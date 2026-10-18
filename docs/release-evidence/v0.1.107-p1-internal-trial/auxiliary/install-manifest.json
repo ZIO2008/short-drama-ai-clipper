@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "v0.1.107-p1-internal-trial",
+  "appVersion": "0.1.107",
+  "sourceCommit": "210b8d998540080983f31a5db9fb0e6eaf4b1706",
+  "executableRelativePath": "短剧投流素材生成平台.exe",
+  "executableSha256": "9a8265a55c471fc6aaf7478aa71b28172d45f2bbe861af6100d1839a8f518292",
+  "appAsarRelativePath": "resources/app.asar",
+  "appAsarSha256": "cff0b3da0e156d112806f7303a3ddb67c659752ed9e9a647bdc4eeaf73ee75c1",
+  "packageFileCount": 3744,
+  "packageBytes": 1439226413,
+  "copyVerification": "every package file SHA-256 matched; inventory count matched",
+  "installedAtUtc": "2026-10-18T19:01:47.105182+00:00"
+}

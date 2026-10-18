@@ -1,0 +1,59 @@
+$ node tools/pack-current-candidate.mjs
+$ node tools/validate-design-contract.mjs
+OK 设计 HTML 哈希匹配：C95820F2FCE372E9BBA3A2A1062495D418951025C1A7C65A73429F5C0FFD563D
+OK Open Design 交接镜像哈希匹配：short-drama-material-studio-v49-clip-review.html.artifact.json
+DESIGN_CONTRACT_OK project=01b5725c-2688-4cbc-bc29-7432712449b3 version=49 status=ready
+$ node tools/visual-fidelity-report.mjs
+FIDELITY_AUDIT_OK completed=44 incomplete=0 report=test-results/fidelity/fidelity-report.json
+LOCAL_OCR_RUNTIME_REUSE=local-self-test
+$ pnpm run check:version && pnpm run validate:phase29-acceptance && pnpm run clean:build-metadata && electron-vite build && pnpm run verify:renderer-model-studio-boundary
+$ node tools/check-version-consistency.mjs
+VERSION_CHECK_OK version=0.1.107
+$ node tools/validate-phase29-acceptance.mjs
+phase29 acceptance ledger valid: public=6 hidden=2 hiddenRuns=1+1 multimodal=passed+correctly-blocked
+$ node -e "for (const file of ['out/tsconfig.node.tsbuildinfo','out/tsconfig.web.tsbuildinfo']) require('node:fs').rmSync(file,{force:true})"
+vite v8.1.5 building ssr environment for production...
+[2Ktransforming...✓ 114 modules transformed.
+rendering chunks...
+out/main/index.js  706.09 kB
+
+✓ built in 66ms
+vite v8.1.5 building ssr environment for production...
+[2Ktransforming...✓ 2 modules transformed.
+rendering chunks...
+out/preload/index.cjs  14.74 kB
+
+✓ built in 13ms
+vite v8.1.5 building client environment for production...
+[2Ktransforming...✓ 155 modules transformed.
+rendering chunks...
+out/renderer/index.html                     0.42 kB
+out/renderer/assets/index-26ps3LEY.css     82.47 kB
+out/renderer/assets/index-BbfBuj-S.js   3,005.64 kB
+
+✓ built in 186ms
+$ node tools/verify-renderer-model-studio-boundary.mjs
+RENDERER_MODEL_STUDIO_BOUNDARY_OK scripts=1
+$ electron-rebuild -f -w better-sqlite3
+Searching dependency tree
+Building modules: better-sqlite3
+✔ Rebuild Complete
+  • electron-builder  version=26.15.3 os=10.0.26200
+  • loaded configuration  file=package.json ("build" field)
+  • @electron/rebuild already used by electron-builder, please consider to remove excess dependency from devDependencies
+
+To ensure your native dependencies are always matched electron version, simply add script `"postinstall": "electron-builder install-app-deps" to your `package.json`
+  • skipped dependencies rebuild  reason=npmRebuild is set to false
+  • packaging       platform=win32 arch=x64 electron=43.1.1 appOutDir=release\candidates\v0.1.107-p1-internal-trial\win-unpacked
+  • downloaded      label=electron progress=100%
+  • downloaded electron zip extracted successfully  output=D:\个人工作\短剧AI切片工具\02_开发源码\short-drama-ai-material-platform\release\candidates\v0.1.107-p1-internal-trial\win-unpacked
+  • searching for node modules  pm=pnpm searchDir=D:\个人工作\短剧AI切片工具\02_开发源码\short-drama-ai-material-platform
+  • platform-specific optional dependencies not bundled — add them to your project's optionalDependencies if your app requires them (pnpm 10+ does not auto-install transitive platform binaries)  dependencies=["@napi-rs/canvas-android-arm64@0.1.80","@napi-rs/canvas-darwin-arm64@0.1.80","@napi-rs/canvas-darwin-x64@0.1.80","@napi-rs/canvas-linux-arm-gnueabihf@0.1.80","@napi-rs/canvas-linux-arm64-gnu@0.1.80","@napi-rs/canvas-linux-arm64-musl@0.1.80","@napi-rs/canvas-linux-riscv64-gnu@0.1.80","@napi-rs/canvas-linux-x64-gnu@0.1.80","@napi-rs/canvas-linux-x64-musl@0.1.80"]
+  • duplicate dependency references  dependencies=["once@1.4.0","readable-stream@3.6.2"]
+  • updating asar integrity executable resource  executablePath=release\candidates\v0.1.107-p1-internal-trial\win-unpacked\短剧投流素材生成平台.exe
+  • executable resource editing and code signing skipped — signAndEditExecutable is false. To skip only code signing while keeping icon and metadata applied, use signExecutable: false instead.  exe=release\candidates\v0.1.107-p1-internal-trial\win-unpacked\短剧投流素材生成平台.exe
+PACKAGE_PRIVACY_AUDIT=passed (3744 files)
+CURRENT_CANDIDATE=D:\个人工作\短剧AI切片工具\02_开发源码\short-drama-ai-material-platform\release\candidates\v0.1.107-p1-internal-trial\win-unpacked\短剧投流素材生成平台.exe
+CURRENT_CANDIDATE_MANIFEST=D:\个人工作\短剧AI切片工具\02_开发源码\short-drama-ai-material-platform\release\candidates\v0.1.107-p1-internal-trial\candidate-manifest.json
+(node:19720) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)

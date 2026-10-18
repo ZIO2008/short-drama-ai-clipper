@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 2,
+  "sourceCommit": "210b8d998540080983f31a5db9fb0e6eaf4b1706",
+  "sourceInputsSha256": "0d9791ba35d88a808439a5b5e650c1b6bd81ba45952dbfa8d0dceb37f4905d10",
+  "sourceDirty": false,
+  "designContractSha256": "8fa027843b1100448c57cb7d16bc53640d1b1995f3f7b075204adef10ad20c0b",
+  "candidateManifestSha256": "c425fb5034d2fa22c01865153906f323b17622f83126977f771eb437786b24a0",
+  "check": "packagedE2E",
+  "command": "node test-results/review-0.1.107/run-installed-e2e.mjs",
+  "exitCode": 0,
+  "signal": null,
+  "startedAt": "2026-10-18T19:02:07.255Z",
+  "completedAt": "2026-10-18T19:02:48.949Z",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "outputPath": "checks/packagedE2E.log",
+  "outputSha256": "2d01a0a644d44b2c99a73035ddbca7a0ce2404e9d5ec0615708722388c3b6b70"
+}

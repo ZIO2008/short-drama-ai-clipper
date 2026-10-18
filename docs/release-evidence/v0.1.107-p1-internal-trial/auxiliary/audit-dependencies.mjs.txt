@@ -1,0 +1,6 @@
+import { spawnSync } from 'node:child_process'
+const result = spawnSync(process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm', ['audit', '--prod', '--json'], { shell: process.platform === 'win32', windowsHide: true, encoding: 'utf8' })
+process.stdout.write(result.stdout ?? '')
+process.stderr.write(result.stderr ?? '')
+if (result.error) throw result.error
+process.exitCode = result.status ?? 1

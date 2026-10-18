@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "v0.1.107-p1-internal-trial",
+  "sourceCommit": "210b8d998540080983f31a5db9fb0e6eaf4b1706",
+  "sourceInputsSha256": "0d9791ba35d88a808439a5b5e650c1b6bd81ba45952dbfa8d0dceb37f4905d10",
+  "candidateManifestSha256": "c425fb5034d2fa22c01865153906f323b17622f83126977f771eb437786b24a0",
+  "executableSha256": "9a8265a55c471fc6aaf7478aa71b28172d45f2bbe861af6100d1839a8f518292",
+  "appAsarSha256": "cff0b3da0e156d112806f7303a3ddb67c659752ed9e9a647bdc4eeaf73ee75c1",
+  "executions": {
+    "packagedE2E": {
+      "record": "packagedE2E.json",
+      "sha256": "94ba64765be4cc670d8158d8e6cad101674c960cdbd14856eadba6c868875c90",
+      "command": "node test-results/review-0.1.107/run-installed-e2e.mjs",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "win32",
+        "arch": "x64"
+      },
+      "exitCode": 0
+    },
+    "currentE2E": {
+      "record": "currentE2E.json",
+      "sha256": "3f7292199b82b1dbf56992057766b6977f9f998eb2c7897a236eafc6e5b58634",
+      "command": "node node_modules/@playwright/test/cli.js test --workers=2",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "win32",
+        "arch": "x64"
+      },
+      "exitCode": 0
+    }
+  },
+  "images": {
+    "packagedE2E-e86647a3a4d0-number-pool-1280.png": {
+      "sha256": "3868a5295fb92e1a44387c31e5614a9b146d253ea25bdfda672a26ac6917c9c8",
+      "source": "test-results/e2e-0.1.107-installed/original-clip-pool-export--648db-pool-export-and-report-path-current/number-pool-1280.png"
+    },
+    "packagedE2E-010d26ac21a4-number-pool-1440.png": {
+      "sha256": "0170699ee2ce0f61dafaf33dd1a3b66b2b7ace4e847e1ba6386f7aee37698263",
+      "source": "test-results/e2e-0.1.107-installed/original-clip-pool-export--648db-pool-export-and-report-path-current/number-pool-1440.png"
+    },
+    "packagedE2E-679a967db120-number-report-1280.png": {
+      "sha256": "5d78b3c254e2c60f9760d944b8264d7651adca0d812f12356979693d132f1716",
+      "source": "test-results/e2e-0.1.107-installed/original-clip-pool-export--648db-pool-export-and-report-path-current/number-report-1280.png"
+    },
+    "packagedE2E-8f01e60757de-number-report-1440.png": {
+      "sha256": "02913cb0d9fc4d49c905cecfc15237dcae1040846f84ae18abfe6bbbe39dc088",
+      "source": "test-results/e2e-0.1.107-installed/original-clip-pool-export--648db-pool-export-and-report-path-current/number-report-1440.png"
+    },
+    "packagedE2E-ec38cd433862-installed-pool-dpi.png": {
+      "sha256": "135eb70fc0f69b22ce1c47749dd425fb4c579daf7bf3184e26c8526cccd3aa3c",
+      "source": "test-results/e2e-0.1.107-installed/packaged-real-dpi-packaged-4289b-at-100-DPI-without-clipping-current/installed-pool-dpi.png"
+    },
+    "packagedE2E-96c1724376eb-installed-report-dpi.png": {
+      "sha256": "72372c4cef5303f6d6feaa336b07215fd3c92cb4a5730ffbd6461e858d1a60e9",
+      "source": "test-results/e2e-0.1.107-installed/packaged-real-dpi-packaged-4289b-at-100-DPI-without-clipping-current/installed-report-dpi.png"
+    },
+    "packagedE2E-37c79e0f3fb0-installed-pool-dpi.png": {
+      "sha256": "55c980859948aee0ec951036bddea4c16deaf785aead6f35d6f22ed8d09ce449",
+      "source": "test-results/e2e-0.1.107-installed/packaged-real-dpi-packaged-e0e2d-at-150-DPI-without-clipping-current/installed-pool-dpi.png"
+    },
+    "packagedE2E-2c8d009f072a-installed-report-dpi.png": {
+      "sha256": "10c975c9968ead75105287d481f82d3172398bd3a63201dbb90ea30e6acaadba",
+      "source": "test-results/e2e-0.1.107-installed/packaged-real-dpi-packaged-e0e2d-at-150-DPI-without-clipping-current/installed-report-dpi.png"
+    },
+    "packagedE2E-a10ffe02c1a1-installed-pool-dpi.png": {
+      "sha256": "b7bec6301444f36f8afe275bfbf3b8e6e0213e43f76a8679560bd682e0abc9b8",
+      "source": "test-results/e2e-0.1.107-installed/packaged-real-dpi-packaged-e9369-at-125-DPI-without-clipping-current/installed-pool-dpi.png"
+    },
+    "packagedE2E-52ccc200bfba-installed-report-dpi.png": {
+      "sha256": "e6b63b9c6b40fa7188761feeb55f302b047de9117652bc32b2e5418c1431eaa6",
+      "source": "test-results/e2e-0.1.107-installed/packaged-real-dpi-packaged-e9369-at-125-DPI-without-clipping-current/installed-report-dpi.png"
+    },
+    "currentE2E-8a58319366b2-1280-high-volume.png": {
+      "sha256": "2faf2954f90cee79e9bd099bde3a5c263406d1305ab64fae2cfa1dcc5368d10c",
+      "source": "test-results/e2e-0.1.107-current/clip-module-dpi-states-com-070c2--inner-scrolling-at-125-DPI-current/1280-high-volume.png"
+    },
+    "currentE2E-31908b747cce-1280-long-results.png": {
+      "sha256": "bbc746cc00efd0165e495b55d2c0ead4bddcfd22c99f303d4c1d09fba2d16669",
+      "source": "test-results/e2e-0.1.107-current/clip-module-dpi-states-com-070c2--inner-scrolling-at-125-DPI-current/1280-long-results.png"
+    },
+    "currentE2E-3842c5730142-1280-partial.png": {
+      "sha256": "4d39463e5174e8496de0579c7a4c9298b79c601072a1f38ca21474a9a244eb20",
+      "source": "test-results/e2e-0.1.107-current/clip-module-dpi-states-com-070c2--inner-scrolling-at-125-DPI-current/1280-partial.png"
+    },
+    "currentE2E-bc8175b70309-1440-high-volume.png": {
+      "sha256": "3af76a4eb48b6e3154cda84d37bd60bf4d38b45acce4e82a26c833b8c11c8bc7",
+      "source": "test-results/e2e-0.1.107-current/clip-module-dpi-states-com-070c2--inner-scrolling-at-125-DPI-current/1440-high-volume.png"
+    },
+    "currentE2E-8287e16b2be4-1440-long-results.png": {
+      "sha256": "d26728db1fa9aedf240c1719687ee31f0896a9f1c94947c5169857412002b7e4",
+      "source": "test-results/e2e-0.1.107-current/clip-module-dpi-states-com-070c2--inner-scrolling-at-125-DPI-current/1440-long-results.png"
+    },
+    "currentE2E-8f6fb68fe5a1-1440-partial.png": {
+      "sha256": "02bffb4a5efb234b5430aea913da571332a169ef38f10d3e3651320247f7e6d9",
+      "source": "test-results/e2e-0.1.107-current/clip-module-dpi-states-com-070c2--inner-scrolling-at-125-DPI-current/1440-partial.png"
+    },
+    "currentE2E-4e269ae2e387-1280-high-volume.png": {
+      "sha256": "8da19d4ff179b9278703f0525469c350ad2e9420982c6971d7b70b4ec3b628bd",
+      "source": "test-results/e2e-0.1.107-current/clip-module-dpi-states-com-6d0ad--inner-scrolling-at-150-DPI-current/1280-high-volume.png"
+    },
+    "currentE2E-2a4442d57db4-1280-long-results.png": {
+      "sha256": "8bedbf553128a76ba7c6e9559b4c84374f14050cc3329614539d5c28d7b93e3a",
+      "source": "test-results/e2e-0.1.107-current/clip-module-dpi-states-com-6d0ad--inner-scrolling-at-150-DPI-current/1280-long-results.png"
+    },
+    "currentE2E-e9d28081ee2d-1280-partial.png": {
+      "sha256": "189207b6d3c3f6fd917340ff194e538b9d8302334dac1e76f0f1d72ebc0430a2",
+      "source": "test-results/e2e-0.1.107-current/clip-module-dpi-states-com-6d0ad--inner-scrolling-at-150-DPI-current/1280-partial.png"
+    },
+    "currentE2E-e1b6dc92f2e0-1440-high-volume.png": {
+      "sha256": "2bee75d99ad8e9f06beab7dd5339f7e737baef4642ed9670629166367871a6d2",
+      "source": "test-results/e2e-0.1.107-current/clip-module-dpi-states-com-6d0ad--inner-scrolling-at-150-DPI-current/1440-high-volume.png"
+    },
+    "currentE2E-3de518851159-1440-long-results.png": {
+      "sha256": "84d47a44bdb3addce2302489134b64d7850237be8a36a5be8d87005aafaf22de",
+      "source": "test-results/e2e-0.1.107-current/clip-module-dpi-states-com-6d0ad--inner-scrolling-at-150-DPI-current/1440-long-results.png"
+    },
+    "currentE2E-acde926ebb03-1440-partial.png": {
+      "sha256": "09a3dbc512753f747e211cefc404b4126617bb6444f5acb0f20963b401799ea0",
+      "source": "test-results/e2e-0.1.107-current/clip-module-dpi-states-com-6d0ad--inner-scrolling-at-150-DPI-current/1440-partial.png"
+    },
+    "currentE2E-6f3444383b97-1280-high-volume.png": {
+      "sha256": "09562a6003dd5e9b879a477c5d268ac65a9c31761b8776f34e76892e2866aa77",
+      "source": "test-results/e2e-0.1.107-current/clip-module-dpi-states-com-81c61--inner-scrolling-at-100-DPI-current/1280-high-volume.png"
+    },
+    "currentE2E-2f87ef278d69-1280-long-results.png": {
+      "sha256": "7a214b1a799f03379dee64438710feae1d5def219bd0da7061d6ba8849ac0460",
+      "source": "test-results/e2e-0.1.107-current/clip-module-dpi-states-com-81c61--inner-scrolling-at-100-DPI-current/1280-long-results.png"
+    },
+    "currentE2E-de1f9d8a79a7-1280-partial.png": {
+      "sha256": "14f020f45fbbcb24bd0baebfaded3d163c37adef661b8765096f6c8a883b0857",
+      "source": "test-results/e2e-0.1.107-current/clip-module-dpi-states-com-81c61--inner-scrolling-at-100-DPI-current/1280-partial.png"
+    },
+    "currentE2E-e3b7b4178f81-1440-high-volume.png": {
+      "sha256": "fde39db0822298d555ee01b5f6638acc6157064d47e2beb285a5f81f77075ca8",
+      "source": "test-results/e2e-0.1.107-current/clip-module-dpi-states-com-81c61--inner-scrolling-at-100-DPI-current/1440-high-volume.png"
+    },
+    "currentE2E-e9d56f83b53e-1440-long-results.png": {
+      "sha256": "0b921f7e650388ce22807e7e2ebf0a2ad13cddc39b804285780580073f9b8f79",
+      "source": "test-results/e2e-0.1.107-current/clip-module-dpi-states-com-81c61--inner-scrolling-at-100-DPI-current/1440-long-results.png"
+    },
+    "currentE2E-9b44899318ab-1440-partial.png": {
+      "sha256": "7ea685ca4ea1728d98c71ceb2769d31547a17294730ecf760ecb859d9f8c33df",
+      "source": "test-results/e2e-0.1.107-current/clip-module-dpi-states-com-81c61--inner-scrolling-at-100-DPI-current/1440-partial.png"
+    }
+  },
+  "scope": "Installed EXE pool/report at three actual DPIs and real export result at two viewports; complex renderer/mockIPC long-list/path/exception states at three actual DPIs and two viewports. Current and installed evidence remain explicitly separate."
+}

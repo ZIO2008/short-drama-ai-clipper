@@ -1,0 +1,3 @@
+# Evidence hashes bind exact bytes across Windows checkouts.
+*.json -text
+*.log -text

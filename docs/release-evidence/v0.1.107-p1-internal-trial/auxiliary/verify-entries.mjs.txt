@@ -1,0 +1,16 @@
+import { spawnSync } from 'node:child_process'
+import { readFileSync } from 'node:fs'
+import { resolve, join } from 'node:path'
+import { fileSha256 } from '../../tools/candidate-provenance.mjs'
+const project = resolve('../..')
+for (const name of ['_launch_material_studio_stable.ps1', '_launch_legacy_stable.ps1']) {
+  const path = join(project, name)
+  console.log('VERIFY_ENTRY=' + path)
+  const result = spawnSync('powershell.exe', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', path, '-VerifyOnly'], { stdio: 'inherit', windowsHide: true })
+  if (result.status !== 0) throw Error('Entry verification failed')
+  console.log('ENTRY_SHA256=' + fileSha256(path))
+}
+const backup = readFileSync('test-results/review-0.1.107/backup-path.txt', 'utf8').replace(/^\uFEFF/, '').trim()
+const manifest = JSON.parse(readFileSync(join(backup, 'backup-manifest.json'), 'utf8'))
+if (fileSha256(join(backup, manifest.databaseFilename)) !== manifest.databaseSha256 || manifest.sqliteIntegrity !== 'ok') throw Error('Backup integrity changed')
+console.log('BACKUP_VERIFIED=' + JSON.stringify({ databaseSha256: manifest.databaseSha256, manifestSha256: fileSha256(join(backup, 'backup-manifest.json')), entriesSha256: fileSha256(join(backup, 'entry-backup-manifest.json')), counts: manifest.counts, includesMediaBytes: manifest.includesMediaBytes }))
