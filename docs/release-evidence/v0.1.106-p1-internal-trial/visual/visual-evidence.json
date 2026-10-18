@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "v0.1.106-p1-internal-trial",
+  "sourceCommit": "7cb37a463cf3b083cdee9c0202d6e16cea1896c8",
+  "sourceInputsSha256": "0f58adb88b7338f9f54be6c7465f14d368781765fe26e7fd4766c11d1e9de39f",
+  "candidateManifestSha256": "d1f3adeb03875d8873b25c348c037e0a2dc97a997468f7ddc9e96418e9eaaf01",
+  "executableSha256": "d66e5c585c64fa06e6140292b9e1466ea16142cfe5d7801ae1a6ffb0f9f8b984",
+  "appAsarSha256": "be535e432a0c2aad13029730d7baf31d190202833662796688652e2c6ee560ff",
+  "command": {
+    "record": "packagedE2E.json",
+    "sha256": "0a4434f5a74269878dd47181a53c23395afa8453ef48f40481eba2d2d8142b59",
+    "command": "node node_modules/@playwright/test/cli.js test tests/current/packaged-real-dpi.spec.ts tests/current/packaged-business-smoke.spec.ts tests/current/original-clip-pool-export-report.spec.ts --workers=1 --timeout=240000",
+    "environment": {
+      "node": "v24.19.0",
+      "platform": "win32",
+      "arch": "x64"
+    },
+    "exitCode": 0
+  },
+  "images": {
+    "installed-report-1280.png": "82cbcbb5cfbd6ba5afa28ec5748be8a157b4ade4059c38cb6f8ff9568dacd811",
+    "baseline-0.1.105-report-1280.png": "56e3cf6072bade2c7bf28a250fefacc7a749e5373b3615d4f3596dfc032e8b49",
+    "installed-report-1440.png": "11ea7d0b77d3ea686675fc0981fd0a8c8c3500c1353791941d2b1f82d65f96f1",
+    "baseline-0.1.105-report-1440.png": "eb38ccbe0df5cee758487c41cef5475fc8414b13c6c4f08e839d14aad6aee1c7"
+  },
+  "scope": "Four existing report statistic values only. 0.1.105 baseline vs actual installed0.1.106 at1440x900/1280x720. Not full-page migration acceptance."
+}

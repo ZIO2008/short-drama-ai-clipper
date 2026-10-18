@@ -1,0 +1,34 @@
+
+Running 24 tests using 2 workers
+
+  -   1 [current] › tests\current\long-asset-scroll.spec.ts:10:37 › 85 episodes reach the last row with End at 100% DPI
+  -   2 [current] › tests\current\long-asset-scroll.spec.ts:10:37 › 85 episodes reach the last row with End at 125% DPI
+  -   3 [current] › tests\current\long-asset-scroll.spec.ts:10:37 › 85 episodes reach the last row with End at 150% DPI
+(node:78216) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:78388) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  5 [current] › tests\current\p0-workflows.spec.ts:99:1 › FLOW-001 to FLOW-004 complete through the isolated desktop app (18.5s)
+  ok  6 [current] › tests\current\p1-remix-workflow.spec.ts:39:1 › P1 produces a controlled local draft and exports only after human confirmation (2.6s)
+  ok  4 [current] › tests\current\original-clip-pool-export-report.spec.ts:67:1 › CLIP-REAL-005 to CLIP-REAL-008 closes sparse local evidence, pool, export, and report path (24.5s)
+  -   8 [current] › tests\current\packaged-business-smoke.spec.ts:12:1 › packaged semantic selection repairs an unfinished proposal once without subtitle recovery
+  -   9 [current] › tests\current\packaged-business-smoke.spec.ts:101:1 › packaged preflight automatically accepts local OCR islands without changing subtitles
+  -  10 [current] › tests\current\packaged-business-smoke.spec.ts:132:1 › packaged clip subtitle preflight failure returns to real global pages instead of prototype demos
+  -  11 [current] › tests\current\packaged-business-smoke.spec.ts:173:1 › packaged app persists 85 real IPC imports and subtitle mapping in isolated temporary userData
+  -  12 [current] › tests\current\packaged-real-dpi.spec.ts:10:37 › packaged app starts at 100% DPI without clipping
+  -  13 [current] › tests\current\packaged-real-dpi.spec.ts:10:37 › packaged app starts at 125% DPI without clipping
+  -  14 [current] › tests\current\packaged-real-dpi.spec.ts:10:37 › packaged app starts at 150% DPI without clipping
+  ok  7 [current] › tests\current\p2-freeze.spec.ts:29:1 › P2 narration has no production card, renderer, preload, provider, or execution surface (2.4s)
+  ok 16 [current] › tests\current\provider-prototype-bridge.spec.ts:39:1 › 设置→能力供应商以最终原型承载三项真实配置，并可回到其它设置项 (5.5s)
+  ok 15 [current] › tests\current\provider-connectivity.spec.ts:126:1 › 文本语义分析的未验证、测试中与成功状态在两个视口使用 E2E mock，不保存测试草稿 (10.8s)
+  ok 17 [current] › tests\current\subtitle-recognition-recovery.spec.ts:70:1 › 打包 EXE 重启后保留字幕批次的中断状态和原因 (2.8s)
+  ok 19 [current] › tests\current\subtitle-runtime-mapping.spec.ts:66:1 › 真实导入字幕在独立来源列展示，删除不影响其他证据 (2.9s)
+  ok 18 [current] › tests\current\provider-connectivity.spec.ts:179:1 › 文本语义分析的失败状态在两个视口使用鉴权 mock，不影响默认方案 (10.2s)
+  ok 20 [current] › tests\current\provider-connectivity.spec.ts:199:1 › E2E 标记未明确选择 mock 时拒绝出网 (3.1s)
+  ok 21 [current] › tests\current\provider-connectivity.spec.ts:209:1 › 腾讯云 ASR 使用静态原型的双凭据测试按钮，缺凭据时不出网也不保存 (3.3s)
+  ok 22 [current] › tests\current\provider-connectivity.spec.ts:236:1 › Model Studio ASR 在两个视口提供自动选择检测，缺密钥不保存也不创建识别任务 (3.7s)
+  ok 23 [current] › tests\current\provider-connectivity.spec.ts:268:1 › 历史 Model Studio 模型引导值与不可解密密钥经真实 IPC 进入重存密钥受控状态 (2.9s)
+  ok 24 [current] › tests\current\provider-connectivity.spec.ts:292:1 › 无法解密的 Model Studio 密钥不会经真实 IPC 冒充已配置 (2.0s)
+
+  10 skipped
+  14 passed (1.1m)
