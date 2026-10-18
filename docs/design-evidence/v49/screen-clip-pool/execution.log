@@ -1,0 +1,17 @@
+
+Running 10 tests using 1 worker
+
+(node:88188) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [current] › tests\current\clip-pool-v49-runtime.spec.ts:8:3 › V49 real pool renderer default stays on the complete prototype (3.9s)
+  ok  2 [current] › tests\current\clip-pool-v49-runtime.spec.ts:8:3 › V49 real pool renderer loading stays on the complete prototype (3.0s)
+  ok  3 [current] › tests\current\clip-pool-v49-runtime.spec.ts:8:3 › V49 real pool renderer empty stays on the complete prototype (2.8s)
+  ok  4 [current] › tests\current\clip-pool-v49-runtime.spec.ts:8:3 › V49 real pool renderer search stays on the complete prototype (3.0s)
+  ok  5 [current] › tests\current\clip-pool-v49-runtime.spec.ts:8:3 › V49 real pool renderer generating stays on the complete prototype (2.9s)
+  ok  6 [current] › tests\current\clip-pool-v49-runtime.spec.ts:8:3 › V49 real pool renderer missing stays on the complete prototype (2.8s)
+  ok  7 [current] › tests\current\clip-pool-v49-runtime.spec.ts:8:3 › V49 real pool renderer exported stays on the complete prototype (3.0s)
+  ok  8 [current] › tests\current\clip-pool-v49-runtime.spec.ts:8:3 › V49 real pool renderer multi stays on the complete prototype (4.6s)
+  ok  9 [current] › tests\current\clip-pool-v49-runtime.spec.ts:8:3 › V49 real pool renderer high-volume stays on the complete prototype (4.3s)
+  ok 10 [current] › tests\current\clip-pool-v49-runtime.spec.ts:8:3 › V49 real pool renderer error stays on the complete prototype (2.8s)
+
+  10 passed (34.2s)

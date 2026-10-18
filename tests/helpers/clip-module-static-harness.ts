@@ -23,7 +23,7 @@ const removeHarnessDirectory = async (directory: string): Promise<void> => {
 type ModuleScreen = 'clip-pool' | 'clip-report'
 export type ModuleState = 'default' | 'filtered' | 'generating' | 'missing' | 'exception'
 
-export const openModuleStaticHarness = async (screen: ModuleScreen, entry: 'static' | 'runtime' = 'static'): Promise<{ app: ElectronApplication; page: Page; reference: Page; directory: string; close: () => Promise<void> }> => {
+export const openModuleStaticHarness = async (screen: ModuleScreen, entry: 'static' | 'runtime' = 'static', scale = 1): Promise<{ app: ElectronApplication; page: Page; reference: Page; directory: string; close: () => Promise<void> }> => {
   const directory = await mkdtemp(join(tmpdir(), 'short-drama-v49-module-fixture-'))
   let runningApp: ElectronApplication | undefined
   try {
@@ -33,8 +33,8 @@ export const openModuleStaticHarness = async (screen: ModuleScreen, entry: 'stat
     } }] })
     await writeFile(join(directory, 'fixture.html'), '<!doctype html><html><head><meta charset="utf-8"><style>html,body,#root{width:100%;height:100%;margin:0;overflow:hidden}iframe{display:block;width:100%;height:100%;border:0}</style></head><body><div id="root"></div><script src="fixture.js"></script></body></html>')
     await writeFile(join(directory, 'reference.html'), await readFile(sourcePath))
-    await writeFile(join(directory, 'main.cjs'), `const{app,BrowserWindow}=require('electron');app.setPath('userData',${JSON.stringify(join(directory, 'data'))});app.whenReady().then(()=>{for(const file of ['fixture.html','reference.html']){const win=new BrowserWindow({show:false,width:1440,height:900,useContentSize:true,webPreferences:{offscreen:true,backgroundThrottling:false}});win.webContents.session.webRequest.onBeforeRequest({urls:['http://*/*','https://*/*']},(_,done)=>done({cancel:true}));win.loadFile(require('node:path').join(__dirname,file),{query:{screen:${JSON.stringify(screen)}}})}});app.on('window-all-closed',()=>app.quit())`)
-    const app = await electron.launch({ executablePath: require('electron') as string, args: [join(directory, 'main.cjs'), '--force-device-scale-factor=1'], env: { ...process.env } })
+    await writeFile(join(directory, 'main.cjs'), `const{app,BrowserWindow}=require('electron');app.setPath('userData',${JSON.stringify(join(directory, 'data'))});app.whenReady().then(()=>{for(const file of ['fixture.html','reference.html']){const win=new BrowserWindow({show:false,width:1440,height:900,useContentSize:true,webPreferences:{offscreen:{deviceScaleFactor:${scale}},backgroundThrottling:false}});win.webContents.session.webRequest.onBeforeRequest({urls:['http://*/*','https://*/*']},(_,done)=>done({cancel:true}));win.loadFile(require('node:path').join(__dirname,file),{query:{screen:${JSON.stringify(screen)}}})}});app.on('window-all-closed',()=>app.quit())`)
+    const app = await electron.launch({ executablePath: require('electron') as string, args: [join(directory, 'main.cjs'), `--force-device-scale-factor=${scale}`], env: { ...process.env } })
     runningApp = app
     await app.firstWindow()
     if (app.windows().length < 2) await app.waitForEvent('window')

@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 2,
+  "projectId": "01b5725c-2688-4cbc-bc29-7432712449b3",
+  "contractRevision": "49.2-scoped",
+  "version": "49",
+  "source": "v49-project-library-preview",
+  "screen": "screen-clip-report",
+  "state": "success",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "designSource": {
+    "entry": "design/open-design/v2026-08-11-v49-clip-monitor-review/short-drama-material-studio-v49-clip-review.html",
+    "sha256": "C95820F2FCE372E9BBA3A2A1062495D418951025C1A7C65A73429F5C0FFD563D"
+  },
+  "sourceCommit": "3e16800b1a37c7fa7c2efedc1ad048b813b0b699",
+  "sourceInputsSha256": "5a6d3d2d9a02146c1ca20cd43fe18ad39759e6f048bdce24b4288a019ca7e8f0",
+  "sourceDirty": false,
+  "designContractSha256": "d759a4bc7b6a72cb36d2abbc73bb03f15db8a4817a82f75ee341f7330aece613",
+  "kind": "real-renderer-mocked-ipc",
+  "fixture": "Real React runtime and production bridge with isolated mocked IPC; independent original V49 node templates with approved data slots. Not real backend evidence.",
+  "test": "tests/current/clip-report-v49-runtime.spec.ts",
+  "evidenceStatus": "accepted",
+  "captures": {
+    "projectPreview": {
+      "path": "docs/design-evidence/v49/screen-clip-report/success/1280x720/project-library-preview.png",
+      "sha256": "3b74caf3ede778f3647587a29587f137c19a656871f041e88ff7fa08710c4aeb",
+      "width": 1280,
+      "height": 720
+    },
+    "electron": {
+      "path": "docs/design-evidence/v49/screen-clip-report/success/1280x720/electron.png",
+      "sha256": "3b74caf3ede778f3647587a29587f137c19a656871f041e88ff7fa08710c4aeb",
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "allowedDifferences": [
+    "Approved real data slots, durable Chinese numbering, explicit selection and safe delete for pool, truthful historical report data."
+  ],
+  "comparisonRegions": [
+    {
+      "label": "完整画面，无掩膜",
+      "x": 0,
+      "y": 0,
+      "width": 1280,
+      "height": 720,
+      "maxChangedPixelRatio": 0.002,
+      "maxMeanRgbDelta": 0.2
+    }
+  ],
+  "execution": {
+    "record": "docs/design-evidence/v49/screen-clip-report/execution.json",
+    "sha256": "5b017e709342b68e3ed99f3f6801ec67662ac455361077016028d8acb8de527b",
+    "command": "node node_modules/@playwright/test/cli.js test tests/current/clip-report-v49-runtime.spec.ts",
+    "environment": {
+      "node": "v24.19.0",
+      "platform": "win32",
+      "arch": "x64"
+    },
+    "exitCode": 0
+  },
+  "acceptance": {
+    "status": "passed",
+    "reviewer": "fresh independent code-reviewer and main agent",
+    "reviewedAt": "2026-10-18T18:47:12.400Z",
+    "notes": "Full frame zero pixel differences; real backend verified separately."
+  }
+}

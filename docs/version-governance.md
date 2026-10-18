@@ -8,7 +8,7 @@
 
 V49 是全产品唯一当前设计基线：`design/open-design/v2026-08-11-v49-clip-monitor-review/short-drama-material-studio-v49-clip-review.html`（SHA-256 `C95820F2FCE372E9BBA3A2A1062495D418951025C1A7C65A73429F5C0FFD563D`）。V48 HTML、`docs/design-contract-v48.json`、V48 截图和 V48 `audit:fidelity` 结果均为历史追溯资料，不得作为当前 V49 开发、视觉验收或发布的裁决。
 
-当前 V49 合同已按 `screen-clip` 激活：3 个状态 × 2 个视口，共 6 项视觉证据；`validate:design-contract`、`audit:fidelity` 和打包入口读取当前 V49 合同。该范围允许生成内部候选，不代表全产品视觉完成或公开发布。其它屏幕的迁移和验收仍需另行授权。下文 2026-08 的未启用记录是历史事实，不覆盖本段现行结论。
+当前 V49 合同按已验收的 `screen-clip`、`screen-clip-pool`、`screen-clip-report` 激活：3+10+9个状态×2视口，共44项视觉证据。后两页为2026-10-18完整排期授权和2026-10-19独立审查通过的新增范围；画面对照明确为真实renderer/隔离模拟IPC，不冒充真实后端，另有实际FFmpeg闭环。`validate:design-contract`、`audit:fidelity`和打包入口读取当前V49合同；不代表其它页面、全产品视觉或公开发布完成。下文2026-08记录是历史事实。
 
 ## 当前状态的唯一查询方式
 

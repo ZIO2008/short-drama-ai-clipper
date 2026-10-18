@@ -1,0 +1,16 @@
+
+Running 9 tests using 1 worker
+
+(node:4496) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [current] › tests\current\clip-report-v49-runtime.spec.ts:8:3 › V49 real report renderer success preserves complete report structure and facts (2.8s)
+  ok 2 [current] › tests\current\clip-report-v49-runtime.spec.ts:8:3 › V49 real report renderer partial preserves complete report structure and facts (3.0s)
+  ok 3 [current] › tests\current\clip-report-v49-runtime.spec.ts:8:3 › V49 real report renderer cancelled preserves complete report structure and facts (2.8s)
+  ok 4 [current] › tests\current\clip-report-v49-runtime.spec.ts:8:3 › V49 real report renderer no-batch preserves complete report structure and facts (2.5s)
+  ok 5 [current] › tests\current\clip-report-v49-runtime.spec.ts:8:3 › V49 real report renderer loading preserves complete report structure and facts (2.6s)
+  ok 6 [current] › tests\current\clip-report-v49-runtime.spec.ts:8:3 › V49 real report renderer error preserves complete report structure and facts (2.3s)
+  ok 7 [current] › tests\current\clip-report-v49-runtime.spec.ts:8:3 › V49 real report renderer deleted preserves complete report structure and facts (3.1s)
+  ok 8 [current] › tests\current\clip-report-v49-runtime.spec.ts:8:3 › V49 real report renderer long-results preserves complete report structure and facts (3.4s)
+  ok 9 [current] › tests\current\clip-report-v49-runtime.spec.ts:8:3 › V49 real report renderer legacy preserves complete report structure and facts (2.9s)
+
+  9 passed (26.5s)

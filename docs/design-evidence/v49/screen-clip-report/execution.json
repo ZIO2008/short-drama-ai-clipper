@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 2,
+  "sourceCommit": "3e16800b1a37c7fa7c2efedc1ad048b813b0b699",
+  "sourceInputsSha256": "5a6d3d2d9a02146c1ca20cd43fe18ad39759e6f048bdce24b4288a019ca7e8f0",
+  "sourceDirty": false,
+  "designContractSha256": "d759a4bc7b6a72cb36d2abbc73bb03f15db8a4817a82f75ee341f7330aece613",
+  "check": "reportVisualE2E",
+  "command": "node node_modules/@playwright/test/cli.js test tests/current/clip-report-v49-runtime.spec.ts",
+  "exitCode": 0,
+  "signal": null,
+  "startedAt": "2026-10-18T18:46:34.152Z",
+  "completedAt": "2026-10-18T18:47:01.735Z",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "outputPath": "checks/reportVisualE2E.log",
+  "outputSha256": "43be0f0367d38399d79c58fdc52f88f70ec2939cf11ba8a92d9f6a1995d522df"
+}
