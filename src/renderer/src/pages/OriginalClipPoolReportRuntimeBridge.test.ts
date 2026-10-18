@@ -26,9 +26,21 @@ describe('bindOriginalClipPoolReportRuntime', () => {
     bindOriginalClipPoolReportRuntime({ document: testDocument, dramaId: 'd1', episodes: [episode], onOpenCandidate: vi.fn() })
     await selectForExport(testDocument, 'candidate-1')
     testDocument.querySelector<HTMLButtonElement>('[data-clip-export-open]')!.click()
+    const namingMode = testDocument.querySelector<HTMLSelectElement>('#exportNamingMode')!
+    const namingPrefix = testDocument.querySelector<HTMLInputElement>('#exportNamingPrefix')!
+    namingMode.value = 'prefix'; namingMode.dispatchEvent(new Event('change'))
+    namingPrefix.value = '中文剧目'; namingPrefix.dispatchEvent(new Event('input'))
     testDocument.getElementById('saveExport')!.click()
     await vi.waitFor(() => expect(testDocument.querySelector('#exportModal .modal-head .meta')?.textContent).toContain(message))
     expect(testDocument.getElementById('exportModal')?.getAttribute('aria-hidden')).toBe(String(closed))
+    expect(namingMode.value).toBe('prefix')
+    expect(namingPrefix.value).toBe('中文剧目')
+    if (!closed) {
+      testDocument.getElementById('closeExport')!.click()
+      testDocument.querySelector<HTMLButtonElement>('[data-clip-export-open]')!.click()
+      expect(namingMode.value).toBe('prefix')
+      expect(namingPrefix.value).toBe('中文剧目')
+    }
   })
 
   it('uses the actual completed result when cancellation races with finishing', async () => {
@@ -167,17 +179,22 @@ describe('bindOriginalClipPoolReportRuntime', () => {
     expect(directory.value).toBe('D:\\切片')
     expect(directory.readOnly).toBe(false)
     directory.value = 'D:\\custom'; directory.dispatchEvent(new Event('input', { bubbles: true }))
-    const naming = testDocument.querySelector<HTMLInputElement>('#exportNamingPattern')!
+    const mode = testDocument.querySelector<HTMLSelectElement>('#exportNamingMode')!
+    mode.value = 'prefix'; mode.dispatchEvent(new Event('change'))
+    const naming = testDocument.querySelector<HTMLInputElement>('#exportNamingPrefix')!
     naming.value = '../escape'; naming.dispatchEvent(new Event('input'))
     testDocument.getElementById('saveExport')!.click(); await settle()
     expect(preflight).not.toHaveBeenCalled()
     expect(testDocument.querySelector('#exportNamingError')?.textContent).toContain('非法字符')
-    naming.value = '素材_{episode}_{candidate}'; naming.dispatchEvent(new Event('input'))
+    expect(testDocument.querySelector('#exportModal .modal-head .meta')?.textContent).not.toContain('非法字符')
+    naming.value = '素材'; naming.dispatchEvent(new Event('input'))
+    expect(testDocument.querySelector('#exportNamingError')?.textContent).toBe('')
     testDocument.getElementById('cancelExport')!.click()
     testDocument.querySelector<HTMLButtonElement>('[data-clip-export-open]')!.click()
-    expect(naming.value).toBe('素材_{episode}_{candidate}')
+    expect(naming.value).toBe('素材')
+    expect(mode.value).toBe('prefix')
     testDocument.getElementById('saveExport')!.click(); await settle()
-    expect(preflight).toHaveBeenCalledWith('d1', expect.objectContaining({ outputDirectory: 'D:\\custom', namingPattern: '素材_{episode}_{candidate}' }))
+    expect(preflight).toHaveBeenCalledWith('d1', expect.objectContaining({ outputDirectory: 'D:\\custom', namingPattern: '素材_第{episode}集_切片' }))
   })
   it('filters real candidate statuses through the production bridge', async () => {
     const items = [candidate('pending-1', 'pending_review'), candidate('editing-1', 'editing'), candidate('confirmed-1', 'confirmed'), candidate('exported-1', 'exported')]

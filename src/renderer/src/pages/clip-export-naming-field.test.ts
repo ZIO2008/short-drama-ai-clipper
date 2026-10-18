@@ -9,22 +9,51 @@ describe('export naming input', () => {
   it.each(['素材_{episode}_{candidate}', '自定义固定名称', 'COM10', '首集_{episode}'])('accepts supported filename rule %s', (value) => {
     expect(validateClipNaming(value)).toBeNull()
   })
-  it('keeps the editable value, exposes errors and returns the final trimmed rule', () => {
+  it('provides Chinese default naming without filling any input', () => {
     const doc = document.implementation.createHTMLDocument('naming')
     doc.body.innerHTML = '<section id="exportModal"><div class="modal-body"><div class="package-control"></div></div></section>'
     mountExportNamingField(doc)
-    const input = doc.getElementById('exportNamingPattern') as HTMLInputElement
-    expect(input.parentElement?.nextElementSibling?.className).toBe('package-control')
-    expect(readExportNaming(doc)).toBe('clip_{episode}_{candidate}')
+    const input = doc.getElementById('exportNamingPrefix') as HTMLInputElement
+    expect(doc.getElementById('exportNamingFields')?.nextElementSibling?.className).toBe('package-control')
+    expect(readExportNaming(doc)).toBe('第{episode}集_切片')
+    expect(input.value).toBe('')
+    expect(input.disabled).toBe(true)
+    expect(input.parentElement?.hidden).toBe(true)
+    expect(doc.getElementById('exportNamingHint')?.textContent).toContain('第01集_切片.mp4')
+    expect(doc.getElementById('exportNamingFields')?.textContent).not.toMatch(/\{episode\}|\{candidate\}|clip_/)
+  })
+  it('takes only ordinary prefix text and retains the selected mode on remount', () => {
+    const doc = document.implementation.createHTMLDocument('naming')
+    doc.body.innerHTML = '<section id="exportModal"><div class="modal-body"><div class="package-control"></div></div></section>'
+    mountExportNamingField(doc)
+    const mode = doc.getElementById('exportNamingMode') as HTMLSelectElement
+    const input = doc.getElementById('exportNamingPrefix') as HTMLInputElement
+    mode.value = 'prefix'; mode.dispatchEvent(new Event('change'))
     input.value = '{unknown}'; input.dispatchEvent(new Event('input'))
     expect(input.getAttribute('aria-invalid')).toBe('true')
     expect(doc.getElementById('exportNamingError')?.hidden).toBe(false)
-    expect(() => readExportNaming(doc)).toThrow('仅支持')
-    input.value = '  素材_{episode}_{candidate}  '; input.dispatchEvent(new Event('input'))
+    expect(() => readExportNaming(doc)).toThrow('不用填写大括号')
+    input.value = '  破茧之后  '; input.dispatchEvent(new Event('input'))
     mountExportNamingField(doc)
-    expect(doc.querySelectorAll('#exportNamingPattern')).toHaveLength(1)
-    expect(readExportNaming(doc)).toBe('素材_{episode}_{candidate}')
-    expect(doc.getElementById('exportNamingHint')?.textContent).toContain('素材_01_ab12cd34.mp4')
+    expect(doc.querySelectorAll('#exportNamingMode')).toHaveLength(1)
+    expect(mode.value).toBe('prefix')
+    expect(readExportNaming(doc)).toBe('破茧之后_第{episode}集_切片')
+    expect(doc.getElementById('exportNamingHint')?.textContent).toContain('破茧之后_第01集_切片.mp4')
     expect(doc.getElementById('exportNamingError')?.hidden).toBe(true)
+    input.value = '../invalid'; input.dispatchEvent(new Event('input'))
+    mode.value = 'episode'; mode.dispatchEvent(new Event('change'))
+    expect(readExportNaming(doc)).toBe('第{episode}集_切片')
+    expect(input.disabled).toBe(true)
+    expect(doc.getElementById('exportNamingError')?.hidden).toBe(true)
+  })
+  it.each(['', '   ', 'x'.repeat(121)])('rejects empty or overly long custom prefix %s', (prefix) => {
+    const doc = document.implementation.createHTMLDocument('naming')
+    doc.body.innerHTML = '<section id="exportModal"><div class="modal-body"></div></section>'
+    mountExportNamingField(doc)
+    const mode = doc.getElementById('exportNamingMode') as HTMLSelectElement
+    mode.value = 'prefix'; mode.dispatchEvent(new Event('change'))
+    const input = doc.getElementById('exportNamingPrefix') as HTMLInputElement
+    input.value = prefix
+    expect(() => readExportNaming(doc)).toThrow()
   })
 })

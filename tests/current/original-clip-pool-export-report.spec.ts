@@ -160,35 +160,20 @@ test('CLIP-REAL-005 to CLIP-REAL-008 closes sparse local evidence, pool, export,
   await frame.locator('[data-clip-export-open]').first().click()
   await expect(frame.locator('#exportModal')).toHaveAttribute('aria-hidden', 'false')
   await frame.locator('#exportDirectory').fill(outputDirectory)
-  const naming = frame.locator('#exportNamingPattern')
-  await expect(naming).toHaveValue('clip_{episode}_{candidate}')
+  const namingMode = frame.locator('#exportNamingMode')
+  const naming = frame.locator('#exportNamingPrefix')
+  await expect(namingMode).toHaveValue('episode')
+  await expect(naming).toBeHidden()
+  await expect(frame.locator('#exportNamingHint')).toContainText('第01集_切片.mp4')
+  await expect(frame.locator('#exportNamingFields')).not.toContainText('{episode}')
   for (const viewport of [{ width: 1440, height: 900 }, { width: 1280, height: 720 }]) {
     await page.setViewportSize(viewport)
-    await naming.scrollIntoViewIfNeeded()
-    await expect(naming).toBeInViewport({ ratio: 1 })
+    await namingMode.scrollIntoViewIfNeeded()
+    await expect(namingMode).toBeInViewport({ ratio: 1 })
     await page.screenshot({ path: testInfo.outputPath(`naming-${viewport.width}.png`) })
-    await naming.fill('长'.repeat(150))
-    expect(await frame.locator('#exportNamingHint').evaluate((hint) => {
-      const bounds = hint.getBoundingClientRect(); return bounds.right <= hint.ownerDocument.defaultView!.innerWidth + 1
-    })).toBe(true)
-    await page.screenshot({ path: testInfo.outputPath(`naming-${viewport.width}-long.png`) })
     await frame.locator('#saveExport').scrollIntoViewIfNeeded()
     await expect(frame.locator('#saveExport')).toBeInViewport({ ratio: 0.99 })
-    expect(await frame.locator('#saveExport').evaluate((button) => {
-      const bounds = button.getBoundingClientRect(); const view = button.ownerDocument.defaultView!
-      return bounds.top >= -1 && bounds.left >= -1 && bounds.right <= view.innerWidth + 1 && bounds.bottom <= view.innerHeight + 1
-    })).toBe(true)
-    await page.screenshot({ path: testInfo.outputPath(`naming-${viewport.width}-footer.png`) })
-    await naming.fill('clip_{episode}_{candidate}')
   }
-  await naming.fill('{unknown}')
-  await frame.locator('#saveExport').click()
-  await expect(frame.locator('#exportNamingError')).toContainText('仅支持')
-  expect(await page.evaluate(async () => {
-    const drama = (await window.desktopApi.listDramas()).find(item => item.name === '原剧切片闭环隔离剧目')!
-    return window.desktopApi.getLatestClipExportBatch(drama.id)
-  })).toBeNull()
-  await naming.fill('素材_{episode}_{candidate}')
   await page.setViewportSize({ width: 1440, height: 900 })
   await frame.locator('#saveExport').click()
   await expect.poll(() => candidateStatus(candidateId), { timeout: 60_000 }).toBe('exported')
@@ -200,19 +185,53 @@ test('CLIP-REAL-005 to CLIP-REAL-008 closes sparse local evidence, pool, export,
   }, candidateId)
   expect(materialPath).toContain(outputDirectory)
   expect(materialPath).not.toBeNull()
-  expect(materialPath).toContain(`素材_01_${candidateId.slice(0, 8)}.mp4`)
+  expect(materialPath).toContain('第01集_切片.mp4')
   const firstOutputHash = createHash('sha256').update(await readFile(materialPath!)).digest('hex')
   const firstBatch = await page.evaluate(async () => {
     const drama = (await window.desktopApi.listDramas()).find((item) => item.name === '原剧切片闭环隔离剧目')!
     return window.desktopApi.getLatestClipExportBatch(drama.id)
   })
   expect(firstBatch?.candidateIds).toEqual([candidateId])
-  expect(firstBatch?.config?.namingPattern).toBe('素材_{episode}_{candidate}')
+  expect(firstBatch?.config?.namingPattern).toBe('第{episode}集_切片')
   expect(createHash('sha256').update(await readFile(sourcePath)).digest('hex')).toBe(sourceSha256)
   await expect(exportChoice).not.toBeChecked()
   await exportChoice.check()
   await frame.locator('[data-clip-export-open]').first().click()
-  await expect(naming).toHaveValue('素材_{episode}_{candidate}')
+  await namingMode.selectOption('prefix')
+  await naming.fill('../错误')
+  await frame.locator('#saveExport').click()
+  await expect(frame.locator('#exportNamingError')).toContainText('非法字符')
+  await expect(frame.locator('#exportModal .modal-head .meta')).not.toContainText('非法字符')
+  expect(await page.evaluate(async () => {
+    const drama = (await window.desktopApi.listDramas()).find(item => item.name === '原剧切片闭环隔离剧目')!
+    return (await window.desktopApi.getLatestClipExportBatch(drama.id))?.id
+  })).toBe(firstBatch?.id)
+  await namingMode.selectOption('episode')
+  await expect(naming).toBeHidden()
+  await expect(frame.locator('#exportNamingError')).toBeHidden()
+  await namingMode.selectOption('prefix')
+  await naming.fill('破茧之后')
+  await expect(frame.locator('#exportNamingError')).toBeHidden()
+  await expect(frame.locator('#exportModal .modal-head .meta')).not.toContainText('非法字符')
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 1280, height: 720 }]) {
+    await page.setViewportSize(viewport)
+    await naming.scrollIntoViewIfNeeded()
+    await expect(naming).toBeInViewport({ ratio: 1 })
+    await page.screenshot({ path: testInfo.outputPath(`naming-${viewport.width}-prefix.png`) })
+    await naming.fill('长'.repeat(120))
+    expect(await frame.locator('#exportNamingHint').evaluate((hint) => hint.getBoundingClientRect().right <= hint.ownerDocument.defaultView!.innerWidth + 1)).toBe(true)
+    await page.screenshot({ path: testInfo.outputPath(`naming-${viewport.width}-long.png`) })
+    await frame.locator('#saveExport').scrollIntoViewIfNeeded()
+    await expect(frame.locator('#saveExport')).toBeInViewport({ ratio: 0.99 })
+    expect(await frame.locator('#saveExport').evaluate((button) => button.getBoundingClientRect().bottom <= button.ownerDocument.defaultView!.innerHeight + 1)).toBe(true)
+    await page.screenshot({ path: testInfo.outputPath(`naming-${viewport.width}-footer.png`) })
+    await naming.fill('破茧之后')
+  }
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await frame.locator('#cancelExport').click()
+  await frame.locator('[data-clip-export-open]').first().click()
+  await expect(namingMode).toHaveValue('prefix')
+  await expect(naming).toHaveValue('破茧之后')
   await frame.locator('#exportModal [data-quality-mode="bitrate"]').click()
   await frame.locator('#exportBitrate').fill('1500')
   await frame.locator('#saveExport').click()
@@ -229,13 +248,30 @@ test('CLIP-REAL-005 to CLIP-REAL-008 closes sparse local evidence, pool, export,
   expect(secondBatch?.id).not.toBe(firstBatch?.id)
   expect(secondBatch?.candidateIds).toEqual([candidateId])
   expect(secondBatch?.config?.qualityMode).toBe('bitrate')
-  expect(secondBatch?.config?.namingPattern).toBe('素材_{episode}_{candidate}')
+  expect(secondBatch?.config?.namingPattern).toBe('破茧之后_第{episode}集_切片')
   const secondMaterial = await page.evaluate(async ({ candidateId, previousPath }) => {
     const drama = (await window.desktopApi.listDramas()).find(item => item.name === '原剧切片闭环隔离剧目')!
     return (await window.desktopApi.listMaterials(drama.id)).find(item => item.taskItemId === candidateId && item.path !== previousPath)
   }, { candidateId, previousPath: materialPath })
   expect(secondMaterial?.id).toBe(secondBatch?.items[0]?.materialId)
-  expect(secondMaterial?.path).toContain(`素材_01_${candidateId.slice(0, 8)}_02.mp4`)
+  expect(secondMaterial?.path).toContain('破茧之后_第01集_切片.mp4')
+  const secondOutputHash = createHash('sha256').update(await readFile(secondMaterial!.path)).digest('hex')
+  await exportChoice.check()
+  await frame.locator('[data-clip-export-open]').first().click()
+  await expect(naming).toHaveValue('破茧之后')
+  await frame.locator('#saveExport').click()
+  await expect.poll(async () => page.evaluate(async () => {
+    const drama = (await window.desktopApi.listDramas()).find(item => item.name === '原剧切片闭环隔离剧目')!
+    return (await window.desktopApi.listMaterials(drama.id)).length
+  }), { timeout: 60_000 }).toBe(3)
+  await expect(frame.locator('#exportModal')).toHaveAttribute('aria-hidden', 'true')
+  const appended = await page.evaluate(async () => {
+    const drama = (await window.desktopApi.listDramas()).find(item => item.name === '原剧切片闭环隔离剧目')!
+    const batch = await window.desktopApi.getLatestClipExportBatch(drama.id)
+    return (await window.desktopApi.listMaterials(drama.id)).find(item => item.id === batch?.items[0]?.materialId)
+  })
+  expect(appended?.path).toContain('破茧之后_第01集_切片_02.mp4')
+  expect(createHash('sha256').update(await readFile(secondMaterial!.path)).digest('hex')).toBe(secondOutputHash)
   expect(createHash('sha256').update(await readFile(materialPath!)).digest('hex')).toBe(firstOutputHash)
   await frame.locator('#screen-clip-pool [data-r5-open="clip-report"]').first().click()
   frame = page.frameLocator('iframe[title="原剧切片完成报告"]')
