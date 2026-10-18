@@ -194,7 +194,7 @@ describe('bindOriginalClipPoolReportRuntime', () => {
     expect(naming.value).toBe('素材')
     expect(mode.value).toBe('prefix')
     testDocument.getElementById('saveExport')!.click(); await settle()
-    expect(preflight).toHaveBeenCalledWith('d1', expect.objectContaining({ outputDirectory: 'D:\\custom', namingPattern: '素材_第{episode}集_切片' }))
+    expect(preflight).toHaveBeenCalledWith('d1', expect.objectContaining({ outputDirectory: 'D:\\custom', namingPattern: '素材_第{episode}集_切片{sequence}' }))
   })
   it('filters real candidate statuses through the production bridge', async () => {
     const items = [candidate('pending-1', 'pending_review'), candidate('editing-1', 'editing'), candidate('confirmed-1', 'confirmed'), candidate('exported-1', 'exported')]

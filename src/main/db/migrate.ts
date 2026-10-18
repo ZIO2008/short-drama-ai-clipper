@@ -1,6 +1,7 @@
 import { mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 import Database from 'better-sqlite3'
+import { createClipCandidateNumberTable, ensureClipCandidateNumbers } from './clip-candidate-numbering.js'
 import { createClipSubtitleVariantTable as createSharedClipSubtitleVariantTable, createProjectLibraryGuards as createSharedProjectLibraryGuards } from './project-library-guards.js'
 import { createP1Tables as createSharedP1Tables } from './p1-schema.js'
 import { addSubtitleEvidenceColumns, createSubtitleEvidenceTables, normalizeProviderCapabilities } from './subtitle-evidence-schema.js'
@@ -19,6 +20,7 @@ export const openDatabase = (databasePath: string): Database.Database => {
 
 export const migrateDatabase = (database: Database.Database): void => {
   database.exec('CREATE TABLE IF NOT EXISTS schema_migrations (version INTEGER PRIMARY KEY, applied_at TEXT NOT NULL)')
+  if (hasMigration(database, 45) && !tableExists(database, 'clip_candidate_numbers')) throw new Error('切片编号元数据缺失，不能重新编号；请从完整备份恢复。')
   const apply = database.transaction(() => {
     if (!hasMigration(database, 1)) {
       applySchema(database)
@@ -222,9 +224,14 @@ export const migrateDatabase = (database: Database.Database): void => {
       upgradeModelStudioProvisionalCapabilityConstraint(database)
       recordMigration(database, 44)
     }
+    if (!hasMigration(database, 45)) {
+      createClipCandidateNumberTable(database)
+      recordMigration(database, 45)
+    }
   })
 
   apply()
+  createClipCandidateNumberTable(database)
   // Repair databases from interrupted or pre-release migrations where version 9 was
   // recorded but its table was not persisted. This is idempotent on healthy databases.
   database.exec('CREATE TABLE IF NOT EXISTS drama_import_preferences (drama_id TEXT PRIMARY KEY REFERENCES dramas(id) ON DELETE CASCADE, last_import_directory TEXT NOT NULL, updated_at TEXT NOT NULL)')
@@ -279,4 +286,5 @@ export const migrateDatabase = (database: Database.Database): void => {
     addColumnIfMissing(database, 'episodes', 'video_height', 'INTEGER')
     addColumnIfMissing(database, 'episodes', 'duration_alert_dismissed_at', 'TEXT')
   }
+  ensureClipCandidateNumbers(database)
 }

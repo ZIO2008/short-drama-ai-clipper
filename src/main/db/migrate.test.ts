@@ -19,7 +19,7 @@ describe('migrateDatabase', () => {
 
     const tables = database.prepare("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name").all() as Array<{ name: string }>
     expect(tables.map(({ name }) => name)).toEqual(expect.arrayContaining(['ai_drafts', 'ai_evidence', 'app_logs', 'clip_candidate_scene_anchors', 'clip_export_batches', 'clip_subtitle_variants', 'drama_covers', 'drama_import_preferences', 'dramas', 'episodes', 'evaluation_runs', 'model_studio_provisional_secrets', 'notifications', 'production_tasks', 'schema_migrations', 'secret_records', 'subtitle_conflicts', 'subtitle_cues', 'subtitle_ocr_regions', 'subtitle_quality_evaluations', 'subtitle_recognition_settings', 'subtitle_recognition_runs', 'subtitle_recognition_run_items', 'subtitle_tracks', 'timeline_projects']))
-    expect(database.prepare('SELECT COUNT(*) AS count FROM schema_migrations').get()).toEqual({ count: 44 })
+    expect(database.prepare('SELECT COUNT(*) AS count FROM schema_migrations').get()).toEqual({ count: 45 })
     expect(database.prepare('PRAGMA table_info(model_studio_provisional_secrets)').all()).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'capability' }), expect.objectContaining({ name: 'owner_id' })]))
     expect(database.prepare('PRAGMA table_info(provider_profiles)').all()).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'model_selection_source' })]))
     expect(database.prepare('PRAGMA table_info(clip_export_batches)').all()).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'reason' })]))

@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import Database from 'better-sqlite3'
 import { describe, expect, it } from 'vitest'
 import { migrateDatabase } from '../db/migrate.js'
+import { ensureClipCandidateNumbers, readClipCandidateNumber } from '../db/clip-candidate-numbering.js'
 import { ClipEvidencePackageService, type ClipEvidencePackage } from './clip-evidence-package-service.js'
 import { OriginalClipService } from './original-clip-service.js'
 
@@ -33,7 +34,11 @@ const publish = (publication: ClipEvidencePackageService, round: ReturnType<type
 describe('clip generation publication boundary', () => {
   it('publishes a complete candidate snapshot that links frozen config, provider, evidence and PTS range', () => {
     const { database, now, publication } = setup(); const round = createRound(database, now, 2)
+    ensureClipCandidateNumbers(database)
+    expect(readClipCandidateNumber(database, round.candidateId)).toBeUndefined()
     publish(publication, round)
+    ensureClipCandidateNumbers(database)
+    expect(readClipCandidateNumber(database, round.candidateId)).toBe(1)
 
     const row = database.prepare(`SELECT pointer.task_id AS pointerTaskId, pointer.task_round AS pointerTaskRound,
       snapshot.qualification, snapshot.config_json AS configJson, snapshot.provider_json AS providerJson, snapshot.summary_json AS summaryJson,

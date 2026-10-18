@@ -1,4 +1,4 @@
-export const DEFAULT_CLIP_NAMING = '第{episode}集_切片'
+export const DEFAULT_CLIP_NAMING = '第{episode}集_切片{sequence}'
 export class ClipNamingInputError extends Error {}
 
 export const validateClipNaming = (raw: string): string | null => {
@@ -6,7 +6,7 @@ export const validateClipNaming = (raw: string): string | null => {
   if (!value) return '请输入文件命名规则。'
   if (value.length > 160) return '命名规则不能超过 160 个字符。'
   if (/[\\/:*?"<>|\u0000-\u001f]/.test(value)) return '名称不能包含路径或文件名非法字符。'
-  if (/[{}]/.test(value.replaceAll('{episode}', '').replaceAll('{candidate}', ''))) return '名称不能包含大括号，请直接填写文字。'
+  if (/[{}]/.test(value.replaceAll('{episode}', '').replaceAll('{candidate}', '').replaceAll('{sequence}', ''))) return '名称不能包含大括号，请直接填写文字。'
   if (/\.$/.test(value)) return '名称不能以点号结尾。'
   if (/\.mp4$/i.test(value)) return '无需填写 .mp4，系统会自动添加扩展名。'
   if (/^(con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\.|$)/i.test(value)) return '该名称为系统保留名称，请换一个。'
@@ -48,7 +48,7 @@ export const mountExportNamingField = (document: Document): void => {
     let message: string | null = null; let pattern = DEFAULT_CLIP_NAMING
     try { pattern = namingFor(mode.value, input.value) } catch (cause) { message = cause instanceof Error ? cause.message : '请检查命名方式。' }
     error.hidden = !message; error.textContent = message ?? ''; input.setAttribute('aria-invalid', String(Boolean(message)))
-    hint.textContent = message ? '系统自动补分集号和扩展名，同名自动加编号。' : `文件名示例：${pattern.replaceAll('{episode}', '01')}.mp4；同名自动加编号。`
+    hint.textContent = message ? '系统自动补分集号、切片编号和扩展名。' : `文件名示例：${pattern.replaceAll('{episode}', '01').replaceAll('{sequence}', '01')}.mp4；重复导出另加“再次导出”标记。`
   }
   mode.addEventListener('change', update); input.addEventListener('input', update); update()
 }

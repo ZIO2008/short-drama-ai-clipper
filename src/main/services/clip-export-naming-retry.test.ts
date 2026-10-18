@@ -29,6 +29,27 @@ const fixture = () => {
 }
 
 describe('per-candidate frozen naming recovery', () => {
+  it('freezes the clip number at claim and retains it in deleted and legacy batch reports', async () => {
+    const f = fixture()
+    try {
+      const number = f.service.getCandidate(f.a.id).sequenceNumber
+      const run = f.runner.getMockImplementation()!
+      f.runner.mockImplementationOnce(async (...args) => {
+        const manifest = JSON.parse((f.db.prepare('SELECT candidate_ids_json AS manifest FROM clip_export_batches WHERE id = ?').get(args[2]) as { manifest: string }).manifest) as { sequenceNumbers: Record<string, number> }
+        expect(manifest.sequenceNumbers[f.a.id]).toBe(number)
+        return run(...args)
+      })
+      await f.service.exportCandidates('d', f.config(f.a.id, 'frozen_{candidate}'))
+      const batch = f.service.getLatestExportBatch('d')!
+      expect(batch.items[0]?.sequenceNumber).toBe(number)
+      f.db.prepare('DELETE FROM task_items WHERE id = ?').run(f.a.id)
+      expect(f.service.getLatestExportBatch('d')?.items[0]?.sequenceNumber).toBe(number)
+      const stored = JSON.parse((f.db.prepare('SELECT candidate_ids_json AS manifest FROM clip_export_batches WHERE id = ?').get(batch.id) as { manifest: string }).manifest) as { sequenceNumbers?: Record<string, number>; items: Array<{ sequenceNumber?: number }> }
+      delete stored.sequenceNumbers; delete stored.items[0]!.sequenceNumber
+      f.db.prepare('UPDATE clip_export_batches SET candidate_ids_json = ? WHERE id = ?').run(JSON.stringify(stored), batch.id)
+      expect(f.service.getLatestExportBatch('d')?.items[0]?.sequenceNumber).toBe(number)
+    } finally { f.db.close() }
+  })
   it('does not use another candidate naming when retrying an earlier failed export', async () => {
     const f = fixture()
     try {

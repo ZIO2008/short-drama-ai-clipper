@@ -64,7 +64,7 @@ test('packaged semantic selection repairs an unfinished proposal once without su
     await page.getByRole('tab', { name: '素材生产' }).click()
     await page.getByRole('button', { name: '进入工作区' }).click()
     const frame = page.frameLocator('iframe[title="原剧切片工作区"]')
-    await expect(frame.locator('.r5-candidate-id')).toContainText(candidates[0]!.id.slice(0, 8))
+    await expect(frame.locator('.r5-candidate-id')).toContainText('切片01')
     calls = 0; mode = 'reject'
     await frame.locator('[data-r5-open="generate"]').click()
     await expect(frame.locator('#screen-clip .r5-inspector .r5-note')).toContainText('正在生成候选')
@@ -77,7 +77,7 @@ test('packaged semantic selection repairs an unfinished proposal once without su
       }
       return samples
     })
-    expect(samples.every(text => text.includes(candidates[0]!.id.slice(0, 8)) && !text.includes('暂无可编辑候选'))).toBe(true)
+    expect(samples.every(text => text.includes('切片01') && !text.includes('暂无可编辑候选'))).toBe(true)
     const second = await page.evaluate(async (firstId) => (await window.desktopApi.listTasks()).find(t => t.type === 'original_clip' && t.id !== firstId), first.taskId)
     expect(second).toBeTruthy()
     await expect.poll(async () => page.evaluate(async (id) => (await window.desktopApi.listTasks()).find(t => t.id === id)?.status, second!.id), { timeout: 60000 }).toBe('failed')
@@ -86,7 +86,7 @@ test('packaged semantic selection repairs an unfinished proposal once without su
     expect(reason).toContain('未收束')
     expect(reason).not.toContain('字幕资产')
     expect(await page.evaluate(async id => (await window.desktopApi.listClipCandidates(id)).length, prepared.dramaId)).toBe(1)
-    await expect(frame.locator('.r5-candidate-id')).toContainText(candidates[0]!.id.slice(0, 8))
+    await expect(frame.locator('.r5-candidate-id')).toContainText('切片01')
     await expect(frame.locator('#screen-clip')).toContainText('未收束')
     await expect(frame.locator('[data-clip-recovery="subtitles"]')).toHaveCount(0)
   } finally {

@@ -1,3 +1,4 @@
+import { clipCandidateLabel } from '../../../shared/clip-candidate-label.js'
 import type { ClipCandidate, ClipEpisodeStatus, EpisodeAsset } from '../../../shared/contracts.js'
 
 export const MIN_CLIP_DURATION = 0.1
@@ -73,7 +74,7 @@ export const renderCandidateSwitcher = (switcher: HTMLElement | null, candidates
     const button = switcher.ownerDocument.createElement('button')
     button.className = 'r5-candidate-switch'; button.type = 'button'; button.dataset.inlineCandidate = item.id; button.dataset.candidateStatus = item.status; button.setAttribute('aria-pressed', String(item.id === selectedCandidateId))
     const marker = switcher.ownerDocument.createElement('i'); const identifier = switcher.ownerDocument.createElement('b'); const status = switcher.ownerDocument.createElement('small')
-    identifier.textContent = `C-${item.id.slice(0, 8)}`; status.textContent = `${displayCandidateStatus(item.status)} · ${(item.endSeconds - item.startSeconds).toFixed(1)}s`
+    identifier.textContent = clipCandidateLabel(item); identifier.title = item.id; status.textContent = `${displayCandidateStatus(item.status)} · ${(item.endSeconds - item.startSeconds).toFixed(1)}s`
     button.append(marker, identifier, status); grid.append(button)
   }
   pageLabel.textContent = `共 ${candidates.length} 条`; pageWindow.textContent = candidates.length === 0 ? '0 / 0' : `${start + 1}–${start + windowItems.length} / ${candidates.length}`

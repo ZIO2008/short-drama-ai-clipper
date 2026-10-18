@@ -1,3 +1,4 @@
+import { clipCandidateLabel } from '../../../shared/clip-candidate-label.js'
 import type { ClipCandidate, ClipEpisodeStatus, EpisodeAsset } from '../../../shared/contracts.js'
 import { ClipWorkspaceMediaSession } from './clip-workspace-media-session.js'
 import { MIN_CLIP_DURATION, clamp, labelEpisode, renderCandidateSwitcher, renderEpisodeRail, renderMissingClipMedia, roundTenth, setSurfaceText, timecode } from './clip-workspace-surface.js'
@@ -141,7 +142,7 @@ export const bindOriginalClipWorkspaceRuntime = ({ document, dramaId, episodes: 
     sourceRange.style.left = `${(candidate.startSeconds / range) * 100}%`; sourceRange.style.width = `${(segment / range) * 100}%`
     candidateRange.style.left = '24%'; candidateRange.style.width = '34.3%'; candidateAnchor.style.left = `${24 + ((previewPoint - candidate.startSeconds) / Math.max(segment, MIN_CLIP_DURATION)) * 34.3}%`
     sourceTimeline.querySelector('.r5-timeline-head span')!.textContent = `${labelEpisode(current!)} · 00:00:00 — ${timecode(duration).slice(0, 8)}`
-    candidateTimeline.querySelector('.r5-timeline-head span')!.textContent = `${candidate.id.slice(0, 8)} · ${segment.toFixed(1)} 秒`
+    candidateTimeline.querySelector('.r5-timeline-head span')!.textContent = `${clipCandidateLabel(candidate, candidate.id.slice(0, 8))} · ${segment.toFixed(1)} 秒`
     monitorTimecode.textContent = timecode(previewPoint)
     session.sync(candidate, true)
   }
@@ -153,7 +154,7 @@ export const bindOriginalClipWorkspaceRuntime = ({ document, dramaId, episodes: 
     const dimensions = current.videoWidth && current.videoHeight ? `${current.videoWidth} × ${current.videoHeight}` : '画幅读取中'
     if (missing) session.release(); else session.load(current)
     renderMissingClipMedia(frame, current, missing, dimensions)
-    const caption = monitorCaption.querySelectorAll('span'); caption[0]!.textContent = `${labelEpisode(current)} · 源片 ${dimensions} · 等比显示`; caption[1]!.textContent = candidate ? `${candidate.id.slice(0, 8)} · ${timecode(candidate.startSeconds)} — ${timecode(candidate.endSeconds)}` : missing ? '源媒体不可用' : candidatesState === 'error' ? '候选读取失败' : candidatesState === 'loading' ? '正在读取候选' : '尚未生成候选'
+    const caption = monitorCaption.querySelectorAll('span'); caption[0]!.textContent = `${labelEpisode(current)} · 源片 ${dimensions} · 等比显示`; caption[1]!.textContent = candidate ? `${clipCandidateLabel(candidate, candidate.id.slice(0, 8))} · ${timecode(candidate.startSeconds)} — ${timecode(candidate.endSeconds)}` : missing ? '源媒体不可用' : candidatesState === 'error' ? '候选读取失败' : candidatesState === 'loading' ? '正在读取候选' : '尚未生成候选'
     const visibleError = actionError?.episodeId === current.id && (actionError.candidateId === null || actionError.candidateId === candidate?.id) ? actionError.message : null
     if (!candidate || missing || candidatesState !== 'loaded') {
       const reason = visibleError ?? (missing ? '源媒体需要重新定位，无法编辑或生成候选。' : candidatesState === 'error' ? '候选读取失败；没有把失败伪装为未生成。' : candidatesState === 'loading' ? '正在读取真实候选。' : '本集还没有真实候选。')
@@ -162,13 +163,13 @@ export const bindOriginalClipWorkspaceRuntime = ({ document, dramaId, episodes: 
     }
     const editable = isEditable(candidate) && !writePending
     const duration = candidate.endSeconds - candidate.startSeconds
-    setSurfaceText(candidateId, `${labelEpisode(current)} · 候选 ${candidate.id.slice(0, 8)}`, `${timecode(candidate.startSeconds)} — ${timecode(candidate.endSeconds)} · ${duration.toFixed(1)} 秒`)
+    setSurfaceText(candidateId, `${labelEpisode(current)} · ${clipCandidateLabel(candidate, `候选 ${candidate.id.slice(0, 8)}`)}`, `${timecode(candidate.startSeconds)} — ${timecode(candidate.endSeconds)} · ${duration.toFixed(1)} 秒`)
     const qualificationNote = candidate.qualification === 'qualified_with_limit' ? candidate.qualificationReason ?? '核心事件和切点证据完整，但上下文存在限制。' : null
     const evidenceText = clipInspectorEvidenceText(candidate)
     setSurfaceText(note, visibleError ? '操作失败' : qualificationNote ? '候选可用但受限' : editable ? '候选待确认' : `候选状态：${candidate.status}`, visibleError ?? [qualificationNote, evidenceText, editable ? '时间线调整会立即保存到当前候选；不会修改源视频。' : candidate.reason].filter(Boolean).join('；'))
     if (visibleError && actionError?.recovery && onRecoveryNavigate) { const button = document.createElement('button'); button.type = 'button'; button.className = 'btn btn-secondary'; button.dataset.clipRecovery = actionError.recovery; button.textContent = actionError.recovery === 'subtitles' ? '前往字幕资产' : '查看素材资产'; note.append(button) }
     if (visibleError && actionError?.deadlineTaskId) { const button = document.createElement('button'); button.type = 'button'; button.className = 'btn btn-secondary'; button.dataset.clipDeadlineContinue = actionError.deadlineTaskId; button.textContent = '继续有限延期'; note.append(button); const stop = document.createElement('button'); stop.type = 'button'; stop.className = 'btn btn-danger'; stop.dataset.clipDeadlineStop = actionError.deadlineTaskId; stop.textContent = '停止生成'; note.append(stop) }
-    inspectorMeta.textContent = candidate.id.slice(0, 8); renderTimeline(candidate); setControls(editable, true)
+    inspectorMeta.textContent = clipCandidateLabel(candidate, candidate.id.slice(0, 8)); renderTimeline(candidate); setControls(editable, true)
   }
   session = new ClipWorkspaceMediaSession(document, frame, { play: transportPlay, loop: transportLoop, speed: speedTrigger, volume: volumeTrigger, speedPopover, volumePopover, sourceTime, relativeTime, volumeLabel, volumeInput, reviewButtons, reviewDescription, boundaryState }, { episode, candidate: selectedCandidate, previewPoint: () => previewPoint, setPreviewPoint: (value) => { previewPoint = value }, isAvailable: hasPreviewableMedia, mediaFailure: (episodeId) => { mediaFailedFor = episodeId }, renderTimeline, render })
   session.bind()
