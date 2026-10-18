@@ -1,3 +1,5 @@
+> 2026-10-18本轮排期覆盖：候选池screen-clip-pool与完成报告screen-clip-report已按用户完整收口要求恢复页面迁移排期，仍以current V49为唯一设计源，编码/视觉验收尚未完成。其余屏幕授权边界保持；本轮不是因整理Brief自动扩围。已验收业务差异保留，见 docs/release-readiness/2026-10-18-finish-remaining-schedule.md。
+
 # 设计规范：短剧投流素材生成平台
 
 > 当前根设计规范，精简于 2026-08-18。2026-08-17 及以前的完整原文已归档至 `docs/history/design-brief/Design-Brief-through-2026-08-17.md`；归档只用于追溯。

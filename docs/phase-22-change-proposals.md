@@ -60,6 +60,8 @@
 
 ## 提案 P22-04：候选池与完成报告的 V49 视觉迁移验收
 
+> 2026-10-18用户要求完整排期做完：本项两页已恢复排期为Phase32/33，Phase34负责集成交付。仅恢复此范围，不恢复P22-02字幕方案；实施尚未开始，详见 release-readiness/2026-10-18-finish-remaining-schedule.md。
+
 **拟改位置**：
 
 - 新建 `docs/prototype-migration-card-original-clip-v49-candidate-pool.md`
