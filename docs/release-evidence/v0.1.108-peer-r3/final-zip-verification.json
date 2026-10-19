@@ -1,0 +1,19 @@
+{
+  "zipSha256": "503783481b58bb7e55fc935a699f281d4ffbeb56a1fd5e1501cd07f7c53cc444",
+  "filesVerified": 4012,
+  "excludedComponents": [
+    {
+      "path": "resources/models/ffmpeg.exe",
+      "sha256": "04e1307997530f9cf2fe35cba2ca7e8875ca91da02f89d6c7243df819c94ad00"
+    },
+    {
+      "path": "resources/models/ffprobe.exe",
+      "sha256": "4303ec85855340689b1f8aa5d9c1dc06ef3e3090682de3034edc3fca2b0798d5"
+    }
+  ],
+  "applicationHashes": {
+    "\u77ed\u5267\u6295\u6d41\u7d20\u6750\u751f\u6210\u5e73\u53f0.exe": "ea9fd8ba87e57cfe93126d42e9b268466a5575682b69d4de287cda0aef6a198b",
+    "resources/app.asar": "bca1984d779e6b0339211f1a19a66858f88320200f9786220ffbaa5733918d5a"
+  },
+  "binaryReuseForBusinessSmoke": "r2 and r3 application bytes identical, both match verified 0.1.108, only first-run SHA helper changed"
+}

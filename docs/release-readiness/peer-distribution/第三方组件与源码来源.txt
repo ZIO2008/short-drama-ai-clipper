@@ -1,0 +1,29 @@
+第三方组件与源码来源（0.1.108亲友试用包）
+
+本包为多个独立组件的集合。各组件版权和许可属于其原作者；非商业试用不改变第三方许可要求。请保留所有随包许可和声明。
+
+Electron及Chromium：程序/LICENSE.electron.txt、程序/LICENSES.chromium.html。
+Electron源代码：https://github.com/electron/electron/tree/v43.1.1
+Chromium源码入口：https://chromium.googlesource.com/chromium/src/
+
+JavaScript依赖：第三方许可/JavaScript；名称、版本、许可索引见“第三方许可/依赖许可索引.json”。索引来自实际app.asar中的包元数据。
+本地OCR：包含Python 3.12运行时、PaddlePaddle 3.3.1、PaddleOCR 3.4.1、PaddleX 3.4.3、PP-OCRv5模型及其依赖。第三方许可/Python同时覆盖OCR构建环境的依赖，是保守的超集，不表示所有开发工具都随运行包发出。
+Python：https://www.python.org/downloads/source/
+PaddlePaddle：https://github.com/PaddlePaddle/Paddle/tree/v3.3.1
+PaddleOCR：https://github.com/PaddlePaddle/PaddleOCR/tree/v3.4.1
+PaddleX：https://github.com/PaddlePaddle/PaddleX/tree/v3.4.3
+PP-OCRv5模型：https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/version3.x/model_list/OCR.md
+
+独立视频工具：本ZIP不包含resources/models/ffmpeg.exe和ffprobe.exe。首次启动入口由接收者直接向以下固定上游下载，校验为已验收的相同二进制后使用；通过子进程调用。随附许可仅作为来源说明，不表示本ZIP在重新分发这两个二进制。
+ffmpeg实际版本6.1.1，Gyan Windows静态GPLv3构建，包含--enable-gpl与--enable-version3；不能当成仅LGPL构建。
+二进制分发来源：https://github.com/eugeneware/ffmpeg-static/releases/tag/b6.1.1
+上游提供的源码提交：https://github.com/FFmpeg/FFmpeg/commit/e38092ef93
+构建方来源与说明：https://www.gyan.dev/ffmpeg/builds/
+注意：ffmpeg-static随附README描述essentials配置，实际二进制为full配置，应以随包二进制执行-version的配置为准。
+ffprobe实际版本4.0.2，原Zeranoe Windows静态GPLv3构建。
+分发包及来源说明：https://github.com/joshwnj/ffprobe-static/tree/v3.1.0
+FFmpeg 4.0.2上游源码：https://github.com/FFmpeg/FFmpeg/tree/n4.0.2
+ffprobe-static本身的MIT许可不替代其附带FFprobe二进制的GPL许可。
+GPL全文与供应商说明见第三方许可/ffmpeg-static。完整对应源码还涉及构建脚本及静态链接的外部依赖；以上源码入口不等同已封存全部对应源码。
+
+请不要将首次下载补全后的程序目录重新打包转发。分享时使用原始ZIP，让每位接收者直接获取上游视频组件；如果要自行重新分发这些GPL二进制，需另行满足完整对应源码等许可要求。

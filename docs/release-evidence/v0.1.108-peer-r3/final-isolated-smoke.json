@@ -1,0 +1,18 @@
+{
+  "status": "passed",
+  "appVersion": "0.1.108",
+  "isPackaged": true,
+  "databaseInitialized": true,
+  "dramaCount": 0,
+  "providerCount": 0,
+  "systemOnlyPath": true,
+  "setupEntryVisible": true,
+  "firstRunScriptHash": "4f33603f50774e1605b7db495f2c1a5066ee07c25fb24cbfa2ac26197e391601",
+  "networkDownloadedComponentHashes": {
+    "ffmpeg.exe": "04e1307997530f9cf2fe35cba2ca7e8875ca91da02f89d6c7243df819c94ad00",
+    "ffprobe.exe": "4303ec85855340689b1f8aa5d9c1dc06ef3e3090682de3034edc3fca2b0798d5"
+  },
+  "repeatWithoutNetwork": true,
+  "corruptComponentRejected": true,
+  "verificationScope": "host isolated installation, not clean VM"
+}

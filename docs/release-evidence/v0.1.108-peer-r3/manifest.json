@@ -1,0 +1,127 @@
+{
+  "artifact": "0.1.108-peer-r3",
+  "status": "prepared-host-verified-clean-machine-pending",
+  "archiveSha256": "503783481b58bb7e55fc935a699f281d4ffbeb56a1fd5e1501cd07f7c53cc444",
+  "archiveBytes": 571967072,
+  "builtApplicationSourceCommit": "d96a94849f6081cd315712afba54b4da57b7dc18",
+  "sourceInputsSha256": "dab001f57ed1eec16062422187647bbd7e50cf56fdfea92b77b2bf7f8669660b",
+  "host": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.6",
+    "node": "v24.19.0"
+  },
+  "commands": [
+    {
+      "command": "python docs/release-readiness/scripts/prepare-peer-distribution.py --root . --output <project>/03_发布包/素材平台-0.1.108-亲友分享-r3",
+      "exitCode": 0
+    },
+    {
+      "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File <new-network-fixture>/首次启动.ps1 -PrepareOnly",
+      "exitCode": 0,
+      "scope": "network/download/hash only; fixture exe is a placeholder, real executable tested separately"
+    },
+    {
+      "command": "node test-results/peer-distribution-0.1.108/verify-final.mjs",
+      "exitCode": 0,
+      "scope": "final r3 ZIP extracted app, two upstream downloads restored from network-test fixture; no mocked application IPC"
+    },
+    {
+      "command": "pnpm exec playwright test tests/current/packaged-business-smoke.spec.ts tests/current/original-clip-pool-export-report.spec.ts --workers=1",
+      "exitCode": 0,
+      "passed": 5,
+      "scope": "r2 extracted application, all application/OCR bytes identical in r3; external semantic model uses isolated HTTP fixture"
+    }
+  ],
+  "notClaimed": [
+    "clean VM/other physical machine",
+    "paid live provider acceptance",
+    "code signing",
+    "public upload",
+    "commercial distribution certification"
+  ],
+  "evidence": [
+    {
+      "path": "final-zip-verification.json",
+      "sha256": "bc19fe474c60827e581d0333d6af16f2d17c7b70111b77c6a2bc4fe75c56cdcf",
+      "bytes": 842
+    },
+    {
+      "path": "final-privacy-audit.json",
+      "sha256": "e279c026fabadd1c893a1169047b7ec5c201841ca431b23f010ed4907505ba80",
+      "bytes": 187
+    },
+    {
+      "path": "final-isolated-smoke.json",
+      "sha256": "4b5c66b18b57e973e761bec59fd62d8a3ad5ceecea553bbb81fad7db0fbf54fd",
+      "bytes": 644
+    },
+    {
+      "path": "r3-first-run-download.log",
+      "sha256": "7f61220ffda4693fc8aeb4a45d8e3ad1e4cd50ddbb9976dfe553aa8dca403b77",
+      "bytes": 224
+    },
+    {
+      "path": "repeat-first-run.log",
+      "sha256": "b47db490552d6d978f91c23b3b488fa7dc8b0a05172e2b98a710eb574ff0b173",
+      "bytes": 58
+    },
+    {
+      "path": "corrupt-component-rejected.log",
+      "sha256": "c7ceccda9aeef80b5342ac8e7ab9665d39cd95be148ae3dddf1e10371a6b4ebf",
+      "bytes": 215
+    },
+    {
+      "path": "final-business-e2e.log",
+      "sha256": "807b2f1b8354af47701ee22596fa3e37e98b1b6927a0f68750efb590f51ce87c",
+      "bytes": 1116
+    },
+    {
+      "path": "final-verifier.log",
+      "sha256": "b2f25a1ccb0f561318914a67da8f3dfac6ba5c83a79de6a07e1a70f3fbf0c726",
+      "bytes": 34
+    },
+    {
+      "path": "final-empty-library.png",
+      "sha256": "f24a76298f9af5e314b833dcfcc59c9b0bbba2332c63e66fda7180a047bf5add",
+      "bytes": 68176
+    },
+    {
+      "path": "final-provider-setup.png",
+      "sha256": "c86eb4e188e8036130f4072093084da216a126c4327262fa6f16a286e87ebf8c",
+      "bytes": 112049
+    },
+    {
+      "path": "r2-zip-verification.json",
+      "sha256": "c0e556455a1c046a0433fc40742e9dd490bd30ddfa11aa47b81615990e3e0edf",
+      "bytes": 703
+    },
+    {
+      "path": "ocr-empty-cache-redacted.log",
+      "sha256": "6aa040811d2863c5b54de8be30896c80260c7f24a3097853d4663efa555118b6",
+      "rawSha256": "7926d95c5d0c88e08ec27486c4c08fd4ed32fc6818bf7888c96536bf310ec213",
+      "redaction": "isolated host username/cache path only"
+    },
+    {
+      "path": "verify-final.mjs.txt",
+      "sha256": "83bf114e4b138c26e061fa4fe04f9b7f53f3cb233206ca735b7b93a12298425a"
+    },
+    {
+      "path": "prepare-peer-distribution.py.txt",
+      "sha256": "b43172d06365f8a1a438461870d2b08a51ae409c48898ad5136c98b225e563fd"
+    },
+    {
+      "path": "final-review.md",
+      "sha256": "15457d4d02e4d7a6472ac17fd3914dd69cd75b45c35125de4522aeb9d35fcac5"
+    }
+  ],
+  "distributionId": "0.1.108-peer-r1",
+  "preparationRevision": "r3",
+  "codeSigning": "NotSigned",
+  "review": {
+    "stage1": "PASS for preparation scope",
+    "stage2": "PASS for preparation scope",
+    "high": 0,
+    "medium": 0,
+    "low": 1
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "zipSha256": "9495c6163473df07831862b162d6252786689f67f5318c71d6bf5083df95f9f2",
+  "filesVerified": 4012,
+  "excludedComponents": [
+    {
+      "path": "resources/models/ffmpeg.exe",
+      "sha256": "04e1307997530f9cf2fe35cba2ca7e8875ca91da02f89d6c7243df819c94ad00"
+    },
+    {
+      "path": "resources/models/ffprobe.exe",
+      "sha256": "4303ec85855340689b1f8aa5d9c1dc06ef3e3090682de3034edc3fca2b0798d5"
+    }
+  ],
+  "applicationHashes": {
+    "\u77ed\u5267\u6295\u6d41\u7d20\u6750\u751f\u6210\u5e73\u53f0.exe": "ea9fd8ba87e57cfe93126d42e9b268466a5575682b69d4de287cda0aef6a198b",
+    "resources/app.asar": "bca1984d779e6b0339211f1a19a66858f88320200f9786220ffbaa5733918d5a"
+  }
+}
