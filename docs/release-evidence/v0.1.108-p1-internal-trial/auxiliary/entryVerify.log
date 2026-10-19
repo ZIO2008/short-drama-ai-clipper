@@ -1,0 +1,7 @@
+VERIFY_ENTRY=D:\个人工作\短剧AI切片工具\_launch_material_studio_stable.ps1
+Verified v0.1.108-p1-internal-trial
+ENTRY_SHA256=5ee607e1dc7079e1fcaa4b0fd8aeda2000c89e8aab58651fd8bea5e4b0a58f56
+VERIFY_ENTRY=D:\个人工作\短剧AI切片工具\_launch_legacy_stable.ps1
+Verified legacy v8.38.1
+ENTRY_SHA256=984ebb2fe303a66e8a020f03c01850f117a25e364504276eb9d2e1c8c1f7e6c0
+BACKUP_VERIFIED={"databaseSha256":"b8d9b52777252013a41bd6043780109e9bd9f2c1faaaba70af472b8b86977cb7","manifestSha256":"4b9fbb4ebe34c8a00948d457e8c5590d0897b38bedbb5d6347e21d2167edb3d6","entriesSha256":"1d96d75d3e12befbdad4bfd14f329f512888037a4a77604cc849e54923fa3102","counts":{"dramas":4,"episodes":87,"subtitle_tracks":216,"subtitle_cues":5944,"generated_materials":14,"clip_export_batches":14},"includesMediaBytes":false}

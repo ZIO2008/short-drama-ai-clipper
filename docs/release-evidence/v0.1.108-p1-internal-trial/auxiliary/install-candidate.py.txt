@@ -1,0 +1,25 @@
+import hashlib,json,shutil,sys
+from pathlib import Path
+from datetime import datetime,timezone
+root=Path.cwd()
+manifest=json.loads((root/'release/candidates/v0.1.108-p1-internal-trial/candidate-manifest.json').read_text(encoding='utf-8'))
+source=Path(manifest['executablePath']).parent
+project=root.parents[1]
+target=project/'04_material_studio_stable/v0.1.108'
+if target.exists(): raise SystemExit('Install target already exists')
+if target.resolve().parent != (project/'04_material_studio_stable').resolve(): raise SystemExit('Invalid target')
+def sha(p):
+ h=hashlib.sha256()
+ with p.open('rb') as f:
+  for chunk in iter(lambda:f.read(1024*1024),b''):h.update(chunk)
+ return h.hexdigest()
+shutil.copytree(source,target)
+files=sorted(p for p in source.rglob('*') if p.is_file())
+for p in files:
+ q=target/p.relative_to(source)
+ if sha(p)!=sha(q):raise SystemExit('Copy mismatch')
+if len([p for p in target.rglob('*') if p.is_file()])!=len(files):raise SystemExit('Copy inventory mismatch')
+install={'schemaVersion':1,'releaseId':manifest['releaseId'],'appVersion':manifest['appVersion'],'sourceCommit':manifest['sourceCommit'],'executableRelativePath':Path(manifest['executablePath']).name,'executableSha256':manifest['executableSha256'],'appAsarRelativePath':'resources/app.asar','appAsarSha256':manifest['appAsarSha256'],'packageFileCount':len(files),'packageBytes':sum(p.stat().st_size for p in files),'copyVerification':'every package file SHA-256 matched; inventory count matched','installedAtUtc':datetime.now(timezone.utc).isoformat()}
+if sha(target/install['executableRelativePath'])!=install['executableSha256'] or sha(target/'resources/app.asar')!=install['appAsarSha256']:raise SystemExit('Identity mismatch')
+(target/'install-manifest.json').write_text(json.dumps(install,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+print(json.dumps(install,ensure_ascii=False))

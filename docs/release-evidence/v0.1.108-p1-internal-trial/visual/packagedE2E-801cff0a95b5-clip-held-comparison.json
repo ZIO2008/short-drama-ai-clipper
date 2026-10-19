@@ -1,0 +1,15 @@
+{
+  "kind": "same-app-old-view-vs-native-held-snapshot",
+  "target": "clip",
+  "input": "programmatic-click-for-mid-transition-capture",
+  "capture": "Electron.webContents.capturePage",
+  "heldState": {
+    "title": "原剧切片工作区",
+    "ready": "false",
+    "transition": "true"
+  },
+  "pixels": {
+    "changedRatio": 0,
+    "meanDelta": 0
+  }
+}

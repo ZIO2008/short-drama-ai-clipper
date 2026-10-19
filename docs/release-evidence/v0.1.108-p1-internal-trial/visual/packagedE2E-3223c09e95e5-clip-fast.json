@@ -1,0 +1,641 @@
+{
+  "kind": "real-electron-isolated-ipc-delay-fault-injection",
+  "target": "clip",
+  "mode": "fast",
+  "input": "real-pointer-click",
+  "installed": true,
+  "samples": [
+    {
+      "time": 672.5999999642372,
+      "hasFrame": false,
+      "visible": false,
+      "ready": false,
+      "loading": false,
+      "transition": false
+    },
+    {
+      "time": 679.6999999880791,
+      "hasFrame": false,
+      "visible": false,
+      "ready": false,
+      "loading": false,
+      "transition": false
+    },
+    {
+      "time": 689,
+      "hasFrame": false,
+      "visible": false,
+      "ready": false,
+      "loading": false,
+      "transition": false
+    },
+    {
+      "time": 698.7999999523163,
+      "hasFrame": false,
+      "visible": false,
+      "ready": false,
+      "loading": false,
+      "transition": true
+    },
+    {
+      "time": 874.0999999642372,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": true
+    },
+    {
+      "time": 881.0999999642372,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": true
+    },
+    {
+      "time": 907.6999999880791,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 914.7999999523163,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 930.6999999880791,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 938.7999999523163,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 947.1999999880791,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 955.3999999761581,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 963.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 973.1999999880791,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 980.5999999642372,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 988.7999999523163,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 998.3999999761581,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1005.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1013.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1021.7999999523163,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1029.8999999761581,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1039.699999988079,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1047,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1055.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1063.0999999642372,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1071.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1081.0999999642372,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1089,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1097.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1104.8999999761581,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1113.3999999761581,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1122.699999988079,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1129.8999999761581,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1139,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1146.8999999761581,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1155.8999999761581,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1163.3999999761581,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1172.2999999523163,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1180.2999999523163,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1188.8999999761581,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1197.7999999523163,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1205.3999999761581,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1213.199999988079,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1222.5999999642372,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1229.8999999761581,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1238.8999999761581,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1248.2999999523163,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1255,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1264.3999999761581,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1271.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1281.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1288.699999988079,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1297.8999999761581,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1305.7999999523163,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1313.7999999523163,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1321.7999999523163,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1329.8999999761581,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1338.7999999523163,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1346.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1355.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1365.5999999642372,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1371.5999999642372,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1380.8999999761581,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1389.199999988079,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    }
+  ]
+}

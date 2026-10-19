@@ -1,0 +1,21 @@
+{
+  "databaseSha256": "b8d9b52777252013a41bd6043780109e9bd9f2c1faaaba70af472b8b86977cb7",
+  "databaseManifestSha256": "4b9fbb4ebe34c8a00948d457e8c5590d0897b38bedbb5d6347e21d2167edb3d6",
+  "entriesManifestSha256": "1d96d75d3e12befbdad4bfd14f329f512888037a4a77604cc849e54923fa3102",
+  "sqliteIntegrity": "ok",
+  "counts": {
+    "dramas": 4,
+    "episodes": 87,
+    "subtitle_tracks": 216,
+    "subtitle_cues": 5944,
+    "generated_materials": 14,
+    "clip_export_batches": 14
+  },
+  "includesMediaBytes": false,
+  "fullDatabaseArchivedHere": false,
+  "entryVerification": {
+    "record": "entryVerify.json",
+    "sha256": "eee1c2f0d7c430f600e98c7c3a680f30e327c0931ba6bcb06280794e3156a6b1",
+    "exitCode": 0
+  }
+}

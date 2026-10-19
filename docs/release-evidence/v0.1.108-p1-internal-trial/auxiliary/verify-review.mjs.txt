@@ -1,0 +1,7 @@
+import { readFileSync } from 'node:fs'
+import { captureProvenance } from '../../tools/candidate-provenance.mjs'
+const expected = JSON.parse(readFileSync('test-results/review-0.1.108/review-source.json', 'utf8')), actual = captureProvenance(process.cwd())
+if (actual.sourceDirty || ['sourceCommit','sourceInputsSha256','designContractSha256'].some(key => actual[key] !== expected[key])) throw Error('Reviewed source changed')
+console.log('Fresh independent /root/transition_fix_review Stage1 PASS Stage2 PASS, no newly introduced HIGH/MEDIUM. Four-entry maintenance only: first-read terminal signal,250ms bounded data wait,3s no-load retry panel, native view snapshot handoff and scoped no-crossfade CSS, generation/cancellation/API unavailable or throw fallback, window-capture known routes with business actions still propagated. New modules are small; legacy oversized bridges only add initial-read signals, not new business logic.')
+console.log('Reviewer independently executed24 renderer tests and typecheck exit0, opened old/held native pairs and terminal report/subtitle-error screenshots. Pixel comparison changedRatio0 is distinct from absolute RGB byte equality. E2E heldState metadata was added during review and independently rerun by main-agent afterward: latest slow1passed15.5s, verifies target frame mounted ready=false, native transition=true, old bitmap retained. Full current and actual installed checks are separate recorded executions, not claimed as reviewer-run.')
+console.log('REVIEW_ACCEPTED '+JSON.stringify(actual))

@@ -22,3 +22,7 @@
 slow为了在原生交接中段精确捕获使用programmatic click，快/失败模式用真实pointer click；截图由Electron.webContents.capturePage取得（Playwright常规screenshot会等下一可绘制帧，无法据它误判中段画面）。JSON明确区分这一前提。源码fresh独立两阶段审查通过，无本次HIGH/MEDIUM；既有超长桥只加就绪信号，不把旧债务另起计划。新候选准备为0.1.108，当前尚未打包或替换默认；接下来冻结同源完整测试、实际安装验证及备份更新。
 
 参考：MDN Document.startViewTransition（更新回调Promise完成后才呈现新视图）及React flushSync浏览器集成说明。原生快照不落盘，不额外挂载第二套可操作业务页面。既有超长业务桥仅增加初次读取信号，新增过渡职责置于独立小模块，不借此开启其它重构计划。
+
+## 已交付0.1.108
+
+完整893单测/49current桌面/11实际安装检查、44位scoped视觉与fresh独立审查通过；七项同源检查已封存。实际安装通过并完整备份后默认入口切到108，107保留回退，旧版备用验证通过。详情见../v0.1.108-p1-internal-trial-closure.md。仅待用户体验四入口切换，不安排重做字幕或生成/导出验收。

@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "v0.1.108-p1-internal-trial",
+  "sourceCommit": "d96a94849f6081cd315712afba54b4da57b7dc18",
+  "sourceInputsSha256": "dab001f57ed1eec16062422187647bbd7e50cf56fdfea92b77b2bf7f8669660b",
+  "records": {
+    "pack": {
+      "record": "pack.json",
+      "sha256": "8d5009c52e40fcb044addb85cdf085a7a60446dfe84a7d44d516666c16d12ad0",
+      "exitCode": 0
+    },
+    "dependencyAudit": {
+      "record": "dependencyAudit.json",
+      "sha256": "7bf8be0f9374f9a90c0ebfadf1cc93d7c85efa3028cb5a4b9f569d5a5e27d7fe",
+      "exitCode": 0
+    },
+    "entryVerify": {
+      "record": "entryVerify.json",
+      "sha256": "eee1c2f0d7c430f600e98c7c3a680f30e327c0931ba6bcb06280794e3156a6b1",
+      "exitCode": 0
+    }
+  },
+  "commandSources": {
+    "verify-review.mjs": {
+      "path": "verify-review.mjs.txt",
+      "sha256": "4344ea835e111a8b7fdc007831f8a0be1a25349349ce3c3d831e19e28792526a",
+      "purpose": "Reference-only bytes of the command adapter actually executed; not a product source module."
+    },
+    "run-installed-e2e.mjs": {
+      "path": "run-installed-e2e.mjs.txt",
+      "sha256": "e025a5de11873e089d1c17f03ea460d9dd59e9dbebccf42d9f6d2269db402f80",
+      "purpose": "Reference-only bytes of the command adapter actually executed; not a product source module."
+    },
+    "audit-dependencies.mjs": {
+      "path": "audit-dependencies.mjs.txt",
+      "sha256": "50e6a9ed49d12baf98850b46e4df29f1b6cfa29275d53659e79a21532532a25f",
+      "purpose": "Reference-only bytes of the command adapter actually executed; not a product source module."
+    },
+    "verify-entries.mjs": {
+      "path": "verify-entries.mjs.txt",
+      "sha256": "cbc9d98bfb9dc9827a5452f36f785abe3d5e4777448661cd401c46c71b8cd67e",
+      "purpose": "Reference-only bytes of the command adapter actually executed; not a product source module."
+    },
+    "install-candidate.py": {
+      "path": "install-candidate.py.txt",
+      "sha256": "7dcb7bc087507521863c89dc8691420c2abcf24fdcc6c30a7016a0cd33ef1337",
+      "purpose": "Reference-only bytes of the command adapter actually executed; not a product source module."
+    }
+  },
+  "installManifestSha256": "535bec51186e250779878236441be369136c9fcbd31de94fa7b6bfb436d3acac",
+  "backupProofSha256": "6ba187d2e886e99f28477c708d22da7f132b1b8cf3c471aca3c5553751606025"
+}

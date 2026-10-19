@@ -1,0 +1,336 @@
+{
+  "schemaVersion": 1,
+  "releaseId": "v0.1.108-p1-internal-trial",
+  "sourceCommit": "d96a94849f6081cd315712afba54b4da57b7dc18",
+  "sourceInputsSha256": "dab001f57ed1eec16062422187647bbd7e50cf56fdfea92b77b2bf7f8669660b",
+  "candidateManifestSha256": "eda2b29b6f0fe56fb062fff6dbcecd48f3d6d3cd91011533b3bd8ab830261d68",
+  "executableSha256": "ea9fd8ba87e57cfe93126d42e9b268466a5575682b69d4de287cda0aef6a198b",
+  "appAsarSha256": "bca1984d779e6b0339211f1a19a66858f88320200f9786220ffbaa5733918d5a",
+  "executions": {
+    "currentE2E": {
+      "record": "currentE2E.json",
+      "sha256": "7a5ce8faedcc846f61c10d68368b899bfe21fcf576e725bcc53dec3d9f6eaf86",
+      "command": "node node_modules/@playwright/test/cli.js test --workers=2",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "win32",
+        "arch": "x64"
+      },
+      "exitCode": 0
+    },
+    "packagedE2E": {
+      "record": "packagedE2E.json",
+      "sha256": "3daf6d509c83e39222ef20d8177212887dd104662e4da17523bac7c701b48856",
+      "command": "node test-results/review-0.1.108/run-installed-e2e.mjs",
+      "environment": {
+        "node": "v24.19.0",
+        "platform": "win32",
+        "arch": "x64"
+      },
+      "exitCode": 0
+    }
+  },
+  "artifacts": {
+    "currentE2E-11bd106a726c-clip-before.png": {
+      "sha256": "32066435ea8fc1d379756b44b85375d8e1777ee731afe3ef1130bee5548436b3",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-before.png"
+    },
+    "currentE2E-9463c086ef52-clip-held-comparison.json": {
+      "sha256": "dc2d47981064c8e8b1093dfe4e7f877197846e2970e189c956f812ce90051ecd",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-held-comparison.json"
+    },
+    "currentE2E-13c73d71fa82-clip-held.png": {
+      "sha256": "32066435ea8fc1d379756b44b85375d8e1777ee731afe3ef1130bee5548436b3",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-held.png"
+    },
+    "currentE2E-08861c4547b4-clip-pool-before.png": {
+      "sha256": "751548f3e1d28dbe3bd1e44b40d208db97c6c481da16bbf079ab852fa4d89421",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-pool-before.png"
+    },
+    "currentE2E-f3ab00fb70d9-clip-pool-held-comparison.json": {
+      "sha256": "ea144b808e2f76381d254ae3f6ef1b90cb6a4bd42969912d8039c027b3585a18",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-pool-held-comparison.json"
+    },
+    "currentE2E-36da47f38c19-clip-pool-held.png": {
+      "sha256": "adae1d5721b492dc8a25fb4ef5a5080dacedf860cd494bdad82b705ff4a83a1a",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-pool-held.png"
+    },
+    "currentE2E-6df0feaf2dde-clip-pool-slow.json": {
+      "sha256": "8e27c0d8e408d1c7d69806e40a5a1532b6a1ef41fa2302a33c43c558c11e666c",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-pool-slow.json"
+    },
+    "currentE2E-6c1bb04d87f5-clip-pool-slow.png": {
+      "sha256": "ff2e957a070ae793da7a4f7de595ead05b51d591996676c3a2852ece0cfc87a6",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-pool-slow.png"
+    },
+    "currentE2E-b3812d77379e-clip-report-before.png": {
+      "sha256": "751548f3e1d28dbe3bd1e44b40d208db97c6c481da16bbf079ab852fa4d89421",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-report-before.png"
+    },
+    "currentE2E-22406b818eb2-clip-report-held-comparison.json": {
+      "sha256": "bfce9a0d68c60b1e82077e8175b3e13d716810d2fa9c3b9b219a60ba89918afc",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-report-held-comparison.json"
+    },
+    "currentE2E-b7851a0427b5-clip-report-held.png": {
+      "sha256": "adae1d5721b492dc8a25fb4ef5a5080dacedf860cd494bdad82b705ff4a83a1a",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-report-held.png"
+    },
+    "currentE2E-3403574946b4-clip-report-slow.json": {
+      "sha256": "f008d824231eaa8905fd55b2744815a6bdfd774f3d1dd2b1128c3c09d41d743b",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-report-slow.json"
+    },
+    "currentE2E-8f0e5178ec4f-clip-report-slow.png": {
+      "sha256": "25971e5c9a84df936b26a37794c38e44230d0c969203227dc8ee5f6a2a75d018",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-report-slow.png"
+    },
+    "currentE2E-9e739f5cbe27-clip-slow.json": {
+      "sha256": "e3902d1d014d98dba320f9b2bba8db0e15e3c064da528cb923310ec6c689b2fe",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-slow.json"
+    },
+    "currentE2E-044306d3815b-clip-slow.png": {
+      "sha256": "4c9dcc181e2b4d213f625992d9808e54e618545df3a208b0ec77ab73af4985ed",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-slow.png"
+    },
+    "currentE2E-f478a70cb939-subtitles-before.png": {
+      "sha256": "0523a1c1ea7526522fe5a9d21651f396eb9e4b539ba4e1e5cbdfdbb5ecb41b7f",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/subtitles-before.png"
+    },
+    "currentE2E-edb529702c6e-subtitles-held-comparison.json": {
+      "sha256": "c6013518be1f7fc944280d13a6a78886e682ed422d2d9a9d728d3216eb9bcee7",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/subtitles-held-comparison.json"
+    },
+    "currentE2E-6be372215ae2-subtitles-held.png": {
+      "sha256": "0523a1c1ea7526522fe5a9d21651f396eb9e4b539ba4e1e5cbdfdbb5ecb41b7f",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/subtitles-held.png"
+    },
+    "currentE2E-22ab7a3acb25-subtitles-slow.json": {
+      "sha256": "c0eabd3025d1f4abc71ed87b2432cf7009251cacbc6d13140338ca50c6142eb9",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/subtitles-slow.json"
+    },
+    "currentE2E-5bb8cb6182b1-subtitles-slow.png": {
+      "sha256": "19f47ce2e00043de45ae110e9efe85a063ea91d67f69ce9128c8c4c6614a11c2",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/subtitles-slow.png"
+    },
+    "currentE2E-4b03f5a8d768-clip-error.json": {
+      "sha256": "c970ab64276421636ac598cb586fe926cb5a29455848a8e5c3d86be9fcc5998b",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-989bd-le-handoff-with-error-reads-current/clip-error.json"
+    },
+    "currentE2E-b05823d1b660-clip-error.png": {
+      "sha256": "5bb512ac8b163fdb8e2d0903c07f409f8ca0e9ea3657d184a1eef5c7681b3d3a",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-989bd-le-handoff-with-error-reads-current/clip-error.png"
+    },
+    "currentE2E-8d1066d4889c-clip-pool-error.json": {
+      "sha256": "c21bb2e03b8ae14cce1b2cf21da29915dec5a8186b596e99d1a16903eaffd581",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-989bd-le-handoff-with-error-reads-current/clip-pool-error.json"
+    },
+    "currentE2E-8eba5c5055e5-clip-pool-error.png": {
+      "sha256": "5e7f3b1d620a83cede1725be0447932c43aa662af450b9c3bf4a419b5289e738",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-989bd-le-handoff-with-error-reads-current/clip-pool-error.png"
+    },
+    "currentE2E-b77f99d71acb-clip-report-error.json": {
+      "sha256": "68f259add7c9c15223a44ee14cb71580a2ce10476812bcf8dde267f5f7932b9d",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-989bd-le-handoff-with-error-reads-current/clip-report-error.json"
+    },
+    "currentE2E-0b81990235d4-clip-report-error.png": {
+      "sha256": "9cfbb55d1ddf842efcb560d2ae16c37eb109722f061472d2837a27efa7ac1c26",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-989bd-le-handoff-with-error-reads-current/clip-report-error.png"
+    },
+    "currentE2E-76ab52a257a8-subtitles-error.json": {
+      "sha256": "abead67f20110c58e6f50c231673d91d88f1d6804595f157658098c757c583bb",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-989bd-le-handoff-with-error-reads-current/subtitles-error.json"
+    },
+    "currentE2E-9dfe4d4cc6b1-subtitles-error.png": {
+      "sha256": "98308d2274d8163b1deba9fac5220cf0432e8ba13746cd9904d71c217c951490",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-989bd-le-handoff-with-error-reads-current/subtitles-error.png"
+    },
+    "currentE2E-5912a1c3528d-clip-fast.json": {
+      "sha256": "88732d4332e5070ee901177ec5f568bb6b23f4d03318fde1780cecfc0f49023c",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-b6a77-ble-handoff-with-fast-reads-current/clip-fast.json"
+    },
+    "currentE2E-3ab3f38c363e-clip-fast.png": {
+      "sha256": "751548f3e1d28dbe3bd1e44b40d208db97c6c481da16bbf079ab852fa4d89421",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-b6a77-ble-handoff-with-fast-reads-current/clip-fast.png"
+    },
+    "currentE2E-adfb9e737bc9-clip-pool-fast.json": {
+      "sha256": "0d7cef4fd1ea01f44e00c142484b139edd21f10b367fcef6da177e5b05cc1a88",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-b6a77-ble-handoff-with-fast-reads-current/clip-pool-fast.json"
+    },
+    "currentE2E-dfa39aac9427-clip-pool-fast.png": {
+      "sha256": "ff2e957a070ae793da7a4f7de595ead05b51d591996676c3a2852ece0cfc87a6",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-b6a77-ble-handoff-with-fast-reads-current/clip-pool-fast.png"
+    },
+    "currentE2E-46f0548721dd-clip-report-fast.json": {
+      "sha256": "2490eb41d6421b864812e4080b241d600d1bab249495f7be202b6ac44b5159d0",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-b6a77-ble-handoff-with-fast-reads-current/clip-report-fast.json"
+    },
+    "currentE2E-9c218fbe29e5-clip-report-fast.png": {
+      "sha256": "25971e5c9a84df936b26a37794c38e44230d0c969203227dc8ee5f6a2a75d018",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-b6a77-ble-handoff-with-fast-reads-current/clip-report-fast.png"
+    },
+    "currentE2E-f947743dc447-subtitles-fast.json": {
+      "sha256": "ea6b55c50f5b309860b17bc3fa0358301267c4d1b41e864ebfa1790b7d04518c",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-b6a77-ble-handoff-with-fast-reads-current/subtitles-fast.json"
+    },
+    "currentE2E-16ef37f59bc5-subtitles-fast.png": {
+      "sha256": "19f47ce2e00043de45ae110e9efe85a063ea91d67f69ce9128c8c4c6614a11c2",
+      "source": "test-results/e2e-0.1.108-current/prototype-navigation-trans-b6a77-ble-handoff-with-fast-reads-current/subtitles-fast.png"
+    },
+    "packagedE2E-a9eaba1b544f-clip-before.png": {
+      "sha256": "2e4baa36db2b61b0d8e77ab59aeb4b70823acb3940024da910df65ed66307263",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-before.png"
+    },
+    "packagedE2E-801cff0a95b5-clip-held-comparison.json": {
+      "sha256": "dc2d47981064c8e8b1093dfe4e7f877197846e2970e189c956f812ce90051ecd",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-held-comparison.json"
+    },
+    "packagedE2E-113b14407d42-clip-held.png": {
+      "sha256": "2e4baa36db2b61b0d8e77ab59aeb4b70823acb3940024da910df65ed66307263",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-held.png"
+    },
+    "packagedE2E-4b0e096ebac3-clip-pool-before.png": {
+      "sha256": "751548f3e1d28dbe3bd1e44b40d208db97c6c481da16bbf079ab852fa4d89421",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-pool-before.png"
+    },
+    "packagedE2E-be25b5af4aa4-clip-pool-held-comparison.json": {
+      "sha256": "ea144b808e2f76381d254ae3f6ef1b90cb6a4bd42969912d8039c027b3585a18",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-pool-held-comparison.json"
+    },
+    "packagedE2E-008f6a25dab1-clip-pool-held.png": {
+      "sha256": "adae1d5721b492dc8a25fb4ef5a5080dacedf860cd494bdad82b705ff4a83a1a",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-pool-held.png"
+    },
+    "packagedE2E-dd650ed5e8dc-clip-pool-slow.json": {
+      "sha256": "0a3d88f065cac2b53eb30bd338f2d74784ed6ab3ccf61039a65b10e332d97e4b",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-pool-slow.json"
+    },
+    "packagedE2E-9e32a0874308-clip-pool-slow.png": {
+      "sha256": "ff2e957a070ae793da7a4f7de595ead05b51d591996676c3a2852ece0cfc87a6",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-pool-slow.png"
+    },
+    "packagedE2E-7ac66227568c-clip-report-before.png": {
+      "sha256": "751548f3e1d28dbe3bd1e44b40d208db97c6c481da16bbf079ab852fa4d89421",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-report-before.png"
+    },
+    "packagedE2E-b3c85a464d40-clip-report-held-comparison.json": {
+      "sha256": "bfce9a0d68c60b1e82077e8175b3e13d716810d2fa9c3b9b219a60ba89918afc",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-report-held-comparison.json"
+    },
+    "packagedE2E-c677394e7e21-clip-report-held.png": {
+      "sha256": "adae1d5721b492dc8a25fb4ef5a5080dacedf860cd494bdad82b705ff4a83a1a",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-report-held.png"
+    },
+    "packagedE2E-6eed5bb69200-clip-report-slow.json": {
+      "sha256": "2e8f4e78a23f68a70c9c3bbd2f20e296659752f1e6e47225e9a6c6706f146283",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-report-slow.json"
+    },
+    "packagedE2E-f6b38c7221d5-clip-report-slow.png": {
+      "sha256": "25971e5c9a84df936b26a37794c38e44230d0c969203227dc8ee5f6a2a75d018",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-report-slow.png"
+    },
+    "packagedE2E-c69e1f1fab0e-clip-slow.json": {
+      "sha256": "e643084cb671836c57cb81987ce382d9271c733d1258dc54a7a815359295c1ef",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-slow.json"
+    },
+    "packagedE2E-94102814c0a6-clip-slow.png": {
+      "sha256": "4c9dcc181e2b4d213f625992d9808e54e618545df3a208b0ec77ab73af4985ed",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/clip-slow.png"
+    },
+    "packagedE2E-c3b0e3ed3697-subtitles-before.png": {
+      "sha256": "08cce4a2b7c6dfc6c31afb6b14d8ceb45f5f1dd74c9777d86d122b18f6d582a5",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/subtitles-before.png"
+    },
+    "packagedE2E-2a76361d49b4-subtitles-held-comparison.json": {
+      "sha256": "c6013518be1f7fc944280d13a6a78886e682ed422d2d9a9d728d3216eb9bcee7",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/subtitles-held-comparison.json"
+    },
+    "packagedE2E-379210eee2c9-subtitles-held.png": {
+      "sha256": "08cce4a2b7c6dfc6c31afb6b14d8ceb45f5f1dd74c9777d86d122b18f6d582a5",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/subtitles-held.png"
+    },
+    "packagedE2E-ae3222208c74-subtitles-slow.json": {
+      "sha256": "eef070b9fdbe4dc738a62024b079ca7f4b5ed76e017d489e991a0c104aaeeea2",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/subtitles-slow.json"
+    },
+    "packagedE2E-d7b03d1514dc-subtitles-slow.png": {
+      "sha256": "158907ffcb113034e99958bbbc51424ede183b396a2c9c5b72f85628382de6e0",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-53909-ble-handoff-with-slow-reads-current/subtitles-slow.png"
+    },
+    "packagedE2E-73a6a96efce6-clip-error.json": {
+      "sha256": "4d8e8295ea42b2d3292925be2664df7b9d889b664107a6dd9d523c74b8e90fcb",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-989bd-le-handoff-with-error-reads-current/clip-error.json"
+    },
+    "packagedE2E-41767b4db479-clip-error.png": {
+      "sha256": "5bb512ac8b163fdb8e2d0903c07f409f8ca0e9ea3657d184a1eef5c7681b3d3a",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-989bd-le-handoff-with-error-reads-current/clip-error.png"
+    },
+    "packagedE2E-fb8594772412-clip-pool-error.json": {
+      "sha256": "bddc67f8b5a44308286ef3bf4fea6251072d8fc0270da3c68e99c82d3b26fa08",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-989bd-le-handoff-with-error-reads-current/clip-pool-error.json"
+    },
+    "packagedE2E-710aff62d2cf-clip-pool-error.png": {
+      "sha256": "5e7f3b1d620a83cede1725be0447932c43aa662af450b9c3bf4a419b5289e738",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-989bd-le-handoff-with-error-reads-current/clip-pool-error.png"
+    },
+    "packagedE2E-06db262ce734-clip-report-error.json": {
+      "sha256": "980371d2dc3be33116ee4184d43ee65590548513109ceeac6fb49b50a8a998ab",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-989bd-le-handoff-with-error-reads-current/clip-report-error.json"
+    },
+    "packagedE2E-9ae974355b03-clip-report-error.png": {
+      "sha256": "9cfbb55d1ddf842efcb560d2ae16c37eb109722f061472d2837a27efa7ac1c26",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-989bd-le-handoff-with-error-reads-current/clip-report-error.png"
+    },
+    "packagedE2E-161b1ed3341f-subtitles-error.json": {
+      "sha256": "58e475e28251bddfdcabe0e039a8d84d0fd03577de6ff9a2f2073b7ace1bbe14",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-989bd-le-handoff-with-error-reads-current/subtitles-error.json"
+    },
+    "packagedE2E-7740d327be88-subtitles-error.png": {
+      "sha256": "e5ea1a16e3e490461468f02f5c79888c62dc4f8d5fc311f4e4bf70bb0dc5d4ce",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-989bd-le-handoff-with-error-reads-current/subtitles-error.png"
+    },
+    "packagedE2E-3223c09e95e5-clip-fast.json": {
+      "sha256": "cd5b72a82e4618ada5218c867ed394e39393e37ab66a1185bf208152f0972579",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-b6a77-ble-handoff-with-fast-reads-current/clip-fast.json"
+    },
+    "packagedE2E-e9fd925dfa2f-clip-fast.png": {
+      "sha256": "751548f3e1d28dbe3bd1e44b40d208db97c6c481da16bbf079ab852fa4d89421",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-b6a77-ble-handoff-with-fast-reads-current/clip-fast.png"
+    },
+    "packagedE2E-7aabf4f2d209-clip-pool-fast.json": {
+      "sha256": "e6028bad0d7601ac76827e97362f067edde7cecaff7e83a12a36a56160919d6c",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-b6a77-ble-handoff-with-fast-reads-current/clip-pool-fast.json"
+    },
+    "packagedE2E-396d0e02bc75-clip-pool-fast.png": {
+      "sha256": "ff2e957a070ae793da7a4f7de595ead05b51d591996676c3a2852ece0cfc87a6",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-b6a77-ble-handoff-with-fast-reads-current/clip-pool-fast.png"
+    },
+    "packagedE2E-1aaca7b37ec6-clip-report-fast.json": {
+      "sha256": "99967f445b574105653b567263f8fd84c9b1865f73c8093af3d2db2fb6b9e0f1",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-b6a77-ble-handoff-with-fast-reads-current/clip-report-fast.json"
+    },
+    "packagedE2E-891feb87259f-clip-report-fast.png": {
+      "sha256": "25971e5c9a84df936b26a37794c38e44230d0c969203227dc8ee5f6a2a75d018",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-b6a77-ble-handoff-with-fast-reads-current/clip-report-fast.png"
+    },
+    "packagedE2E-f8f468571e74-subtitles-fast.json": {
+      "sha256": "e9dfc7d1263849c21eca9411946bd9eee9b224cb32f534a6ccd1604ad2fb65fc",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-b6a77-ble-handoff-with-fast-reads-current/subtitles-fast.json"
+    },
+    "packagedE2E-1ecbdb81f6ec-subtitles-fast.png": {
+      "sha256": "158907ffcb113034e99958bbbc51424ede183b396a2c9c5b72f85628382de6e0",
+      "source": "test-results/e2e-0.1.108-installed/prototype-navigation-trans-b6a77-ble-handoff-with-fast-reads-current/subtitles-fast.png"
+    },
+    "baseline107-2f47f8ea678a-subtitles-fast.json": {
+      "sha256": "537d7567ee2b47a0d74c0655c55fd643aa315751e08386db618ba07d490efd4b",
+      "source": "test-results/navigation-transition-107-red/prototype-navigation-trans-b6a77-ble-handoff-with-fast-reads-current/subtitles-fast.json"
+    }
+  },
+  "baseline": {
+    "reference": "baseline107-2f47f8ea678a-subtitles-fast.json",
+    "actualInstalledVersion": "0.1.107",
+    "installManifestSha256": "437c6204b7b0fab7bfa8f9573eb402356fedadcd352da08c5ac8b080f6abf230",
+    "appAsarSha256": "cff0b3da0e156d112806f7303a3ddb67c659752ed9e9a647bdc4eeaf73ee75c1",
+    "observedToolExitCode": 1,
+    "reason": "Actual107 fast regression failed on hidden/not-ready frame samples, not missing a new readiness protocol field."
+  },
+  "scope": "Four entries × fast/slow/error; real isolated app with explicit IPC delay/fault injection. Fast/error real pointer; slow programmatic click permits capture while new target frame is mounted ready=false and native transition=true. Native old vs held full-frame comparison, not a new design baseline. Full real export remains a separate packaged regression."
+}

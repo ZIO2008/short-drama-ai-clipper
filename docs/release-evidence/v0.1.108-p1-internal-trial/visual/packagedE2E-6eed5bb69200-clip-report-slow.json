@@ -1,0 +1,1139 @@
+{
+  "kind": "real-electron-isolated-ipc-delay-fault-injection",
+  "target": "clip-report",
+  "mode": "slow",
+  "input": "programmatic-click-for-mid-transition-capture",
+  "installed": true,
+  "samples": [
+    {
+      "time": 1004.7000000476837,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1005,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1013.9000000357628,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1022.4000000357628,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1030.7000000476837,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1039,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1047.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1055.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1064.2000000476837,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": false
+    },
+    {
+      "time": 1072.7000000476837,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip",
+      "transition": true
+    },
+    {
+      "time": 1445,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": true
+    },
+    {
+      "time": 1447.2000000476837,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": true
+    },
+    {
+      "time": 1472.6000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1487.300000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1499.4000000357628,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1504.9000000357628,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1513.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1521.4000000357628,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1530,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1547,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1554.800000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1563.800000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1579.300000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1596.300000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1611.6000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1613.7000000476837,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1626.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1634.300000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1641.6000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1650.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1658,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1666.6000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1674.1000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1683.1000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1691.7000000476837,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1699.4000000357628,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1707.7000000476837,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1716.300000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1724.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1732.2000000476837,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1740.4000000357628,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1748.1000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1756.1000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1764.4000000357628,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1772.6000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1781.1000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1789.300000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1798,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1805.800000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1814,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1822.1000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1830.7000000476837,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1839,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1846.7000000476837,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1863.800000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1879.300000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1880,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "initialData": "loading",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1895.7000000476837,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1905.1000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1914.4000000357628,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1929.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1946.300000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1947.1000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1961.4000000357628,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1968.9000000357628,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1976.6000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1984.9000000357628,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 1993.7000000476837,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2002,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2010.6000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2019,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2027.4000000357628,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2036,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2044.4000000357628,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2051.900000035763,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2061,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2069.400000035763,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2078.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2079.600000023842,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2095.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2096.400000035763,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2112.7000000476837,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2113.800000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2129,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2129.900000035763,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2146.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2155.300000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2171.300000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2188,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2204.800000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2213.900000035763,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2230.300000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2238.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2247.400000035763,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2255.2000000476837,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2271.400000035763,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2280.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2296.400000035763,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2312.800000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2313.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2329.300000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2347.300000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2358,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2371.900000035763,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2381.2000000476837,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2388.7000000476837,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2396.900000035763,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2405.100000023842,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2413.600000023842,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2421.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2430,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2446.900000035763,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    },
+    {
+      "time": 2455.2000000476837,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "initialData": "ready",
+      "active": "screen-clip-report",
+      "transition": false
+    }
+  ]
+}

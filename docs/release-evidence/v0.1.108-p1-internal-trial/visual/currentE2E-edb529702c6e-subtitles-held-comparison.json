@@ -1,0 +1,15 @@
+{
+  "kind": "same-app-old-view-vs-native-held-snapshot",
+  "target": "subtitles",
+  "input": "programmatic-click-for-mid-transition-capture",
+  "capture": "Electron.webContents.capturePage",
+  "heldState": {
+    "title": "字幕资产",
+    "ready": "false",
+    "transition": "true"
+  },
+  "pixels": {
+    "changedRatio": 0,
+    "meanDelta": 0
+  }
+}

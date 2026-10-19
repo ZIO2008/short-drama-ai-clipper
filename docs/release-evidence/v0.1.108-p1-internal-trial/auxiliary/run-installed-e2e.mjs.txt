@@ -1,0 +1,13 @@
+import { readFileSync } from 'node:fs'
+import { resolve, join } from 'node:path'
+import { spawnSync } from 'node:child_process'
+import { fileSha256 } from '../../tools/candidate-provenance.mjs'
+const installation = resolve('../..', '04_material_studio_stable/v0.1.108')
+const installed = JSON.parse(readFileSync(join(installation, 'install-manifest.json'), 'utf8'))
+const manifest = JSON.parse(readFileSync('release/candidates/v0.1.108-p1-internal-trial/candidate-manifest.json', 'utf8'))
+const executable = join(installation, installed.executableRelativePath)
+if (installed.releaseId !== manifest.releaseId || installed.sourceCommit !== manifest.sourceCommit || fileSha256(executable) !== manifest.executableSha256 || fileSha256(join(installation, 'resources/app.asar')) !== manifest.appAsarSha256) throw Error('Installed package identity mismatch')
+console.log('ACTUAL_INSTALLED_TEST_IDENTITY=' + JSON.stringify({ executable, releaseId: installed.releaseId, sourceCommit: installed.sourceCommit, executableSha256: manifest.executableSha256, appAsarSha256: manifest.appAsarSha256 }))
+const result = spawnSync(process.execPath, ['node_modules/@playwright/test/cli.js', 'test', 'tests/current/packaged-real-dpi.spec.ts', 'tests/current/packaged-business-smoke.spec.ts', 'tests/current/original-clip-pool-export-report.spec.ts', 'tests/current/prototype-navigation-transition.spec.ts', '--workers=2'], { stdio: 'inherit', windowsHide: true, env: { ...process.env, SHORTDRAMA_PACKAGED_EXE: executable, PLAYWRIGHT_OUTPUT_DIR: resolve('test-results/e2e-0.1.108-installed') } })
+if (result.error) throw result.error
+process.exitCode = result.status ?? 1

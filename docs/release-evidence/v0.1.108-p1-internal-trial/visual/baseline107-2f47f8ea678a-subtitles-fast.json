@@ -1,0 +1,407 @@
+{
+  "kind": "real-electron-isolated-ipc-delay-fault-injection",
+  "target": "subtitles",
+  "mode": "fast",
+  "installed": true,
+  "samples": [
+    {
+      "time": 1392.199999988079,
+      "hasFrame": false,
+      "visible": false,
+      "ready": false,
+      "loading": false,
+      "transition": false
+    },
+    {
+      "time": 1402,
+      "hasFrame": false,
+      "visible": false,
+      "ready": false,
+      "loading": false,
+      "transition": false
+    },
+    {
+      "time": 1418.1000000238419,
+      "hasFrame": false,
+      "visible": false,
+      "ready": false,
+      "loading": false,
+      "transition": false
+    },
+    {
+      "time": 1440.5,
+      "hasFrame": true,
+      "visible": false,
+      "ready": false,
+      "loading": false,
+      "transition": false
+    },
+    {
+      "time": 1441.5,
+      "hasFrame": true,
+      "visible": false,
+      "ready": false,
+      "loading": false,
+      "transition": false
+    },
+    {
+      "time": 1448.5,
+      "hasFrame": true,
+      "visible": false,
+      "ready": false,
+      "loading": false,
+      "transition": false
+    },
+    {
+      "time": 1486.3999999761581,
+      "hasFrame": true,
+      "visible": false,
+      "ready": false,
+      "loading": false,
+      "active": "screen-library",
+      "transition": false
+    },
+    {
+      "time": 1487,
+      "hasFrame": true,
+      "visible": false,
+      "ready": false,
+      "loading": false,
+      "active": "screen-library",
+      "transition": false
+    },
+    {
+      "time": 1500,
+      "hasFrame": true,
+      "visible": false,
+      "ready": false,
+      "loading": false,
+      "active": "screen-library",
+      "transition": false
+    },
+    {
+      "time": 1517.5,
+      "hasFrame": true,
+      "visible": false,
+      "ready": false,
+      "loading": false,
+      "active": "screen-library",
+      "transition": false
+    },
+    {
+      "time": 1521.5,
+      "hasFrame": true,
+      "visible": false,
+      "ready": false,
+      "loading": false,
+      "active": "screen-library",
+      "transition": false
+    },
+    {
+      "time": 1534.699999988079,
+      "hasFrame": true,
+      "visible": false,
+      "ready": false,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1535.1000000238419,
+      "hasFrame": true,
+      "visible": false,
+      "ready": false,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1558.800000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1563.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1574.1000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1585.800000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1605.8999999761581,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1621.199999988079,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1637,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": true,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1652.300000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1668.1000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1683.300000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1698.8999999761581,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1714.300000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1729.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1745,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1760.6000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1777.1000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1792.3999999761581,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1793.1000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1807.699999988079,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1822.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1838.300000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1853.300000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1869,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1884.199999988079,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1884.6000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1899.6000000238419,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1915.300000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1930.5,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1946,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1961.3999999761581,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1977.199999988079,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    },
+    {
+      "time": 1992.800000011921,
+      "hasFrame": true,
+      "visible": true,
+      "ready": true,
+      "loading": false,
+      "active": "screen-subtitles",
+      "transition": false
+    }
+  ]
+}

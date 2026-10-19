@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 2,
+  "sourceCommit": "d96a94849f6081cd315712afba54b4da57b7dc18",
+  "sourceInputsSha256": "dab001f57ed1eec16062422187647bbd7e50cf56fdfea92b77b2bf7f8669660b",
+  "sourceDirty": false,
+  "designContractSha256": "8fa027843b1100448c57cb7d16bc53640d1b1995f3f7b075204adef10ad20c0b",
+  "check": "pack",
+  "command": "pnpm run pack:current",
+  "exitCode": 0,
+  "signal": null,
+  "startedAt": "2026-10-19T02:58:25.219Z",
+  "completedAt": "2026-10-19T03:00:05.758Z",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "outputPath": "checks/pack.log",
+  "outputSha256": "302cf7333b7e57762c8e71659a4cbbd3400b7664bd9e3f4d4db1546ecbdd2f74"
+}

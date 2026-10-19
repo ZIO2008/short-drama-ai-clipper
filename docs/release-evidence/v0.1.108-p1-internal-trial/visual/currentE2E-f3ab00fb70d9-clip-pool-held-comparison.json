@@ -1,0 +1,15 @@
+{
+  "kind": "same-app-old-view-vs-native-held-snapshot",
+  "target": "clip-pool",
+  "input": "programmatic-click-for-mid-transition-capture",
+  "capture": "Electron.webContents.capturePage",
+  "heldState": {
+    "title": "原剧切片候选池",
+    "ready": "false",
+    "transition": "true"
+  },
+  "pixels": {
+    "changedRatio": 0,
+    "meanDelta": 0.00002516684190475057
+  }
+}
