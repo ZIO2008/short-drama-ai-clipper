@@ -1,0 +1,6 @@
+Connectivity check to the model hoster has been skipped because `PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK` is enabled.
+INFO: Could not find files for the given pattern(s).
+paddle\utils\cpp_extension\extension_utils.py:712: UserWarning: No ccache found. Please be aware that recompiling all source files may be required. You can download and install ccache from: https://github.com/ccache/ccache/blob/master/doc/INSTALL.md
+Model files already exist. Using cached files. To redownload, please delete the directory manually: `<new-isolated-model-cache>\official_models\PP-OCRv5_server_det`.
+Model files already exist. Using cached files. To redownload, please delete the directory manually: `<new-isolated-model-cache>\official_models\PP-OCRv5_server_rec`.
+{"ok": true, "runnerBuildId": "local-paddleocr-pyinstaller-20260810-r8", "engine": "paddleocr", "detector": true, "recognizer": true, "cacheRoot": "C:\\Users\\ZIO\\AppData\\Local\\Temp\\shortdrama-peer-empty-cache-4f0f2e8963a841528a2b403223c13951"}
