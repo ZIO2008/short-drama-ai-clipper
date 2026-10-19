@@ -1,4 +1,5 @@
 import type { EpisodeAsset, LocalOcrRuntimeIdentity, SubtitleAsset, SubtitleEvidenceTrack, SubtitleRecognitionRun, SubtitleRecognitionSettings } from '../../../shared/contracts.js'
+import { beginPrototypeDataRead, completePrototypeDataRead } from './prototype-data-ready.js'
 import { toMediaUrl } from '../components/MediaMonitor.js'
 import { announceSubtitleToast as announce } from './subtitle-toast.js'
 import { SUBTITLE_PRESSURE_CUE_COUNT, SUBTITLE_PRESSURE_DURATION_SECONDS, SUBTITLE_PRESSURE_EPISODE_NO, SUBTITLE_PRESSURE_SAMPLE_ID, subtitlePressureSample } from './subtitle-pressure-sample.js'
@@ -61,6 +62,7 @@ const ensureSubtitleSelectionStyles = (document: Document): void => {
 export const bindSubtitleAssetRuntime = ({ document, dramaId, episodes, detailActionsEnabled = true, staticDetailActionsEnabled = false }: Props): void => {
   if (document.body.dataset.subtitleRuntimeBound === 'true') return
   document.body.dataset.subtitleRuntimeBound = 'true'
+  beginPrototypeDataRead(document)
   ensureSubtitleSelectionStyles(document)
   const listBody = document.querySelector<HTMLTableSectionElement>('#subtitleListPanel tbody')
   const listHelper = document.querySelector<HTMLElement>('#subtitleListPanel .helper')
@@ -182,10 +184,12 @@ export const bindSubtitleAssetRuntime = ({ document, dramaId, episodes, detailAc
       }))
       listLoading = false
       renderList()
+      completePrototypeDataRead(document)
     } catch (cause) {
       if (request !== listRequest) return
       listLoading = false
       if (listBody) listBody.innerHTML = `<tr><td colspan="4">字幕资产读取失败：${escapeHtml(cause instanceof Error ? cause.message : '未知错误')}</td></tr>`
+      completePrototypeDataRead(document)
     }
   }
   const showDetail = async (episodeId: string): Promise<void> => {

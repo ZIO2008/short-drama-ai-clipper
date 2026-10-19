@@ -1,4 +1,5 @@
 import { clipCandidateLabel } from '../../../shared/clip-candidate-label.js'
+import { beginPrototypeDataRead, completePrototypeDataRead } from './prototype-data-ready.js'
 import type { ClipCandidate, ClipEpisodeStatus, EpisodeAsset } from '../../../shared/contracts.js'
 import { ClipWorkspaceMediaSession } from './clip-workspace-media-session.js'
 import { MIN_CLIP_DURATION, clamp, labelEpisode, renderCandidateSwitcher, renderEpisodeRail, renderMissingClipMedia, roundTenth, setSurfaceText, timecode } from './clip-workspace-surface.js'
@@ -31,6 +32,7 @@ export const bindOriginalClipWorkspaceRuntime = ({ document, dramaId, episodes: 
   const episodes = [...sourceEpisodes].sort((left, right) => left.sortOrder - right.sortOrder || left.id.localeCompare(right.id))
   const elements = resolveClipWorkspaceElements(screen)
   if (!elements) return
+  beginPrototypeDataRead(document)
   const { rail, railMeta, sourceTimeline, candidateTimeline, sourceTrack, candidateTrack, sourceRange, candidateRange, candidateAnchor, frame, candidateId, monitorTimecode, monitorCaption, note, inspectorMeta, transportPlay, transportLoop, speedTrigger, volumeTrigger, speedPopover, volumePopover, sourceTime, relativeTime, volumeLabel, volumeInput, reviewButtons, reviewDescription, boundaryState, nudges, inlineCandidateSwitcher, inlineCandidateGrid, inlineCandidatePrevious, inlineCandidateNext } = elements
   candidateAnchor.classList.add('clip-playhead'); candidateAnchor.dataset.clipPlayhead = 'true'; candidateAnchor.setAttribute('aria-label', '当前预览位置')
   if (!screen.querySelector('[data-clip-inspector-evidence-style]')) { const style = document.createElement('style'); style.dataset.clipInspectorEvidenceStyle = 'true'; style.textContent = '#screen-clip .r5-anchor.clip-playhead::after{content:"预览"}'; screen.append(style) }
@@ -222,7 +224,7 @@ export const bindOriginalClipWorkspaceRuntime = ({ document, dramaId, episodes: 
       if (taskNotice) actionError = { candidateId: null, episodeId: currentEpisodeId, ...taskNotice }
       else if (actionError?.candidateId === null && actionError.episodeId === currentEpisodeId && !generating.has(currentEpisodeId)) actionError = null
     }
-    render()
+    render(); completePrototypeDataRead(document)
   }
   document.addEventListener(workspaceRefreshEvent, () => { void refresh() })
   const persist = async (candidateIdToSave: string, startSeconds: number, endSeconds: number): Promise<void> => {

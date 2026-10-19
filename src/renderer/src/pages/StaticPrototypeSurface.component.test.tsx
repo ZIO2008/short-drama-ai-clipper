@@ -2,6 +2,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { StaticPrototypeSurface } from './StaticPrototypeSurface.js'
+import { beginPrototypeDataRead, completePrototypeDataRead } from './prototype-data-ready.js'
 
 afterEach(() => { cleanup(); vi.useRealTimers() })
 
@@ -42,6 +43,42 @@ const setFrameDocument = (frame: HTMLIFrameElement, contentDocument: Document): 
 }
 
 describe('StaticPrototypeSurface loading guard', () => {
+  it('shows the existing retry panel even when the iframe load event never arrives', async () => {
+    vi.useFakeTimers()
+    render(<StaticPrototypeSurface screen="clip" onBack={vi.fn()} />)
+    await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+    expect(screen.getByRole('alert').textContent).toContain('加载失败')
+    expect(screen.getByRole('button', { name: '重新加载页面' })).not.toBeNull()
+  })
+  it('reveals the real surface after its first data read, rather than the transient loading render', async () => {
+    const onPrepared = vi.fn(), doc = readyClipFixtureDocument()
+    const { container } = render(<StaticPrototypeSurface screen="clip" onBack={vi.fn()} onReady={document => beginPrototypeDataRead(document)} onPrepared={onPrepared} />)
+    const frame = container.querySelector<HTMLIFrameElement>('iframe')!; setFrameDocument(frame, doc); fireEvent.load(frame)
+    expect(frame.dataset.prototypeReady).toBe('false')
+    completePrototypeDataRead(doc)
+    expect(frame.dataset.prototypeReady).toBe('true'); expect(onPrepared).toHaveBeenCalledOnce()
+  })
+  it('does not publish an unmounted data wait after it finishes', () => {
+    const onPrepared = vi.fn(), doc = readyClipFixtureDocument()
+    const { container, unmount } = render(<StaticPrototypeSurface screen="clip" onBack={vi.fn()} onReady={document => beginPrototypeDataRead(document)} onPrepared={onPrepared} />)
+    const frame = container.querySelector<HTMLIFrameElement>('iframe')!; setFrameDocument(frame, doc); fireEvent.load(frame)
+    unmount(); completePrototypeDataRead(doc); expect(onPrepared).not.toHaveBeenCalled()
+  })
+  it('handles local routes before the prototype document capture handlers, while leaving business actions available', async () => {
+    const navigate = vi.fn(), demo = vi.fn(), business = vi.fn()
+    const { container, unmount } = render(<StaticPrototypeSurface screen="clip" onBack={vi.fn()} onNavigate={navigate} />)
+    const frame = container.querySelector<HTMLIFrameElement>('iframe')!, doc = frame.contentDocument!
+    doc.body.innerHTML = readyClipFixtureDocument().body.innerHTML
+    const route = doc.createElement('button'); route.dataset.r5Open = 'clip-pool'
+    const generate = doc.createElement('button'); generate.dataset.r5Open = 'generate'
+    doc.getElementById('screen-clip')!.append(route, generate)
+    doc.addEventListener('click', event => { if ((event.target as Element).closest('[data-r5-open="clip-pool"]')) demo() }, true)
+    doc.addEventListener('click', event => { if ((event.target as Element).closest('[data-r5-open="generate"]')) business() })
+    fireEvent.load(frame); await act(async () => { await Promise.resolve() })
+    route.click(); expect(navigate).toHaveBeenCalledWith('clip-pool'); expect(demo).not.toHaveBeenCalled()
+    generate.click(); expect(business).toHaveBeenCalledOnce()
+    unmount(); route.click(); expect(navigate).toHaveBeenCalledTimes(2)
+  })
   it('keeps local return-to-settings actions on their surface callback', async () => {
     const globalNavigate = vi.fn()
     const localNavigate = vi.fn()

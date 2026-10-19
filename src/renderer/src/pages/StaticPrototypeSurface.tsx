@@ -1,6 +1,8 @@
 import { prepareClipModuleFixture, prepareClipModuleRuntime, type ClipModuleFixtureState } from './clip-module-prototype-host.js'
 import { useLayoutEffect, useMemo, useRef, useState, type ReactElement } from 'react'
 import { bindPrototypeGlobalNavigation } from '../navigation.js'
+import { waitForPrototypeData } from './prototype-data-ready.js'
+import { bindPrototypeLocalNavigation } from './prototype-local-navigation.js'
 import prototypeHtml from '../../../../design/open-design/v2026-07-30-open-design-final/short-drama-material-studio.html?raw'
 import clipMonitorReviewPrototypeHtml from '../../../../design/open-design/v2026-08-11-v49-clip-monitor-review/short-drama-material-studio-v49-clip-review.html?raw'
 import textAnalysisConnectivityPrototypeHtml from '../../../../design/open-design/v2026-08-05-model-studio-connectivity/short-drama-material-studio.html?raw'
@@ -96,9 +98,6 @@ export const isolatePrototypeScreen = (document: Document, screen: Screen, mode:
     if (screen === 'subtitles' && (!subtitleModal || !document.querySelector('[data-subtitle-region-setting]'))) return 'missing'
     return 'ready'
   }
-  // The prototype creates pool/report screens and their `clip-r5-style` stylesheet
-  // in separate inline-script turns. Extracting the screen first leaves it with
-  // browser default controls, so wait until its original stylesheet exists.
   if (screen === 'subtitles') {
     if (document.querySelectorAll('[data-subtitle-method]').length !== 3 || !document.querySelector('[data-subtitle-region-setting]')) return 'missing'
   }
@@ -129,9 +128,6 @@ export const isolatePrototypeScreen = (document: Document, screen: Screen, mode:
     ...document.head.querySelectorAll('meta'),
     ...document.querySelectorAll('style')
   ].map((node) => node.outerHTML).join('')
-  // A clip screen's iframe begins below the host application's 56px top bar.
-  // Shift all prototype height media queries into that coordinate system so the
-  // original <=760px layout begins at the same outer-window height (<=704px).
   const head = preparePrototypeHead(sourceHead, screen)
   // Extracting a provider screen replaces its document and discards the
   // source listeners. Keep the ASR prototype's own initializer so its
@@ -139,11 +135,6 @@ export const isolatePrototypeScreen = (document: Document, screen: Screen, mode:
   const providerRuntimeScript = screen === 'provider-asr'
     ? ['tencent-asr-credentials-runtime', 'tencent-asr-connectivity-runtime', 'asr-default-configuration-runtime'].map((id) => document.getElementById(id)?.outerHTML ?? '').join('')
     : ''
-  // The original prototype calculates the three clip canvases from the full app
-  // viewport, including its 56px top bar. Inside our isolated iframe that bar is
-  // outside the document, so its `100dvh` is 56px shorter and leaves a false
-  // page-level gap below every clip screen. Keep the prototype geometry and only
-  // restore that omitted shell height at the isolation boundary.
   const isolationLayout = screen === 'subtitles'
     ? '<style id="static-prototype-subtitles-isolation-layout">html,body,#content{height:100%;min-height:0;overflow:hidden}#content>.screen.active{animation:none!important}</style>'
     : screen === 'provider-text-analysis'
@@ -182,15 +173,20 @@ export const StaticPrototypeSurface = ({ screen, mode = 'runtime', fixtureState 
   const currentFrame = useRef<HTMLIFrameElement | null>(null)
   const preparationTimer = useRef<ReturnType<typeof window.setTimeout> | null>(null)
   const preparationGeneration = useRef(0)
+  const cancelDataWait = useRef<(() => void) | null>(null)
+  const initialDeadline = useRef<ReturnType<typeof setTimeout> | null>(null)
   const activeScreen = useRef(screen)
   const [loadFailed, setLoadFailed] = useState(false)
   const [loadAttempt, setLoadAttempt] = useState(0)
   const cancelPreparation = (): void => {
+    cancelDataWait.current?.(); cancelDataWait.current = null
     preparationGeneration.current += 1
     if (preparationTimer.current !== null) window.clearTimeout(preparationTimer.current)
     preparationTimer.current = null
     currentFrame.current = null
   }
+  const clearDeadline = (): void => { if (initialDeadline.current !== null) clearTimeout(initialDeadline.current); initialDeadline.current = null }
+  const failPreparation = (): void => { clearDeadline(); cancelPreparation(); runtimeCleanup.current?.(); runtimeCleanup.current = null; setLoadFailed(true) }
   // This ref is updated during render, before the new iframe can commit. It
   // prevents a previous screen's queued timeout from replacing the new screen
   // in the passive-effect gap of a React transition.
@@ -200,7 +196,9 @@ export const StaticPrototypeSurface = ({ screen, mode = 'runtime', fixtureState 
   }
   useLayoutEffect(() => {
     setLoadFailed(false)
+    if (mode === 'runtime' && ['clip', 'clip-pool', 'clip-report', 'subtitles'].includes(screen)) initialDeadline.current = setTimeout(failPreparation, 3000)
     return () => {
+      clearDeadline()
       cancelPreparation()
       runtimeCleanup.current?.()
       runtimeCleanup.current = null
@@ -226,19 +224,10 @@ export const StaticPrototypeSurface = ({ screen, mode = 'runtime', fixtureState 
         detail: { episodeId: trigger.dataset.subtitleStaticEpisodeId ?? '', kind }
       }))
     }, true)
-    document.addEventListener('click', (click) => {
-      const trigger = (click.target as Element).closest<HTMLElement>('[data-open], [data-r5-open]')
-      if (!trigger) return
-      const target = trigger.dataset.r5Open ?? trigger.dataset.open
-      if (!target) return
-      if (trigger.textContent?.includes('返回剧目库')) { click.preventDefault(); onBack(); return }
-      if (target === 'results' && onOpenResults) { click.preventDefault(); onOpenResults(); return }
-      if (onNavigate) { click.preventDefault(); onNavigate(target); return }
-      if (target === 'production' || target === 'library') { click.preventDefault(); onBack() }
-    }, true)
+    const disposeLocalNavigation = bindPrototypeLocalNavigation(document, { onBack, onOpenResults, onNavigate }, mode === 'runtime')
     runtimeCleanup.current?.()
     const disposeRuntime = mode === 'runtime' ? onReady?.(document) : null
-    runtimeCleanup.current = () => { disposeNavigation(); disposeRuntime?.() }
+    runtimeCleanup.current = () => { disposeLocalNavigation(); disposeNavigation(); disposeRuntime?.() }
   }
   if (loadFailed) return <section className="static-prototype-surface-error" role="alert" aria-live="assertive">
     <div>
@@ -273,8 +262,11 @@ export const StaticPrototypeSurface = ({ screen, mode = 'runtime', fixtureState 
         if (state === 'ready') {
           if (activeScreen.current !== screen || preparationGeneration.current !== generation || currentFrame.current !== frame) return
           wireSurface(document)
-          frame.dataset.prototypeReady = 'true'
-          onPrepared?.(screen)
+          cancelDataWait.current = waitForPrototypeData(document, () => {
+            if (activeScreen.current !== screen || preparationGeneration.current !== generation || currentFrame.current !== frame) return
+            clearDeadline()
+            frame.dataset.prototypeReady = 'true'; onPrepared?.(screen)
+          })
           preparationTimer.current = null
           return
         }
@@ -287,10 +279,7 @@ export const StaticPrototypeSurface = ({ screen, mode = 'runtime', fixtureState 
           return
         }
         if (activeScreen.current !== screen || preparationGeneration.current !== generation || currentFrame.current !== frame) return
-        runtimeCleanup.current?.()
-        runtimeCleanup.current = null
-        preparationTimer.current = null
-        setLoadFailed(true)
+        failPreparation()
       }
       prepareSurface()
     }}

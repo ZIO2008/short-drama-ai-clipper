@@ -16,6 +16,7 @@ import { ProductionPage } from './ProductionPage.js'
 import { AiRemixWorkspacePage } from './AiRemixWorkspacePage.js'
 import { AiReviewTimelinePage } from './AiReviewTimelinePage.js'
 import { ModalDialog } from '../components/ModalDialog.js'
+import { usePrototypeNavigation } from './use-prototype-navigation.js'
 
 type Props = {
   drama: DramaSummary; tags: TagSummary[]; initialMode?: 'workspace' | 'edit'; initialDetail?: DramaDetail; onClose: () => void; onLoad: () => Promise<DramaDetail>
@@ -25,6 +26,7 @@ type Props = {
 type Tab = 'assets' | 'production' | 'subtitles' | 'results'
 
 export const DramaWorkspacePage = (props: Props): ReactElement => {
+  const navigatePrototype = usePrototypeNavigation()
   const [detail, setDetail] = useState<DramaDetail | null>(props.initialDetail ?? null)
   const [scripts, setScripts] = useState<ScriptAssetSummary[]>([])
   const [materials, setMaterials] = useState<MaterialSummary[]>([])
@@ -47,8 +49,7 @@ export const DramaWorkspacePage = (props: Props): ReactElement => {
   const requestStaticScreen = (screen: StaticPrototypeScreen): void => {
     // Static surfaces are mounted one at a time.  A document from the preceding
     // clip iframe must never receive events intended for the next iframe.
-    setClipSurfaceDocument(null)
-    activateStaticScreen(screen)
+    navigatePrototype(() => { setClipSurfaceDocument(null); activateStaticScreen(screen) })
   }
   const openCandidateInClipWorkspace = (candidate: ClipCandidate): void => {
     const selection = { dataKey: staticSurfaceDataKey, candidate }
