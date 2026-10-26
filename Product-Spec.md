@@ -1,3 +1,6 @@
+> 2026-10-26最新公开发布：用户明确要求“发布到GitHub吧”，v1.0.0已正式发布并设为Latest：https://github.com/ZIO2008/short-drama-ai-clipper/releases/tag/v1.0.0 。三个附件uploaded、服务端SHA256/大小匹配本地，发布页和ZIP下载匿名HEAD200。源码为独立公开分支release/material-studio-v1.0.0、提交0092fed9b91dd1b9265adab8aa93c3bd98554e11，439项映射与原构建输入一致，未上传本机私有历史。事实来源：当前源码docs/release-readiness/2026-10-26-github-publication-result.md。下方“未公开上传”是更早本地制包阶段的历史事实，已被本授权覆盖；日常0.1.108未替换，跨电脑验收仍暂缓。
+
+
 > 2026-10-26 正式初版授权：现有基本能力满足用户需要，冻结业务范围，制作 Windows x64 1.0.0 正式初版发布包；只更新版本、渠道和发布材料，并从最终包完成本机隔离闭环。独立电脑验收按用户决定暂缓，不作为本轮完成前置，不宣称跨机通过。云 OCR 不安排开发，其它增强不启动；剪映字幕小工具独立存放，不集成平台。公开上传、push、merge、tag、GitHub Release、替换日常安装和正式数据均不在本轮范围。执行与完成标准见 docs/release-readiness/2026-10-26-initial-release-plan.md。正式ZIP及本机验证已完成，交付结果见 docs/release-readiness/2026-10-26-initial-release-result.md。
 
 > 2026-10-19新增授权：0.1.108体验已确认，准备供朋友同事使用的Windows分发包；复用已验收业务版本，补齐跨机、隐私、依赖、许可与中文说明验证，不公开上传。执行步骤及完成标准见 docs/release-readiness/2026-10-19-peer-distribution-plan.md。

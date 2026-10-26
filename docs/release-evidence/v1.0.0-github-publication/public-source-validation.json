@@ -1,0 +1,16 @@
+[
+  {
+    "command": "pnpm run typecheck",
+    "exitCode": 0,
+    "startedAt": "2026-10-26T13:11:19.896451+00:00",
+    "completedAt": "2026-10-26T13:11:22.215677+00:00",
+    "output": "typecheck.log"
+  },
+  {
+    "command": "pnpm run build",
+    "exitCode": 0,
+    "startedAt": "2026-10-26T13:11:22.215760+00:00",
+    "completedAt": "2026-10-26T13:11:26.813496+00:00",
+    "output": "build.log"
+  }
+]

@@ -1,0 +1,43 @@
+{
+  "releaseUrl": "https://github.com/ZIO2008/short-drama-ai-clipper/releases/tag/v1.0.0",
+  "status": "published-latest",
+  "publicSourceCommit": "0092fed9b91dd1b9265adab8aa93c3bd98554e11",
+  "archiveSha256": "4d43ca54168d32e6769ff58e580087ba11638658a3d223db8f1080905f0467d6",
+  "evidence": [
+    {
+      "path": "build.log",
+      "sha256": "a6fb27650cc6e655c064bbde9ca8bf70bd96b0036b280814aec5cda8fe5c0146",
+      "bytes": 1282
+    },
+    {
+      "path": "draft-verification.json",
+      "sha256": "5788b589050a27dba671a7464e28c5b0db3b97149bc0272d2f06d7fa2ac845b5",
+      "bytes": 1559
+    },
+    {
+      "path": "public-http-verification.json",
+      "sha256": "65e12246cc2b191a3f9c1287c4fb3095be75397edc1bcb9659cd2ecf210c9a54",
+      "bytes": 98
+    },
+    {
+      "path": "public-source-validation.json",
+      "sha256": "8ff4060ebe8314a121fca33cb5664eeb831e64bdf2f3b30984c5f1e034fdff73",
+      "bytes": 417
+    },
+    {
+      "path": "published-verification.json",
+      "sha256": "4499f7d03998ed4409adc907f74fcf95e79b118245ac974c2210927f268d4434",
+      "bytes": 1472
+    },
+    {
+      "path": "typecheck.log",
+      "sha256": "f59ce890d385a7d8a9be97a754c6b0476c071f3aea02e9258e8819bb1756a449",
+      "bytes": 74
+    },
+    {
+      "path": "verify-github-release.py.txt",
+      "sha256": "767cd82dad2d045e164d9eaf0c887d082f5931336b3fb5e048532cd7d373795c",
+      "bytes": 2381
+    }
+  ]
+}

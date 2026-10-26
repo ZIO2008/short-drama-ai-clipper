@@ -1,0 +1,28 @@
+$ pnpm run check:version && pnpm run validate:phase29-acceptance && pnpm run clean:build-metadata && electron-vite build && pnpm run verify:renderer-model-studio-boundary
+$ node tools/check-version-consistency.mjs
+VERSION_CHECK_OK version=1.0.0
+$ node tools/validate-phase29-acceptance.mjs
+phase29 acceptance ledger valid: public=6 hidden=2 hiddenRuns=1+1 multimodal=passed+correctly-blocked
+$ node -e "for (const file of ['out/tsconfig.node.tsbuildinfo','out/tsconfig.web.tsbuildinfo']) require('node:fs').rmSync(file,{force:true})"
+vite v8.1.5 building ssr environment for production...
+[2Ktransforming...✓ 114 modules transformed.
+rendering chunks...
+out/main/index.js  706.08 kB
+
+✓ built in 164ms
+vite v8.1.5 building ssr environment for production...
+[2Ktransforming...✓ 2 modules transformed.
+rendering chunks...
+out/preload/index.cjs  14.74 kB
+
+✓ built in 13ms
+vite v8.1.5 building client environment for production...
+[2Ktransforming...✓ 174 modules transformed.
+rendering chunks...
+out/renderer/index.html                     0.42 kB
+out/renderer/assets/index-B443XedN.css     82.67 kB
+out/renderer/assets/index-Bv1ctJDB.js   3,059.43 kB
+
+✓ built in 327ms
+$ node tools/verify-renderer-model-studio-boundary.mjs
+RENDERER_MODEL_STUDIO_BOUNDARY_OK scripts=1

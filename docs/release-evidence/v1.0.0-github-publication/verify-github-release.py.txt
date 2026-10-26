@@ -1,0 +1,37 @@
+import hashlib, json, subprocess, sys
+from datetime import datetime, timezone
+from pathlib import Path
+root = Path.cwd()
+gh, mode = sys.argv[1:3]
+repo = 'ZIO2008/short-drama-ai-clipper'
+def api(endpoint):
+    return json.loads(subprocess.check_output([gh,'api',endpoint],text=True,encoding='utf-8'))
+release = api('repos/'+repo+'/releases/424267750')
+assert release['tag_name']=='v1.0.0'
+assert release['draft'] is (mode=='draft')
+assert release['prerelease'] is False
+assets = {a['name']:a for a in release['assets']}
+assetroot = root/'.tmp/github-assets-v1.0.0'
+expected = {'ShortDramaMaterialStudio-1.0.0-Windows-x64.zip','SHA256SUMS.txt','Getting-Started.zh-CN.txt'}
+assert set(assets)==expected, 'Release assets incomplete or unexpected'
+for name in sorted(expected):
+    local=assetroot/name
+    with local.open('rb') as f:
+        sha=hashlib.file_digest(f,'sha256').hexdigest()
+    assert assets[name]['state']=='uploaded'
+    assert assets[name]['size']==local.stat().st_size
+    assert assets[name]['digest']=='sha256:'+sha, 'GitHub digest mismatch: '+name
+public = root/'.tmp/github-public-v1.0.0'
+commit = subprocess.check_output(['git','-C',str(public),'rev-parse','HEAD'],text=True).strip()
+tree = subprocess.check_output(['git','-C',str(public),'rev-parse','HEAD^{tree}'],text=True).strip()
+remote_commit = api('repos/'+repo+'/commits/'+commit)
+assert remote_commit['commit']['tree']['sha']==tree
+tag=api('repos/'+repo+'/git/ref/tags/v1.0.0')
+assert api('repos/'+repo+'/git/tags/'+tag['object']['sha'])['object']['sha']==commit
+if mode=='published':
+    assert api('repos/'+repo+'/releases/latest')['id']==release['id']
+record={'mode':mode,'checkedAt':datetime.now(timezone.utc).isoformat(),'repository':repo,'releaseId':release['id'],'releaseUrl':release['html_url'],'tag':'v1.0.0','publicSourceCommit':commit,'publicSourceTree':tree,'draft':release['draft'],'prerelease':release['prerelease'],'assets':[{'name':a['name'],'size':a['size'],'digest':a['digest'],'url':a['browser_download_url']} for a in assets.values()],'serverDigestMatchesLocal':True,'remoteSourceTreeMatchesLocal':True,'tagMatchesPublicSource':True}
+out=root/'test-results/github-publication-1.0.0'
+out.mkdir(parents=True,exist_ok=True)
+(out/(mode+'-verification.json')).write_text(json.dumps(record,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+print(json.dumps(record,ensure_ascii=False))
