@@ -1,6 +1,6 @@
 {
   "name": "short-drama-ai-material-platform",
-  "version": "0.1.108",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "description": "短剧投流素材生成平台 Windows 桌面版",
@@ -86,7 +86,7 @@
     "pdf-parse": "^2.4.5",
     "react": "19.2.7",
     "react-dom": "19.2.7",
-    "zod": "4.4.3"
+    "zod": "4.6.6"
   },
   "devDependencies": {
     "@electron/rebuild": "4.2.0",

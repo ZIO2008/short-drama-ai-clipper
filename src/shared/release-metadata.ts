@@ -1,7 +1,7 @@
 export const RELEASE_METADATA = {
   scope: 'P1',
-  channel: 'internal-trial',
-  channelLabel: '内部试点'
+  channel: 'stable',
+  channelLabel: '正式版'
 } as const
 
 export type ReleaseScope = typeof RELEASE_METADATA.scope

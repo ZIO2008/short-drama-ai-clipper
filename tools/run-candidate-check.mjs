@@ -14,8 +14,12 @@ mkdirSync(directory, { recursive: false })
 const output = join(directory, `${check}.log`)
 writeFileSync(output, '', 'utf8')
 const before = captureProvenance(root)
+const metadata = readFileSync('src/shared/release-metadata.ts', 'utf8')
+const scope = /scope: '(P\d+)'/.exec(metadata)?.[1]?.toLowerCase()
+const channel = /channel: '([a-z-]+)'/.exec(metadata)?.[1]
+if (!scope || !channel) throw new Error('Release scope/channel metadata is required')
 const candidateManifest = check === 'packagedE2E'
-  ? resolve('release', 'candidates', `v${JSON.parse(readFileSync('package.json', 'utf8')).version}-p1-internal-trial`, 'candidate-manifest.json')
+  ? resolve('release', 'candidates', `v${JSON.parse(readFileSync('package.json', 'utf8')).version}-${scope}-${channel}`, 'candidate-manifest.json')
   : null
 const candidateManifestSha256 = candidateManifest ? fileSha256(candidateManifest) : undefined
 const startedAt = new Date().toISOString()
