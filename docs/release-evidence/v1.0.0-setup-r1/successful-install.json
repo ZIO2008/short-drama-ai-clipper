@@ -1,0 +1,21 @@
+{
+  "mode": "success",
+  "data": "C:\\Users\\ZIO\\AppData\\Local\\Temp\\shortdrama-installer-data-9d8b25063d81490290ca884bfb379085",
+  "target": "C:\\Users\\ZIO\\AppData\\Local\\Programs\\ShortDramaInstallerCheck-26698ad8287b41f3923187f72fcc01c7",
+  "links": [
+    {
+      "arguments": "",
+      "target": "C:\\Users\\ZIO\\AppData\\Local\\Programs\\ShortDramaInstallerCheck-26698ad8287b41f3923187f72fcc01c7\\短剧投流素材生成平台.exe",
+      "path": "C:\\Users\\ZIO\\Desktop\\短剧投流素材生成平台.lnk"
+    },
+    {
+      "arguments": "",
+      "target": "C:\\Users\\ZIO\\AppData\\Local\\Programs\\ShortDramaInstallerCheck-26698ad8287b41f3923187f72fcc01c7\\短剧投流素材生成平台.exe",
+      "path": "C:\\Users\\ZIO\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\短剧投流素材生成平台.lnk"
+    }
+  ],
+  "allPayloadHashesMatched": true,
+  "exitCode": 0,
+  "videoComponentHashesMatched": true,
+  "exe": "C:\\Users\\ZIO\\AppData\\Local\\Programs\\ShortDramaInstallerCheck-26698ad8287b41f3923187f72fcc01c7\\短剧投流素材生成平台.exe"
+}

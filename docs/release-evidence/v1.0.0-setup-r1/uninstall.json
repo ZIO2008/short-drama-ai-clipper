@@ -1,0 +1,10 @@
+{
+  "testTarget": "C:\\Users\\ZIO\\AppData\\Local\\Programs\\ShortDramaInstallerCheck-26698ad8287b41f3923187f72fcc01c7",
+  "applicationRemoved": true,
+  "shortcutsRemoved": true,
+  "exitCode": 0,
+  "mode": "uninstall",
+  "isolatedDataPreserved": true,
+  "isolatedApplicationDatabaseRetained": true,
+  "isolatedDatabaseIntegrity": "ok"
+}

@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "isPackaged": true,
+  "appVersion": "1.0.0",
+  "channel": "stable",
+  "databaseInitialized": true,
+  "emptyLibrary": true,
+  "actualInstallerExe": "C:\\Users\\ZIO\\AppData\\Local\\Programs\\ShortDramaInstallerCheck-26698ad8287b41f3923187f72fcc01c7\\短剧投流素材生成平台.exe",
+  "shortcutTargetDirectExe": true,
+  "installerPrivacyRuleScan": "passed"
+}

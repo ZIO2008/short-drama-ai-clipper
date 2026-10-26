@@ -1,0 +1,63 @@
+param([ValidateSet('failure','success','uninstall')][string]$Mode)
+$ErrorActionPreference='Stop'
+. 'C:\Users\ZIO\.codex\skills\windows-utf8-shell\scripts\utf8_prelude.ps1'
+$root=(Get-Location).Path
+$evidence=Join-Path $root 'test-results\exe-installer-1.0.0'
+$statePath=Join-Path $evidence 'install-state.json'
+$output='D:\个人工作\短剧AI切片工具\03_发布包\素材平台-1.0.0-安装版-r2'
+$setup=Join-Path $output 'ShortDramaMaterialStudio-1.0.0-Setup-x64.exe'
+$manifest=Get-Content -LiteralPath (Join-Path $output 'installer-manifest.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+if ((Get-FileHash -LiteralPath $setup -Algorithm SHA256).Hash -ne $manifest.installerSha256) { throw 'Installer identity mismatch' }
+if (Get-Process -Name '短剧投流素材生成平台' -ErrorAction SilentlyContinue) { throw 'An application instance is running; do not close user windows for an installer test' }
+if (!(Test-Path -LiteralPath $statePath)) {
+  $existing=Get-ChildItem 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall' -ErrorAction SilentlyContinue | Get-ItemProperty -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -like '短剧投流素材生成平台*' }
+  if ($existing) { throw 'Existing managed installation must not be replaced by test' }
+  $desktop=Join-Path ([Environment]::GetFolderPath('Desktop')) '短剧投流素材生成平台.lnk'
+  $menu=Join-Path ([Environment]::GetFolderPath('Programs')) '短剧投流素材生成平台.lnk'
+  if ((Test-Path -LiteralPath $desktop) -or (Test-Path -LiteralPath $menu)) { throw 'Existing shortcut must not be overwritten by test' }
+  $target=Join-Path $env:LOCALAPPDATA ('Programs\ShortDramaInstallerCheck-'+[Guid]::NewGuid().ToString('N'))
+  $data=Join-Path ([IO.Path]::GetTempPath()) ('shortdrama-installer-data-'+[Guid]::NewGuid().ToString('N'))
+  New-Item -ItemType Directory -Path $data -Force | Out-Null
+  [IO.File]::WriteAllText((Join-Path $data 'keep-project-data.txt'),'isolated data must survive uninstall')
+  @{target=$target;data=$data;desktop=$desktop;menu=$menu} | ConvertTo-Json | Set-Content -LiteralPath $statePath -Encoding UTF8
+}
+$state=Get-Content -LiteralPath $statePath -Raw -Encoding UTF8 | ConvertFrom-Json
+$base=[IO.Path]::GetFullPath((Join-Path $env:LOCALAPPDATA 'Programs'))+'\'
+$resolved=[IO.Path]::GetFullPath($state.target)
+if (!$resolved.StartsWith($base,[StringComparison]::OrdinalIgnoreCase) -or !([IO.Path]::GetFileName($resolved)).StartsWith('ShortDramaInstallerCheck-')) { throw 'Unsafe installer test target' }
+if ($Mode -eq 'failure') {
+  New-Item -ItemType Directory -Path (Join-Path $resolved 'resources\models') -Force | Out-Null
+  [IO.File]::WriteAllText((Join-Path $resolved 'resources\models\ffmpeg.exe'),'controlled corrupt fixture')
+  $process=Start-Process -FilePath $setup -ArgumentList @('/S','/currentuser',('/D='+$resolved)) -WindowStyle Hidden -Wait -PassThru
+  if ($process.ExitCode -eq 0) { throw 'Corrupt tool incorrectly accepted as successful install' }
+  if ((Test-Path -LiteralPath $state.desktop) -or (Test-Path -LiteralPath $state.menu)) { throw 'Failed installation left a usable shortcut' }
+  @{mode=$Mode;exitCode=$process.ExitCode;failureBlocked=$true;shortcutsAbsent=$true;dataMarkerPreserved=(Test-Path -LiteralPath (Join-Path $state.data 'keep-project-data.txt'))} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'failed-install.json') -Encoding UTF8
+} elseif ($Mode -eq 'success') {
+  $process=Start-Process -FilePath $setup -ArgumentList @('/S','/currentuser',('/D='+$resolved)) -WindowStyle Hidden -Wait -PassThru
+  if ($process.ExitCode -ne 0) { throw ('Installer failed with exit '+$process.ExitCode) }
+  $exe=Join-Path $resolved '短剧投流素材生成平台.exe'
+  if (!(Test-Path -LiteralPath $exe) -or !(Test-Path -LiteralPath $state.desktop) -or !(Test-Path -LiteralPath $state.menu)) { throw 'Installed EXE or shortcuts missing' }
+  $shell=New-Object -ComObject WScript.Shell
+  $links=@($state.desktop,$state.menu) | ForEach-Object { $shortcut=$shell.CreateShortcut($_); @{path=$_;target=$shortcut.TargetPath;arguments=$shortcut.Arguments} }
+  foreach ($link in $links) { if ($link.target -ne $exe -or $link.target -notlike '*.exe' -or $link.arguments -like '*.bat*') { throw 'Shortcut is not direct application EXE' } }
+  foreach ($item in $manifest.payloadFiles) {
+    $installed=Join-Path $resolved $item.path
+    if ((Get-FileHash -LiteralPath $installed -Algorithm SHA256).Hash -ne $item.sha256) { throw ('Installed file mismatch: '+$item.path) }
+  }
+  foreach ($entry in $manifest.applicationHashes.PSObject.Properties) {
+    if ((Get-FileHash -LiteralPath (Join-Path $resolved $entry.Name) -Algorithm SHA256).Hash -ne $entry.Value) { throw 'Original application EXE/asar identity mismatch' }
+  }
+  $expected=@{'ffmpeg.exe'='04e1307997530f9cf2fe35cba2ca7e8875ca91da02f89d6c7243df819c94ad00';'ffprobe.exe'='4303ec85855340689b1f8aa5d9c1dc06ef3e3090682de3034edc3fca2b0798d5'}
+  foreach ($name in $expected.Keys) { if ((Get-FileHash -LiteralPath (Join-Path $resolved ('resources\models\'+$name)) -Algorithm SHA256).Hash -ne $expected[$name]) { throw 'Installed video component mismatch' } }
+  @{mode=$Mode;exitCode=0;exe=$exe;target=$resolved;links=$links;allPayloadHashesMatched=$true;videoComponentHashesMatched=$true;data=$state.data} | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $evidence 'successful-install.json') -Encoding UTF8
+} else {
+  $uninstaller=Get-ChildItem -LiteralPath $resolved -Filter 'Uninstall*.exe' -File | Select-Object -First 1
+  if (!$uninstaller -or !($uninstaller.FullName.StartsWith($resolved+'\',[StringComparison]::OrdinalIgnoreCase))) { throw 'Uninstaller is outside verified test target' }
+  $process=Start-Process -FilePath $uninstaller.FullName -ArgumentList @('/S','/currentuser') -WindowStyle Hidden -Wait -PassThru
+  for ($i=0;$i -lt 40 -and (Test-Path -LiteralPath (Join-Path $resolved '短剧投流素材生成平台.exe'));$i++) { Start-Sleep -Milliseconds 250 }
+  if (Test-Path -LiteralPath (Join-Path $resolved '短剧投流素材生成平台.exe')) { throw 'Application executable still exists after uninstall' }
+  if ((Test-Path -LiteralPath $state.desktop) -or (Test-Path -LiteralPath $state.menu)) { throw 'Uninstall did not remove test shortcuts' }
+  if (!(Test-Path -LiteralPath (Join-Path $state.data 'keep-project-data.txt'))) { throw 'Isolated project data was removed by uninstall' }
+  @{mode=$Mode;exitCode=$process.ExitCode;applicationRemoved=$true;shortcutsRemoved=$true;isolatedDataPreserved=$true;testTarget=$resolved} | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'uninstall.json') -Encoding UTF8
+}
+Get-Content -LiteralPath (Join-Path $evidence (@{failure='failed-install.json';success='successful-install.json';uninstall='uninstall.json'}[$Mode])) -Raw -Encoding UTF8

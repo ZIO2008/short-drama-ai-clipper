@@ -1,0 +1,155 @@
+{
+  "artifact": "1.0.0-setup-r1",
+  "preparationDirectoryRevision": "r2",
+  "status": "published-host-verified",
+  "appVersion": "1.0.0",
+  "installerSha256": "984efdb38a853dd7624e36ec05fcb9339a8a6b323e23f86c04372f401c61aca9",
+  "installerBytes": 403805667,
+  "sourceZipSha256": "4d43ca54168d32e6769ff58e580087ba11638658a3d223db8f1080905f0467d6",
+  "sourceApplicationUnchanged": true,
+  "releaseUrl": "https://github.com/ZIO2008/short-drama-ai-clipper/releases/tag/v1.0.0",
+  "packagingSourceCommit": "3e75c4c1d10859e27aa88dfad1697f2c9eed98c3",
+  "environment": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.6",
+    "node": "v24.19.0",
+    "electronBuilder": "26.15.3",
+    "nsis": "3.0.4.1"
+  },
+  "commands": [
+    {
+      "command": "python docs/release-readiness/scripts/prepare-windows-installer.py --root . --output <project>/03_发布包/素材平台-1.0.0-安装版-r2",
+      "exitCode": 0,
+      "outputEvidence": "build-manifest.json",
+      "rawBuildConsoleFileAvailable": false
+    },
+    {
+      "command": ".tmp/test-installed-setup.ps1 -Mode failure",
+      "exitCode": 0,
+      "installerExitCode": 2
+    },
+    {
+      "command": ".tmp/test-installed-setup.ps1 -Mode success",
+      "exitCode": 0,
+      "installerExitCode": 0
+    },
+    {
+      "command": "node tools/run-candidate-check.mjs setupSmoke --node .tmp/setup-smoke.mjs",
+      "exitCode": 0,
+      "businessPassed": 5
+    },
+    {
+      "command": ".tmp/test-installed-setup.ps1 -Mode uninstall",
+      "exitCode": 0
+    },
+    {
+      "command": "gh release upload v1.0.0 <Setup> <SHA256-Setup> <Installing.zh-CN>; gh release edit v1.0.0 --notes-file <updated-notes> --latest",
+      "exitCode": 0
+    },
+    {
+      "command": "python .tmp/verify-setup-publication.py <verified-gh>; anonymous HTTP HEAD setup URL",
+      "exitCode": 0,
+      "httpStatus": 200
+    }
+  ],
+  "limitations": [
+    "NotSigned",
+    "Cross-machine acceptance deferred",
+    "Timeout is statically inspected; bad-hash failure is exercised",
+    "Installer tested with silent switches and explicit destination; no claim of manual wizard click-through",
+    "Business uses synthetic media/local HTTP fixture and seeded candidates",
+    "Failed install may leave program files/uninstall registration; not a full rollback"
+  ],
+  "evidence": [
+    {
+      "path": "application-smoke.json",
+      "sha256": "f588646ca2a885a2dce2a8be922648884af0f994500b0c0d43e4b8ee1de2853c",
+      "bytes": 387
+    },
+    {
+      "path": "build-manifest.json",
+      "sha256": "7c535a98022ff99e376c9a4e8454c5d92401bf4d9c0159d86ff9fc4aaf183a41",
+      "bytes": 939575
+    },
+    {
+      "path": "components.nsh.txt",
+      "sha256": "bd8ef6fe2c7c86e6bcd82efd80a73755db21490c610bb1b482aaa6bacfa925a8",
+      "bytes": 943
+    },
+    {
+      "path": "failed-install.json",
+      "sha256": "b79d2ca70bae9c9310db444d8cf268e048d611648695ed71ec3de17512baa2e0",
+      "bytes": 132
+    },
+    {
+      "path": "final-review.md",
+      "sha256": "d33ef4fd066d5f89c755234501b8d8fda2da4be77541f1321b0a1dfa33ed7a29",
+      "bytes": 7559
+    },
+    {
+      "path": "github-publication.json",
+      "sha256": "8ea0f77c4919d8773783926dee64b7e589c6eb5596fdf4a2a6823ecf1f45781d",
+      "bytes": 2236
+    },
+    {
+      "path": "http-verification.json",
+      "sha256": "9c5890d89e099a48704efbde3cc5d192765adbed6635ffa7604c6b542ec6f0c6",
+      "bytes": 76
+    },
+    {
+      "path": "installed-empty-library.png",
+      "sha256": "e6971947835a600177c81e0032639d74d9aee1d1a4bca76249d8066a61af9fe8",
+      "bytes": 78617
+    },
+    {
+      "path": "installed-ocr.log",
+      "sha256": "20142174038d5ed4d6c7f15c9263a32ec99b5080ba28de119c49f594349444e0",
+      "bytes": 1067
+    },
+    {
+      "path": "prepare-windows-installer.py.txt",
+      "sha256": "02dafc786406b58899aaf1237b4ca3e6ac9ab10c2306beeb97f5378dc4d4970f",
+      "bytes": 8885
+    },
+    {
+      "path": "setup-smoke.mjs.txt",
+      "sha256": "43a64c71bfff0a12436ad193ffb12bf2c5d302c1972bac23467429686c45c43b",
+      "bytes": 3377
+    },
+    {
+      "path": "setupSmoke.json",
+      "sha256": "214e52d07f5095b353562ff11572eb10629d07a237c5d9ddda1eb06946835fa6",
+      "bytes": 704
+    },
+    {
+      "path": "setupSmoke.log",
+      "sha256": "f11343d28cff8100a50c85539fe9736930df0f13e0f641d386d097af0fab595b",
+      "bytes": 1135
+    },
+    {
+      "path": "signature.json",
+      "sha256": "d3aa4c72287bc36a64fa36d6b47de7ffd8292882931374ea82ce02df15f98b49",
+      "bytes": 92
+    },
+    {
+      "path": "successful-install.json",
+      "sha256": "d62a388eecc1701b7aaaf84ffd96f8f5d96665d7e3f30e10bc1ee0b06de32806",
+      "bytes": 1111
+    },
+    {
+      "path": "test-installed-setup.ps1.txt",
+      "sha256": "d6be8bd2cd74bb05ee8730e75d1171e7319f0c418d63f11b3279aa38189c1919",
+      "bytes": 6850
+    },
+    {
+      "path": "uninstall.json",
+      "sha256": "944bf7be5b73311176718cffd4629ca5ef017e46a3aeeb98721f88faf7397800",
+      "bytes": 347
+    },
+    {
+      "path": "verify-setup-publication.py.txt",
+      "sha256": "bbab5670799db8bd7ed874cb3f3d08447dd066d627054faeb151722a4340ad1c",
+      "bytes": 2184
+    }
+  ]
+}

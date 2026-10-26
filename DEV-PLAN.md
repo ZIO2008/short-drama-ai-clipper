@@ -2,6 +2,12 @@
 
 # Development Plan — 短剧投流素材生成平台
 
+## 2026-10-26 已完成：标准EXE安装包
+
+用户纠正BAT入口交付方式，本轮按2026-10-26-exe-installer-plan补齐Setup.exe、桌面/开始菜单直达应用EXE、安装期间视频组件准备、卸载保留数据，并从真实安装目录验证。原1.0.0应用与ZIP不改；只重验安装受影响范围，完成后给现有Release增加安装附件并更新首选入口。
+
+实际结果已完成：安装失败阻断/成功重装、实际快捷方式EXE目标、OCR及5项业务、真正卸载与隔离数据库保留、fresh两阶段审查全部通过；GitHub首选入口已更新为Setup，六附件大小/SHA一致、新EXE匿名下载200。结果：docs/release-readiness/2026-10-26-exe-installer-result.md。日常旧安装未强制切换，测试安装已卸载；跨机仍暂缓。
+
 ## 2026-10-26 GitHub正式发布已完成
 
 用户随后明确授权公开发布，已将v1.0.0设为GitHub Latest正式Release；附件大小/服务端SHA256与本地一致，匿名发布页和下载HEAD均200。源码使用独立干净公开版本分支，不上传本机完整历史。结果：docs/release-readiness/2026-10-26-github-publication-result.md。跨电脑验收仍暂缓，本机默认安装未替换；下方“未公开上传”描述的是更早的本地制包阶段，已被本授权覆盖。

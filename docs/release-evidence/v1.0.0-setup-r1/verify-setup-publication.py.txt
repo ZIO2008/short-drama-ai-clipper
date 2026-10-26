@@ -1,0 +1,28 @@
+import hashlib,json,subprocess,sys
+from datetime import datetime,timezone
+from pathlib import Path
+root=Path.cwd()
+gh=sys.argv[1]
+repo='ZIO2008/short-drama-ai-clipper'
+def api(path):return json.loads(subprocess.check_output([gh,'api',path],text=True,encoding='utf-8'))
+release=api('repos/'+repo+'/releases/424267750')
+assert release['draft'] is False and release['prerelease'] is False
+assert api('repos/'+repo+'/releases/latest')['id']==release['id']
+assets={a['name']:a for a in release['assets']}
+expected={'ShortDramaMaterialStudio-1.0.0-Setup-x64.exe','SHA256-Setup.txt','Installing.zh-CN.txt','ShortDramaMaterialStudio-1.0.0-Windows-x64.zip','SHA256SUMS.txt','Getting-Started.zh-CN.txt'}
+assert set(assets)==expected
+for name in expected:
+    p=root/'.tmp/github-assets-v1.0.0'/name
+    with p.open('rb') as f:sha=hashlib.file_digest(f,'sha256').hexdigest()
+    assert assets[name]['state']=='uploaded' and assets[name]['size']==p.stat().st_size and assets[name]['digest']=='sha256:'+sha
+assert '推荐：EXE安装版' in release['body'] and 'PACKAGING_COMMIT' not in release['body']
+tag=api('repos/'+repo+'/git/ref/tags/v1.0.0')
+original=api('repos/'+repo+'/git/tags/'+tag['object']['sha'])['object']['sha']
+assert original=='0092fed9b91dd1b9265adab8aa93c3bd98554e11'
+public=root/'.tmp/github-public-v1.0.0'
+head=subprocess.check_output(['git','-C',str(public),'rev-parse','HEAD'],text=True).strip()
+tree=subprocess.check_output(['git','-C',str(public),'rev-parse','HEAD^{tree}'],text=True).strip()
+assert api('repos/'+repo+'/commits/'+head)['commit']['tree']['sha']==tree
+record={'checkedAt':datetime.now(timezone.utc).isoformat(),'releaseUrl':release['html_url'],'releaseId':release['id'],'latest':True,'draft':False,'setupPrimaryInReleaseNotes':True,'allSixAssetsMatchLocalSha256AndSize':True,'originalV1TagUnchanged':original,'packagingSourceCommit':head,'assets':[{'name':a['name'],'size':a['size'],'digest':a['digest'],'url':a['browser_download_url']} for a in assets.values()]}
+(root/'test-results/exe-installer-1.0.0/github-publication.json').write_text(json.dumps(record,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+print(json.dumps(record,ensure_ascii=False))

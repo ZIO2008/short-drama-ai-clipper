@@ -1,0 +1,32 @@
+import { readFileSync, writeFileSync, mkdtempSync } from 'node:fs'
+import { join, resolve } from 'node:path'
+import { tmpdir } from 'node:os'
+import { spawnSync } from 'node:child_process'
+import { _electron as electron, expect } from '@playwright/test'
+import { auditPackagePrivacy, developmentPathStrings } from '../tools/package-privacy-audit.mjs'
+import { fileSha256 } from '../tools/candidate-provenance.mjs'
+const evidence=resolve('test-results/exe-installer-1.0.0')
+const installed=JSON.parse(readFileSync(join(evidence,'successful-install.json'),'utf8').replace(/^\uFEFF/,''))
+const installer='D:/个人工作/短剧AI切片工具/03_发布包/素材平台-1.0.0-安装版-r2/ShortDramaMaterialStudio-1.0.0-Setup-x64.exe'
+const manifest=JSON.parse(readFileSync('D:/个人工作/短剧AI切片工具/03_发布包/素材平台-1.0.0-安装版-r2/installer-manifest.json','utf8'))
+for(const [path,sha] of Object.entries(manifest.applicationHashes))if(fileSha256(join(installed.target,path))!==sha)throw Error('Installed original application identity mismatch')
+auditPackagePrivacy([installer],developmentPathStrings(process.cwd()))
+const app=await electron.launch({executablePath:installed.exe,args:['--packaged-smoke','--packaged-smoke-user-data',installed.data],env:{...process.env,SHORTDRAMA_MATERIAL_CHANNEL:'packaged-smoke'}})
+try {
+  const page=await app.firstWindow()
+  await expect(page.getByRole('heading',{name:'剧目库',exact:true})).toBeVisible()
+  await expect(page.locator('.sidebar-foot .meta')).toHaveText('v1.0.0 · P1 · 正式版')
+  const state=await page.evaluate(async()=>({health:await window.desktopApi.getAppHealth(),dramas:await window.desktopApi.listDramas()}))
+  const isPackaged=await app.evaluate(({app})=>app.isPackaged)
+  if(!isPackaged||!state.health.databaseInitialized||state.health.appVersion!=='1.0.0'||state.dramas.length)throw Error('Installed EXE smoke failed')
+  await page.screenshot({path:join(evidence,'installed-empty-library.png')})
+  writeFileSync(join(evidence,'application-smoke.json'),JSON.stringify({status:'passed',isPackaged,appVersion:'1.0.0',channel:state.health.releaseChannel,databaseInitialized:true,emptyLibrary:true,actualInstallerExe:installed.exe,shortcutTargetDirectExe:true,installerPrivacyRuleScan:'passed'},null,2))
+} finally {await app.close()}
+const cache=mkdtempSync(join(tmpdir(),'shortdrama-setup-ocr-cache-'))
+const ocr=spawnSync(join(installed.target,'resources/tools/local-ocr/runtime/temporal_ocr_runner.exe'),['--self-test'],{windowsHide:true,encoding:'utf8',timeout:120000,env:{...process.env,PATH:`${process.env.SystemRoot}\\System32;${process.env.SystemRoot}`,PADDLE_PDX_CACHE_HOME:cache,PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK:'True'}})
+writeFileSync(join(evidence,'installed-ocr.log'),(ocr.stdout??'')+(ocr.stderr??''))
+if(ocr.status!==0||!ocr.stdout.includes('"ok": true'))throw Error('Installed OCR initialization failed')
+console.log('NSIS_INSTALLED_EXE_SMOKE_PASSED')
+const result=spawnSync(process.execPath,['node_modules/@playwright/test/cli.js','test','tests/current/packaged-business-smoke.spec.ts','tests/current/original-clip-pool-export-report.spec.ts','--workers=1'],{stdio:'inherit',windowsHide:true,env:{...process.env,SHORTDRAMA_PACKAGED_EXE:installed.exe,PLAYWRIGHT_OUTPUT_DIR:join(evidence,'business')}})
+if(result.error)throw result.error
+process.exitCode=result.status??1

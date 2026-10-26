@@ -1,0 +1,5 @@
+{
+  "status": "NotSigned",
+  "command": "Get-AuthenticodeSignature",
+  "exitCode": 0
+}
