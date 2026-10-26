@@ -1762,5 +1762,24 @@
       "path": "docs/test-suite-boundary.json",
       "sha256": "93d8d9f0965a657aa4bd8d2fed17b10c932d78e42ae5a55b9793afbdb432d7ef"
     }
-  ]
+  ],
+  "installerPackaging": {
+    "revision": "1.0.0-setup-r1",
+    "installerSha256": "984efdb38a853dd7624e36ec05fcb9339a8a6b323e23f86c04372f401c61aca9",
+    "applicationUnchanged": true,
+    "files": [
+      {
+        "path": "docs/release-readiness/scripts/prepare-windows-installer.py",
+        "sha256": "02dafc786406b58899aaf1237b4ca3e6ac9ab10c2306beeb97f5378dc4d4970f"
+      },
+      {
+        "path": "docs/release-readiness/windows-installer/components.nsh",
+        "sha256": "bd8ef6fe2c7c86e6bcd82efd80a73755db21490c610bb1b482aaa6bacfa925a8"
+      },
+      {
+        "path": "docs/release-readiness/windows-installer/Installing.zh-CN.txt",
+        "sha256": "17fcedc7b9c97a4a8a9f8d6af1d2da9882ba9af4f763bb965b32462a75235220"
+      }
+    ]
+  }
 }

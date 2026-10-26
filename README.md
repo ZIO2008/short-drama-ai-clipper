@@ -4,9 +4,9 @@
 
 ## 下载正式版
 
-请到 [v1.0.0 Release](https://github.com/ZIO2008/short-drama-ai-clipper/releases/tag/v1.0.0) 下载 Windows x64 ZIP。完整解压后双击 `01_启动素材平台.bat`，不要只复制一个 EXE。
+请到 [v1.0.0 Release](https://github.com/ZIO2008/short-drama-ai-clipper/releases/tag/v1.0.0) 下载 `ShortDramaMaterialStudio-1.0.0-Setup-x64.exe`。运行安装EXE，选择目录并按向导完成安装；以后从桌面或开始菜单直接打开软件EXE，不需要手动解压或运行BAT。原ZIP保留为便携版备选，按其包内说明使用。
 
-首次需联网获取并校验两个视频组件；本地 PaddleOCR 与模型随包。自动候选需要使用者自己的文本分析服务，ASR/视频复核按需要配置；费用由服务商计算。程序不含作者数据或密钥。
+安装期间需联网获取并校验两个视频组件；本地 PaddleOCR 与模型随包。自动候选需要使用者自己的文本分析服务，ASR/视频复核按需要配置；费用由服务商计算。程序不含作者数据或密钥。
 
 本包未签名。独立电脑兼容性尚未验收；本轮完成本机隔离安装和最终包验证，具体边界见 Release 说明。云 OCR、解说/TTS/旁白未开放；爆点前置二创仍为受控本地模式。
 
