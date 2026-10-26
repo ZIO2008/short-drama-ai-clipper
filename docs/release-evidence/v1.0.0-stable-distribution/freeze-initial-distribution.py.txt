@@ -1,0 +1,38 @@
+import hashlib, json, platform, shutil, sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+root = Path.cwd()
+evidence = root / 'test-results/initial-release-1.0.0'
+target = root / 'docs/release-evidence/v1.0.0-stable-distribution'
+target.mkdir(parents=True, exist_ok=True)
+def sha(p):
+    with p.open('rb') as f:
+        return hashlib.file_digest(f, 'sha256').hexdigest()
+def copy(source, name):
+    dest = target / name
+    if dest.exists():
+        raise RuntimeError('Evidence destination already exists: '+name)
+    shutil.copy2(source, dest)
+
+for name in ['final-zip-verification.json', 'final-privacy-audit.json', 'post-download-privacy-audit.json', 'final-isolated-smoke.json', 'signature.json', 'first-run-download.log', 'repeat-first-run.log', 'corrupt-component-rejected.log', 'ocr-empty-cache.log', 'final-empty-library.png', 'final-provider-setup.png']:
+    copy(evidence / name, name)
+checks = []
+for check in ['finalSmoke', 'finalBusiness']:
+    for directory in sorted((root / 'test-results/candidate-checks').glob(check+'-*')):
+        record_path = directory / (check+'.json')
+        record = json.loads(record_path.read_text(encoding='utf-8'))
+        if record.get('sourceInputsSha256') != '5d10758aa1c52cf30090982ec05c2367b3177508b53f1392ce8cb5e11cf450e6':
+            continue
+        if sha(directory / (check+'.log')) != record['outputSha256']:
+            raise RuntimeError('Command output hash mismatch')
+        stem = directory.name
+        for suffix in ['json', 'log']:
+            copy(directory / (check+'.'+suffix), stem+'.'+suffix)
+        checks.append({'record': stem+'.json', 'command': record['command'], 'exitCode': record['exitCode'], 'startedAt': record['startedAt'], 'completedAt': record['completedAt']})
+for name in ['initial-final-verify.mjs', 'initial-final-business.mjs', 'initial-extract.py', 'freeze-initial-distribution.py']:
+    copy(root / '.tmp' / name, name+'.txt')
+zip_record = json.loads((evidence / 'final-zip-verification.json').read_text(encoding='utf-8'))
+manifest = {'artifact': '1.0.0-stable-r1', 'status': 'local-stable-package-host-verified', 'appVersion': '1.0.0', 'channel': 'stable', 'archiveSha256': zip_record['archiveSha256'], 'archiveBytes': zip_record['archiveBytes'], 'sourceCommit': '4610100e160ef098df9bb523605967ce4ef81ff3', 'sourceInputsSha256': '5d10758aa1c52cf30090982ec05c2367b3177508b53f1392ce8cb5e11cf450e6', 'candidate': 'v1.0.0-p1-stable', 'createdAt': datetime.now(timezone.utc).isoformat(), 'host': {'platform': platform.platform(), 'python': sys.version.split()[0]}, 'commands': [{'command': 'python docs/release-readiness/scripts/prepare-peer-distribution.py --root . --candidate release/candidates/v1.0.0-p1-stable --mode stable --output <project>/03_发布包/素材平台-1.0.0-正式初版', 'exitCode': 0}, *checks], 'notClaimed': ['cross-machine/VM acceptance (deferred by user)', 'paid live provider acceptance in this release round', 'code signing', 'public upload', 'replacement of daily 0.1.108 installation'], 'evidence': [{'path': p.name, 'sha256': sha(p), 'bytes': p.stat().st_size} for p in sorted(target.iterdir()) if p.is_file() and p.name != 'manifest.json']}
+(target / 'manifest.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
+print(json.dumps({'archiveSha256': manifest['archiveSha256'], 'commands': len(manifest['commands']), 'evidence': len(manifest['evidence'])}))

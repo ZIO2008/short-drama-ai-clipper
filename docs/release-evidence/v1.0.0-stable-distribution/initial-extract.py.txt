@@ -1,0 +1,26 @@
+import hashlib, json, os, uuid, zipfile
+from pathlib import Path
+
+root = Path.cwd()
+output = root.parents[1] / '03_发布包/素材平台-1.0.0-正式初版'
+archive = output / '素材平台-1.0.0-Windows-x64-正式初版.zip'
+evidence = root / 'test-results/initial-release-1.0.0'
+evidence.mkdir(parents=True, exist_ok=True)
+target = Path(os.environ['LOCALAPPDATA']) / 'Programs' / ('ShortDramaMaterialStudio-1.0.0-final-' + uuid.uuid4().hex[:8])
+target.mkdir(parents=True, exist_ok=False)
+with archive.open('rb') as f:
+    sha = hashlib.file_digest(f, 'sha256').hexdigest()
+with zipfile.ZipFile(archive) as z:
+    bad = z.testzip()
+    if bad:
+        raise RuntimeError('ZIP CRC failure')
+    for entry in z.infolist():
+        resolved = (target / entry.filename).resolve()
+        if not resolved.is_relative_to(target.resolve()):
+            raise RuntimeError('Unsafe ZIP path')
+    z.extractall(target)
+bundle = next(p for p in target.iterdir() if p.is_dir())
+record = {'archiveSha256': sha, 'archiveBytes': archive.stat().st_size, 'crc': 'passed', 'installationRoot': str(target), 'extractedBundle': str(bundle), 'scope': 'final ZIP independent local installation; cross-machine deferred'}
+(evidence / 'final-extracted-path.txt').write_text(str(bundle), encoding='utf-8')
+(evidence / 'final-zip-verification.json').write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding='utf-8')
+print(json.dumps(record, ensure_ascii=False))

@@ -1,0 +1,14 @@
+# 1.0.0 制备代码独立审查
+
+Fresh agent: /root/initial_release_review，2026-10-26。
+Stage 1 PASS；Stage 2 PASS（制备代码范围）。HIGH 0、MEDIUM 0、LOW 2。
+
+已对照当前Product-Spec、DEV-PLAN、2026-10-26-initial-release-plan逐项审查git diff。版本1.0.0/stable一致；包级检查从元数据推导候选；stable制备门禁验证干净正式候选、七项检查、closure及EXE/asar哈希；旧peer默认兼容；不可覆盖ZIP及CRC；固定视频下载哈希与坏哈希阻断；OCR运行时与模型打包配置；中文使用/升级/凭据/第三方说明；无新增业务、数据库、原型或云OCR面。
+
+检查输出：VERSION_CHECK_OK version=1.0.0；Node syntax exit=0；Python AST syntax OK；PowerShell parser OK；本次危险模式扫描无匹配。未运行native、全量测试或正式包，不以此宣称安装验收。
+
+LOW-1：说明模板内的本机验证通过表述须在最终包实际验证通过后才交付。
+LOW-2：zod4.6.6外锁文件补全supports-color7.2.0 optional peer绑定和弃用注记，未看到其它包版本升级；需完整回归并如实记录。
+
+最终实物另审：实际ZIP哈希/清单/隐私、最终EXE版本/channel、OCR、导入/确认/导出/报告。跨机按授权暂缓，不算通过。
+

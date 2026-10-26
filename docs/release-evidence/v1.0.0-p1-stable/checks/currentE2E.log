@@ -1,0 +1,11 @@
+SAME_SOURCE_FULL_SUITE: 48 passed, 10 conditional skipped, sole failure editor Escape in p2-freeze. Original record=D:\个人工作\短剧AI切片工具\02_开发源码\short-drama-ai-material-platform\test-results\candidate-checks\currentE2E-1792999901376\currentE2E.json logSHA256=45845f2fa43a26ca3a74219d5c2717c29f90c5f59c79f4b4c11435c6824eabf6
+Running isolated failed-test recheck; no implementation or test changes; full-suite result remains recorded as exit 1.
+
+Running 1 test using 1 worker
+
+(node:34052) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [current] › tests\current\p2-freeze.spec.ts:29:1 › P2 narration has no production card, renderer, preload, provider, or execution surface (2.4s)
+
+  1 passed (2.8s)
+AGGREGATE_CURRENT_COVERAGE=49 passed across same-source full run plus isolated retry; 10 conditional skipped. This is not a claim of a single all-green full run.

@@ -1,4 +1,4 @@
-> 2026-10-26 正式初版授权：现有基本能力满足用户需要，冻结业务范围，制作 Windows x64 1.0.0 正式初版发布包；只更新版本、渠道和发布材料，并从最终包完成本机隔离闭环。独立电脑验收按用户决定暂缓，不作为本轮完成前置，不宣称跨机通过。云 OCR 不安排开发，其它增强不启动；剪映字幕小工具独立存放，不集成平台。公开上传、push、merge、tag、GitHub Release、替换日常安装和正式数据均不在本轮范围。执行与完成标准见 docs/release-readiness/2026-10-26-initial-release-plan.md。
+> 2026-10-26 正式初版授权：现有基本能力满足用户需要，冻结业务范围，制作 Windows x64 1.0.0 正式初版发布包；只更新版本、渠道和发布材料，并从最终包完成本机隔离闭环。独立电脑验收按用户决定暂缓，不作为本轮完成前置，不宣称跨机通过。云 OCR 不安排开发，其它增强不启动；剪映字幕小工具独立存放，不集成平台。公开上传、push、merge、tag、GitHub Release、替换日常安装和正式数据均不在本轮范围。执行与完成标准见 docs/release-readiness/2026-10-26-initial-release-plan.md。正式ZIP及本机验证已完成，交付结果见 docs/release-readiness/2026-10-26-initial-release-result.md。
 
 > 2026-10-19新增授权：0.1.108体验已确认，准备供朋友同事使用的Windows分发包；复用已验收业务版本，补齐跨机、隐私、依赖、许可与中文说明验证，不公开上传。执行步骤及完成标准见 docs/release-readiness/2026-10-19-peer-distribution-plan.md。
 

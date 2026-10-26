@@ -1,0 +1,68 @@
+$ pnpm run rebuild:node && vitest run
+$ pnpm rebuild better-sqlite3
+.../node_modules/better-sqlite3 install$ prebuild-install || node-gyp rebuild --release
+.../node_modules/better-sqlite3 install: (node:27728) [DEP0176] DeprecationWarning: fs.R_OK is deprecated, use fs.constants.R_OK instead
+.../node_modules/better-sqlite3 install: (Use `node --trace-deprecation ...` to show where the warning was created)
+.../node_modules/better-sqlite3 install: Done
+
+ RUN  v4.1.10 D:/个人工作/短剧AI切片工具/02_开发源码/short-drama-ai-material-platform
+
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/v1.0.0-p1-internal-trial-closure.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'DEV-PLAN.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'Product-Spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/version-governance.md', LF will be replaced by CRLF the next time Git touches it
+
+ Test Files  150 passed | 5 skipped (155)
+      Tests  893 passed | 5 skipped (898)
+   Start at  15:29:43
+   Duration  42.94s (transform 22.53s, setup 0ms, import 72.82s, tests 164.20s, environment 92.40s)
+

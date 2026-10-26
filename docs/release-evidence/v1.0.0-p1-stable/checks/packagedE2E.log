@@ -1,0 +1,24 @@
+ACTUAL_INSTALLED_TEST_IDENTITY={"releaseId":"v1.0.0-p1-stable","executable":"C:\\Users\\ZIO\\AppData\\Local\\Programs\\ShortDramaMaterialStudio-1.0.0-check-56020a33\\短剧投流素材生成平台.exe","fileCount":3744,"copyCheck":"every-file-sha256","sourceCommit":"4610100e160ef098df9bb523605967ce4ef81ff3"}
+
+Running 11 tests using 2 workers
+
+(node:27840) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:29828) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  2 [current] › tests\current\packaged-business-smoke.spec.ts:12:1 › packaged semantic selection repairs an unfinished proposal once without subtitle recovery (15.3s)
+  ok  3 [current] › tests\current\packaged-business-smoke.spec.ts:101:1 › packaged preflight automatically accepts local OCR islands without changing subtitles (2.8s)
+  ok  4 [current] › tests\current\packaged-business-smoke.spec.ts:132:1 › packaged clip subtitle preflight failure returns to real global pages instead of prototype demos (6.3s)
+  ok  1 [current] › tests\current\original-clip-pool-export-report.spec.ts:68:1 › CLIP-REAL-005 to CLIP-REAL-008 closes sparse local evidence, pool, export, and report path (27.9s)
+  ok  5 [current] › tests\current\packaged-business-smoke.spec.ts:173:1 › packaged app persists 85 real IPC imports and subtitle mapping in isolated temporary userData (9.7s)
+PACKAGED_REAL_DPI { devicePixelRatio: 1, scrollWidth: 1418, innerWidth: 1418 }
+  ok  6 [current] › tests\current\packaged-real-dpi.spec.ts:11:37 › packaged app starts at 100% DPI without clipping (4.1s)
+PACKAGED_REAL_DPI { devicePixelRatio: 1.25, scrollWidth: 1423, innerWidth: 1423 }
+  ok  8 [current] › tests\current\packaged-real-dpi.spec.ts:11:37 › packaged app starts at 125% DPI without clipping (4.1s)
+  ok  7 [current] › tests\current\prototype-navigation-transition.spec.ts:22:56 › four prototype entries keep a stable handoff with fast reads (8.6s)
+PACKAGED_REAL_DPI { devicePixelRatio: 1.5, scrollWidth: 1426, innerWidth: 1426 }
+  ok  9 [current] › tests\current\packaged-real-dpi.spec.ts:11:37 › packaged app starts at 150% DPI without clipping (4.3s)
+  ok 10 [current] › tests\current\prototype-navigation-transition.spec.ts:22:56 › four prototype entries keep a stable handoff with slow reads (11.8s)
+  ok 11 [current] › tests\current\prototype-navigation-transition.spec.ts:22:56 › four prototype entries keep a stable handoff with error reads (8.7s)
+
+  11 passed (1.1m)

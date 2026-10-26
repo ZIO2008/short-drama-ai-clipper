@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 2,
+  "sourceCommit": "0fa592cff14685be258c3a1c053558277e2c2302",
+  "sourceInputsSha256": "5d10758aa1c52cf30090982ec05c2367b3177508b53f1392ce8cb5e11cf450e6",
+  "sourceDirty": false,
+  "designContractSha256": "8fa027843b1100448c57cb7d16bc53640d1b1995f3f7b075204adef10ad20c0b",
+  "check": "finalSmoke",
+  "command": "node .tmp/initial-final-verify.mjs",
+  "exitCode": 1,
+  "signal": null,
+  "startedAt": "2026-10-26T07:42:44.767Z",
+  "completedAt": "2026-10-26T07:43:32.626Z",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "outputPath": "checks/finalSmoke.log",
+  "outputSha256": "6ac21d1a3da06bb5c86386c3262d8cedba2d61cd5719db5d6a6f4a2cda9c27f7"
+}

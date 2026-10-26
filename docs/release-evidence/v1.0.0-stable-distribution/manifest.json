@@ -1,0 +1,187 @@
+{
+  "artifact": "1.0.0-stable-r1",
+  "status": "local-stable-package-host-verified",
+  "appVersion": "1.0.0",
+  "channel": "stable",
+  "archiveSha256": "4d43ca54168d32e6769ff58e580087ba11638658a3d223db8f1080905f0467d6",
+  "archiveBytes": 572321846,
+  "sourceCommit": "4610100e160ef098df9bb523605967ce4ef81ff3",
+  "sourceInputsSha256": "5d10758aa1c52cf30090982ec05c2367b3177508b53f1392ce8cb5e11cf450e6",
+  "candidate": "v1.0.0-p1-stable",
+  "createdAt": "2026-10-26T07:48:35.203436+00:00",
+  "host": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.14.6"
+  },
+  "commands": [
+    {
+      "command": "python docs/release-readiness/scripts/prepare-peer-distribution.py --root . --candidate release/candidates/v1.0.0-p1-stable --mode stable --output <project>/03_发布包/素材平台-1.0.0-正式初版",
+      "exitCode": 0
+    },
+    {
+      "record": "finalSmoke-1793000564194.json",
+      "command": "node .tmp/initial-final-verify.mjs",
+      "exitCode": 1,
+      "startedAt": "2026-10-26T07:42:44.767Z",
+      "completedAt": "2026-10-26T07:43:32.626Z"
+    },
+    {
+      "record": "finalSmoke-1793000650589.json",
+      "command": "node .tmp/initial-final-verify.mjs --resume-after-download",
+      "exitCode": 1,
+      "startedAt": "2026-10-26T07:44:11.024Z",
+      "completedAt": "2026-10-26T07:44:33.423Z"
+    },
+    {
+      "record": "finalSmoke-1793000724754.json",
+      "command": "node .tmp/initial-final-verify.mjs --resume-after-download",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T07:45:25.195Z",
+      "completedAt": "2026-10-26T07:45:42.654Z"
+    },
+    {
+      "record": "finalBusiness-1793000742787.json",
+      "command": "node .tmp/initial-final-business.mjs",
+      "exitCode": 0,
+      "startedAt": "2026-10-26T07:45:43.226Z",
+      "completedAt": "2026-10-26T07:46:43.122Z"
+    }
+  ],
+  "notClaimed": [
+    "cross-machine/VM acceptance (deferred by user)",
+    "paid live provider acceptance in this release round",
+    "code signing",
+    "public upload",
+    "replacement of daily 0.1.108 installation"
+  ],
+  "evidence": [
+    {
+      "path": "corrupt-component-rejected.log",
+      "sha256": "9a0cd440d36083f51b52c25fcc128cd0e83d1e60340c36492235e8dd7250883e",
+      "bytes": 215
+    },
+    {
+      "path": "final-empty-library.png",
+      "sha256": "909d4fa1bf7a2de8a21b805e20b8ae0d0b579f2903e359f26ae072eac94997a9",
+      "bytes": 77603
+    },
+    {
+      "path": "final-isolated-smoke.json",
+      "sha256": "979defbfa2f571ccd794201b7f0608f7cdbaa02fbd390a010a1c70b7129ad599",
+      "bytes": 646
+    },
+    {
+      "path": "final-privacy-audit.json",
+      "sha256": "9c9f8193cabc4c17ebd49c64fb6f314fac4b069e9d4cc017be87223d56880609",
+      "bytes": 115
+    },
+    {
+      "path": "final-provider-setup.png",
+      "sha256": "6581dbd05d0598c7a4d9420491515a291ae923c8d14f5465db587c0225cdc1fc",
+      "bytes": 110948
+    },
+    {
+      "path": "final-zip-verification.json",
+      "sha256": "e67cd593fc237859ff1850e908d0b548015b27b2bee554f90ba2152d804dac79",
+      "bytes": 481
+    },
+    {
+      "path": "finalBusiness-1793000742787.json",
+      "sha256": "3581696a374d110382ceb53098ecd64de07e441231058401a3c6733942c1ec77",
+      "bytes": 722
+    },
+    {
+      "path": "finalBusiness-1793000742787.log",
+      "sha256": "52202e73abe2e254f45efea5fefe91fc9446a2ae91210e16c5f775d7b86b1d27",
+      "bytes": 1405
+    },
+    {
+      "path": "finalSmoke-1793000564194.json",
+      "sha256": "658dd099d53ee46d00768217436a24ca3ef47cb4d8a801833efe7a34e261c3b2",
+      "bytes": 714
+    },
+    {
+      "path": "finalSmoke-1793000564194.log",
+      "sha256": "6ac21d1a3da06bb5c86386c3262d8cedba2d61cd5719db5d6a6f4a2cda9c27f7",
+      "bytes": 3371
+    },
+    {
+      "path": "finalSmoke-1793000650589.json",
+      "sha256": "b0ba66bb8284b31c9e85c261fdc69059a71d7b40c47dc4d2fc26865d967f857b",
+      "bytes": 738
+    },
+    {
+      "path": "finalSmoke-1793000650589.log",
+      "sha256": "75cbd338fe987f3de067ec018b2e0d4560221bb333874c6a88802302ca569526",
+      "bytes": 3571
+    },
+    {
+      "path": "finalSmoke-1793000724754.json",
+      "sha256": "fa165cd0a429a1609e2c7bbf11f92c70baf47f2dd821b18db64167fa7af583df",
+      "bytes": 738
+    },
+    {
+      "path": "finalSmoke-1793000724754.log",
+      "sha256": "d0fb56e0b65ce1ded8d2eb5a7058c9e8f4aa7a2f19140f3f3d57d22da0cf6bcb",
+      "bytes": 35
+    },
+    {
+      "path": "first-run-download.log",
+      "sha256": "0e2ddbce93dd062a3b86bf977ff9ec55961b6f2d246694b793640630341d10b7",
+      "bytes": 221
+    },
+    {
+      "path": "freeze-initial-distribution.py.txt",
+      "sha256": "08f72f64b91ecb30166373d2a35ec96ff53fac3e267557cdb32a084322dd1c15",
+      "bytes": 3441
+    },
+    {
+      "path": "initial-extract.py.txt",
+      "sha256": "caf7c9bc76f52c3c396383228493de8c4381a0252b38e12af4f076fa401746a3",
+      "bytes": 1449
+    },
+    {
+      "path": "initial-final-business.mjs.txt",
+      "sha256": "f3d051dcdac407bef0049d6054f38aa4d8b88c7ba5b513d58800f9b193991f81",
+      "bytes": 886
+    },
+    {
+      "path": "initial-final-verify.mjs.txt",
+      "sha256": "55761b57249efb44d3a8784ecfdd9d3831913d7a0659f8cb62e7fa3f4c7c49ac",
+      "bytes": 7192
+    },
+    {
+      "path": "ocr-empty-cache.log",
+      "sha256": "4abd96cd7b00dcd1ac0be613d9cfd6dadb1fb2cea72c8d57363bc837f62191aa",
+      "bytes": 1070
+    },
+    {
+      "path": "post-download-privacy-audit.json",
+      "sha256": "a56a917d0ba693076921c8f02dee9dec94b0720aba58a6c4ff8690d531e58f79",
+      "bytes": 150
+    },
+    {
+      "path": "repeat-first-run.log",
+      "sha256": "b47db490552d6d978f91c23b3b488fa7dc8b0a05172e2b98a710eb574ff0b173",
+      "bytes": 58
+    },
+    {
+      "path": "signature.json",
+      "sha256": "9033e5aca0272b72c9cf6063b3ee65769f754787a6b3734558dba7b6a30caa3c",
+      "bytes": 118
+    },
+    {
+      "path": "final-review.md",
+      "sha256": "1735f5da9c91cd69c92c38906d8e85eb16fdf37cdfc987cb7ab5744bf6818a24",
+      "bytes": 10935
+    }
+  ],
+  "independentReview": {
+    "status": "Stage 1 PASS / Stage 2 PASS",
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "path": "final-review.md",
+    "sha256": "1735f5da9c91cd69c92c38906d8e85eb16fdf37cdfc987cb7ab5744bf6818a24"
+  }
+}

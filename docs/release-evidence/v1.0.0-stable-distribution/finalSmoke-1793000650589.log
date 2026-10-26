@@ -1,0 +1,77 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+ExpectError: expect(locator).toBeVisible() failed
+
+Locator: getByText('Windows 10/11 · 本地模式 v1.0.0 · P1 · 正式版', { exact: true })
+Expected: visible
+Timeout: 5000ms
+Error: element(s) not found
+
+Call log:
+  - Expect "to.be.visible" with timeout 5000ms
+  - waiting for getByText('Windows 10/11 · 本地模式 v1.0.0 · P1 · 正式版', { exact: true })
+
+    at captureRawStack (D:\个人工作\短剧AI切片工具\02_开发源码\short-drama-ai-material-platform\node_modules\.pnpm\playwright-core@1.61.1\node_modules\playwright-core\lib\coreBundle.js:3172:17)
+    at callMatcherAsStep (D:\个人工作\短剧AI切片工具\02_开发源码\short-drama-ai-material-platform\node_modules\.pnpm\playwright@1.61.1\node_modules\playwright\lib\matchers\expect.js:12877:57)
+    at Object.toBeVisible (D:\个人工作\短剧AI切片工具\02_开发源码\short-drama-ai-material-platform\node_modules\.pnpm\playwright@1.61.1\node_modules\playwright\lib\matchers\expect.js:12867:23)
+    at D:\个人工作\短剧AI切片工具\02_开发源码\short-drama-ai-material-platform\.tmp\initial-final-verify.mjs:54:91 {
+  matcherResult: {
+    message: 'expect(locator).toBeVisible() failed\n' +
+      '\n' +
+      "Locator: getByText('Windows 10/11 · 本地模式 v1.0.0 · P1 · 正式版', { exact: true })\n" +
+      'Expected: visible\n' +
+      'Timeout: 5000ms\n' +
+      'Error: element(s) not found\n' +
+      '\n' +
+      'Call log:\n' +
+      '  - Expect "to.be.visible" with timeout 5000ms\n' +
+      "  - waiting for getByText('Windows 10/11 · 本地模式 v1.0.0 · P1 · 正式版', { exact: true })\n",
+    pass: false,
+    actual: undefined,
+    name: 'toBeVisible',
+    expected: 'visible',
+    log: [
+      '  - Expect "to.be.visible" with timeout 5000ms',
+      "  - waiting for getByText('Windows 10/11 · 本地模式 v1.0.0 · P1 · 正式版', { exact: true })"
+    ],
+    timeout: 5000,
+    ariaSnapshot: '- complementary:\n' +
+      '  - text: 短剧素材台 全局工作区\n' +
+      '  - navigation "全局导航":\n' +
+      '    - button "剧目库"\n' +
+      '    - button "任务中心"\n' +
+      '    - button "标签管理"\n' +
+      '    - button "设置"\n' +
+      '  - text: Windows 10/11 · 本地模式 v1.0.0 · P1 · 正式版\n' +
+      '- banner:\n' +
+      '  - paragraph: 全局 / 剧目库\n' +
+      '  - button "打开通知中心"\n' +
+      '- main:\n' +
+      '  - region "剧目库":\n' +
+      '    - heading "剧目库" [level=1]\n' +
+      '    - paragraph: 按剧目管理原片、剧本、生产任务和生成成果。\n' +
+      '    - button "创建剧目"\n' +
+      '    - text: 搜索剧目\n' +
+      '    - textbox "搜索剧目":\n' +
+      '      - /placeholder: 搜索剧名或标签\n' +
+      '    - text: 标签筛选\n' +
+      '    - combobox "标签筛选":\n' +
+      '      - option "全部标签" [selected]\n' +
+      '    - text: 排序\n' +
+      '    - combobox "排序":\n' +
+      '      - option "最近更新" [selected]\n' +
+      '      - option "剧名"\n' +
+      '      - option "异常优先"\n' +
+      '    - group "剧目视图":\n' +
+      '      - button "卡片" [pressed]\n' +
+      '      - button "列表"\n' +
+      '    - status:\n' +
+      '      - strong: 还没有剧目\n' +
+      '      - paragraph: 先创建一部剧，再导入原片。\n' +
+      '      - button "创建剧目"'
+  }
+}
+
+Node.js v24.19.0

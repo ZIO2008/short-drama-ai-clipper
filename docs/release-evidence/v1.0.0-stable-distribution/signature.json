@@ -1,0 +1,6 @@
+{
+  "appVersion": "1.0.0",
+  "status": "NotSigned",
+  "exitCode": 0,
+  "command": "Get-AuthenticodeSignature"
+}

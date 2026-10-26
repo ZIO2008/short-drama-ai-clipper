@@ -1,8 +1,6 @@
-# Preserve exact bytes for the hashes in this immutable candidate evidence.
-v0.1.94-p1-internal-trial-closure.md -text
-release-evidence/v0.1.94-p1-internal-trial.json -text
-release-evidence/v0.1.94-p1-internal-trial/checks/* -text
-v0.1.95-p1-internal-trial-closure.md -text
-release-evidence/v0.1.95-p1-internal-trial.json -text
-release-evidence/v0.1.95-p1-internal-trial/checks/* -text whitespace=-blank-at-eof
-release-readiness/scripts/* -text
+# Preserve byte identities referenced by the 1.0.0 release manifests.
+release-evidence/v1.0.0*/** -text
+release-evidence/v1.0.0-p1-stable.json -text
+runtime-baselines/package-0.1.95.json -text
+runtime-baselines/package-1.0.0.json -text
+v1.0.0-p1-stable-closure.md -text

@@ -1,0 +1,9 @@
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { spawnSync } from 'node:child_process'
+const executable = readFileSync('test-results/initial-release-1.0.0/final-exe-path.txt', 'utf8')
+console.log('FINAL_ZIP_INSTALLED_BUSINESS_EXE=' + executable)
+console.log('External semantic provider is isolated localhost HTTP fixture; FFmpeg export and actual installed app are real.')
+const result = spawnSync(process.execPath, ['node_modules/@playwright/test/cli.js', 'test', 'tests/current/packaged-business-smoke.spec.ts', 'tests/current/original-clip-pool-export-report.spec.ts', '--workers=1'], { stdio: 'inherit', windowsHide: true, env: { ...process.env, SHORTDRAMA_PACKAGED_EXE: executable, PLAYWRIGHT_OUTPUT_DIR: resolve('test-results/initial-release-1.0.0/final-business') } })
+if (result.error) throw result.error
+process.exitCode = result.status ?? 1

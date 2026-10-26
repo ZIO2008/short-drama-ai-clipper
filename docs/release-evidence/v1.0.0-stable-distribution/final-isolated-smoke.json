@@ -1,0 +1,17 @@
+{
+  "status": "passed",
+  "appVersion": "1.0.0",
+  "channel": "stable",
+  "channelLabel": "正式版",
+  "isPackaged": true,
+  "databaseInitialized": true,
+  "dramaCount": 0,
+  "providerCount": 0,
+  "systemOnlyPath": true,
+  "ocrFreshCacheInitialized": true,
+  "firstRunDownload": true,
+  "repeatWithoutNetwork": true,
+  "corruptComponentRejected": true,
+  "installation": "C:\\Users\\ZIO\\AppData\\Local\\Programs\\ShortDramaMaterialStudio-1.0.0-final-2ecdc8a7\\素材平台-1.0.0-正式初版\\程序\\短剧投流素材生成平台.exe",
+  "scope": "host independent installation and isolated data; cross-machine acceptance deferred by user"
+}

@@ -1,0 +1,67 @@
+import { readFileSync, readdirSync, writeFileSync, copyFileSync, mkdtempSync, mkdirSync, existsSync } from 'node:fs'
+import { join, resolve } from 'node:path'
+import { tmpdir } from 'node:os'
+import { spawnSync } from 'node:child_process'
+import { _electron as electron, expect } from '@playwright/test'
+import { fileSha256 } from '../tools/candidate-provenance.mjs'
+import { auditPackagePrivacy, developmentPathStrings } from '../tools/package-privacy-audit.mjs'
+
+const evidence = resolve('test-results/initial-release-1.0.0')
+mkdirSync(evidence, { recursive: true })
+const bundle = readFileSync(join(evidence, 'final-extracted-path.txt'), 'utf8')
+const walk = p => readdirSync(p, { withFileTypes: true }).flatMap(e => e.isDirectory() ? walk(join(p, e.name)) : [join(p, e.name)])
+const inventory = JSON.parse(readFileSync(join(bundle, '分发校验清单.json'), 'utf8').replace(/^\uFEFF/, ''))
+const resume = process.argv.includes('--resume-after-download')
+if (inventory.channel !== 'stable' || inventory.appVersion !== '1.0.0') throw Error('Distribution metadata mismatch')
+if (walk(bundle).length !== inventory.files.length + (resume ? 3 : 1)) throw Error('Unexpected ZIP files')
+for (const entry of inventory.files) if (fileSha256(join(bundle, entry.path)) !== entry.sha256) throw Error('ZIP file hash mismatch: ' + entry.path)
+if (!resume) for (const name of ['ffmpeg.exe', 'ffprobe.exe']) if (existsSync(join(bundle, '程序/resources/models', name))) throw Error('Video component was redistributed in ZIP')
+auditPackagePrivacy(walk(bundle), developmentPathStrings(process.cwd()))
+writeFileSync(join(evidence, resume ? 'post-download-privacy-audit.json' : 'final-privacy-audit.json'), JSON.stringify({ status: 'passed', fileCount: walk(bundle).length, userDataIncluded: false, scope: resume ? 'final extracted ZIP plus two hash-verified upstream downloads' : 'final ZIP before first run' }, null, 2))
+const ps = join(process.env.SystemRoot, 'System32/WindowsPowerShell/v1.0/powershell.exe')
+const script = join(bundle, '首次启动.ps1')
+const psRun = (path, offline = false) => spawnSync(ps, ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', '[Console]::OutputEncoding=New-Object Text.UTF8Encoding; ' + (offline ? '[Net.WebRequest]::DefaultWebProxy=New-Object Net.WebProxy("http://127.0.0.1:1"); ' : '') + '& $env:SHORTDRAMA_TEST_SCRIPT -PrepareOnly'], { windowsHide: true, encoding: 'utf8', timeout: 180000, env: { ...process.env, SHORTDRAMA_TEST_SCRIPT: path } })
+if (!resume) {
+  const first = psRun(script)
+  writeFileSync(join(evidence, 'first-run-download.log'), (first.stdout ?? '') + (first.stderr ?? ''))
+  if (first.status !== 0) throw Error('Actual first-run download failed: see first-run-download.log')
+} else if (!readFileSync(join(evidence, 'first-run-download.log'), 'utf8').includes('视频组件已就绪')) throw Error('No prior successful first-run download evidence')
+for (const entry of inventory.firstRunDownloads) if (fileSha256(join(bundle, '程序', entry.path)) !== entry.sha256) throw Error('Downloaded component hash mismatch')
+const repeat = psRun(script, true)
+writeFileSync(join(evidence, 'repeat-first-run.log'), (repeat.stdout ?? '') + (repeat.stderr ?? ''))
+if (repeat.status !== 0) throw Error('Offline repeat start failed')
+const broken = mkdtempSync(join(tmpdir(), 'shortdrama-stable-corrupt-'))
+mkdirSync(join(broken, '程序/resources/models'), { recursive: true })
+copyFileSync(script, join(broken, '首次启动.ps1'))
+writeFileSync(join(broken, '程序/短剧投流素材生成平台.exe'), '')
+writeFileSync(join(broken, '程序/resources/models/ffmpeg.exe'), 'corrupt isolated fixture')
+const rejected = psRun(join(broken, '首次启动.ps1'), true)
+writeFileSync(join(evidence, 'corrupt-component-rejected.log'), (rejected.stdout ?? '') + (rejected.stderr ?? ''))
+if (rejected.status !== 1 || !rejected.stdout.includes('校验不通过')) throw Error('Corrupt component not rejected')
+const systemPath = `${process.env.SystemRoot}\\System32;${process.env.SystemRoot}`
+const cache = mkdtempSync(join(tmpdir(), 'shortdrama-stable-ocr-cache-'))
+const ocr = spawnSync(join(bundle, '程序/resources/tools/local-ocr/runtime/temporal_ocr_runner.exe'), ['--self-test'], { windowsHide: true, encoding: 'utf8', timeout: 120000, env: { ...process.env, PATH: systemPath, PADDLE_PDX_CACHE_HOME: cache, PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK: 'True' } })
+writeFileSync(join(evidence, 'ocr-empty-cache.log'), (ocr.stdout ?? '') + (ocr.stderr ?? ''))
+if (ocr.status !== 0 || !ocr.stdout.includes('"ok": true') || !ocr.stdout.includes('"detector": true') || !ocr.stdout.includes('"recognizer": true')) throw Error('Packaged OCR initialization failed')
+const userData = mkdtempSync(join(tmpdir(), 'shortdrama-stable-final-userdata-'))
+const executablePath = join(bundle, '程序/短剧投流素材生成平台.exe')
+const app = await electron.launch({ executablePath, args: ['--packaged-smoke', '--packaged-smoke-user-data', userData], env: { ...process.env, PATH: systemPath, SHORTDRAMA_MATERIAL_CHANNEL: 'packaged-smoke' } })
+try {
+  const page = await app.firstWindow()
+  await expect(page.getByRole('heading', { name: '剧目库', exact: true })).toBeVisible()
+  const data = await page.evaluate(async () => ({ health: await window.desktopApi.getAppHealth(), dramas: await window.desktopApi.listDramas(), providers: await window.desktopApi.listProviderProfiles() }))
+  if (data.dramas.length || data.providers.length || !data.health.databaseInitialized || data.health.appVersion !== '1.0.0' || data.health.releaseChannel !== 'stable' || data.health.releaseChannelLabel !== '正式版') throw Error('Stable fresh-install identity mismatch')
+  await expect(page.locator('.sidebar-foot .meta')).toHaveText('v1.0.0 · P1 · 正式版')
+  await expect(page.locator('.sidebar-foot .meta')).toBeVisible()
+  await page.screenshot({ path: join(evidence, 'final-empty-library.png') })
+  await page.getByRole('button', { name: '设置', exact: true }).click()
+  const settings = page.frameLocator('iframe[title="设置"]')
+  await expect(settings.getByRole('heading', { name: '能力供应商', exact: true })).toBeVisible()
+  await expect(settings.getByRole('button', { name: '进入独立配置', exact: true })).toHaveCount(3)
+  await page.screenshot({ path: join(evidence, 'final-provider-setup.png') })
+  const isPackaged = await app.evaluate(({ app }) => app.isPackaged)
+  if (!isPackaged) throw Error('Not actual packaged app')
+  writeFileSync(join(evidence, 'final-isolated-smoke.json'), JSON.stringify({ status: 'passed', appVersion: data.health.appVersion, channel: data.health.releaseChannel, channelLabel: data.health.releaseChannelLabel, isPackaged, databaseInitialized: true, dramaCount: 0, providerCount: 0, systemOnlyPath: true, ocrFreshCacheInitialized: true, firstRunDownload: true, repeatWithoutNetwork: true, corruptComponentRejected: true, installation: executablePath, scope: 'host independent installation and isolated data; cross-machine acceptance deferred by user' }, null, 2))
+} finally { await app.close() }
+writeFileSync(join(evidence, 'final-exe-path.txt'), executablePath)
+console.log('FINAL_STABLE_ISOLATED_SMOKE_PASSED')
