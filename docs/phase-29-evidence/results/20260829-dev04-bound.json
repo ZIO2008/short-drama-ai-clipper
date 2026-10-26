@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "sampleId": "dev-04",
+  "packageId": "29000000-0000-4000-8000-000000000004",
+  "candidateId": "29000000-0000-4000-8003-000000000004",
+  "snapshotId": "29000000-0000-4000-8004-000000000004",
+  "evidenceId": "29000000-0000-4000-8001-000000000004",
+  "factCode": "visual-fact-5bc0c1348a3e22d53318e530",
+  "startSeconds": 65.64,
+  "endSeconds": 65.72,
+  "frameCount": 5,
+  "frameFacts": [
+    { "ptsSeconds": 65.6, "sha256": "4ecabea76ad23bfe0b116a725fe8e2810c9fc0b21609dbf2d58a78918f3da20c", "byteLength": 49984 },
+    { "ptsSeconds": 65.64, "sha256": "8a0dd8bfa3fda63a39126456ade2e6d69f9688f36912d6d4a80b0e52c27db444", "byteLength": 50033 },
+    { "ptsSeconds": 65.68, "sha256": "4ea1764a2bd8e161b96222c8204eecdd966286c96dde9bca35343c7362f528b6", "byteLength": 49901 },
+    { "ptsSeconds": 65.72, "sha256": "929a8fcb7ebb7886811fe2ecdad8fe471b12a4156a558352cbdabb3e5f27c84d", "byteLength": 50248 },
+    { "ptsSeconds": 65.76, "sha256": "329fa9867b8c8e723110ece67d3904f45010503d082953465c8276c475f44a5e", "byteLength": 50269 }
+  ],
+  "providerSnapshot": {
+    "provider": "阿里云百炼 / Model Studio",
+    "model": "qwen3.7-plus",
+    "modelRunId": "dc0f552f-c599-4a4f-b9ff-2d514475e8ed"
+  },
+  "visualFactEvidenceId": "dd6ffc05-332c-47b2-b970-3ed549391fd5",
+  "conclusion": "supported",
+  "sourceDatabaseWrites": 0
+}

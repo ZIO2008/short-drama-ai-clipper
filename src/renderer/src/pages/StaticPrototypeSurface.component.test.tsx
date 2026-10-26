@@ -1,0 +1,213 @@
+// @vitest-environment jsdom
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { StaticPrototypeSurface } from './StaticPrototypeSurface.js'
+import { beginPrototypeDataRead, completePrototypeDataRead } from './prototype-data-ready.js'
+
+afterEach(() => { cleanup(); vi.useRealTimers() })
+
+const readySubtitleDocument = (): Document => {
+  const surface = document.implementation.createHTMLDocument('subtitle-surface')
+  surface.head.innerHTML = '<style>#screen-subtitles{display:flex}</style>'
+  surface.body.innerHTML = '<section id="screen-subtitles" class="screen active">字幕资产</section><section id="subtitleRecognitionSettingsModal"></section><div id="toast"></div>'
+  surface.body.append(
+    ...Array.from({ length: 3 }, (_, index) => {
+      const method = surface.createElement('button')
+      method.dataset.subtitleMethod = `test-${index}`
+      return method
+    })
+  )
+  const regionSetting = surface.createElement('div')
+  regionSetting.dataset.subtitleRegionSetting = 'true'
+  surface.body.append(regionSetting)
+  const subtitleAssetModal = surface.createElement('div')
+  subtitleAssetModal.id = 'subtitleAssetModal'
+  surface.body.append(subtitleAssetModal)
+  surface.body.dataset.staticPrototypeIsolated = 'true'
+  return surface
+}
+
+const readyClipFixtureDocument = (): Document => {
+  const surface = document.implementation.createHTMLDocument('clip-fixture')
+  surface.body.innerHTML = [
+    '<div class="app"><aside class="sidebar">V49 壳</aside><main class="workspace"><div id="content">',
+    '<section id="screen-library" class="screen active">剧目库</section>',
+    '<section id="screen-clip" class="screen"><div data-od-id="clip-monitor-media"></div><section data-od-id="clip-monitor-transport"></section><section data-od-id="clip-review-range"></section><section data-od-id="clip-boundary-nudges"></section></section>',
+    '</div></main></div>'
+  ].join('')
+  return surface
+}
+
+const setFrameDocument = (frame: HTMLIFrameElement, contentDocument: Document): void => {
+  Object.defineProperty(frame, 'contentDocument', { configurable: true, value: contentDocument })
+}
+
+describe('StaticPrototypeSurface loading guard', () => {
+  it('shows the existing retry panel even when the iframe load event never arrives', async () => {
+    vi.useFakeTimers()
+    render(<StaticPrototypeSurface screen="clip" onBack={vi.fn()} />)
+    await act(async () => { await vi.advanceTimersByTimeAsync(3000) })
+    expect(screen.getByRole('alert').textContent).toContain('加载失败')
+    expect(screen.getByRole('button', { name: '重新加载页面' })).not.toBeNull()
+  })
+  it('reveals the real surface after its first data read, rather than the transient loading render', async () => {
+    const onPrepared = vi.fn(), doc = readyClipFixtureDocument()
+    const { container } = render(<StaticPrototypeSurface screen="clip" onBack={vi.fn()} onReady={document => beginPrototypeDataRead(document)} onPrepared={onPrepared} />)
+    const frame = container.querySelector<HTMLIFrameElement>('iframe')!; setFrameDocument(frame, doc); fireEvent.load(frame)
+    expect(frame.dataset.prototypeReady).toBe('false')
+    completePrototypeDataRead(doc)
+    expect(frame.dataset.prototypeReady).toBe('true'); expect(onPrepared).toHaveBeenCalledOnce()
+  })
+  it('does not publish an unmounted data wait after it finishes', () => {
+    const onPrepared = vi.fn(), doc = readyClipFixtureDocument()
+    const { container, unmount } = render(<StaticPrototypeSurface screen="clip" onBack={vi.fn()} onReady={document => beginPrototypeDataRead(document)} onPrepared={onPrepared} />)
+    const frame = container.querySelector<HTMLIFrameElement>('iframe')!; setFrameDocument(frame, doc); fireEvent.load(frame)
+    unmount(); completePrototypeDataRead(doc); expect(onPrepared).not.toHaveBeenCalled()
+  })
+  it('handles local routes before the prototype document capture handlers, while leaving business actions available', async () => {
+    const navigate = vi.fn(), demo = vi.fn(), business = vi.fn()
+    const { container, unmount } = render(<StaticPrototypeSurface screen="clip" onBack={vi.fn()} onNavigate={navigate} />)
+    const frame = container.querySelector<HTMLIFrameElement>('iframe')!, doc = frame.contentDocument!
+    doc.body.innerHTML = readyClipFixtureDocument().body.innerHTML
+    const route = doc.createElement('button'); route.dataset.r5Open = 'clip-pool'
+    const generate = doc.createElement('button'); generate.dataset.r5Open = 'generate'
+    doc.getElementById('screen-clip')!.append(route, generate)
+    doc.addEventListener('click', event => { if ((event.target as Element).closest('[data-r5-open="clip-pool"]')) demo() }, true)
+    doc.addEventListener('click', event => { if ((event.target as Element).closest('[data-r5-open="generate"]')) business() })
+    fireEvent.load(frame); await act(async () => { await Promise.resolve() })
+    route.click(); expect(navigate).toHaveBeenCalledWith('clip-pool'); expect(demo).not.toHaveBeenCalled()
+    generate.click(); expect(business).toHaveBeenCalledOnce()
+    unmount(); route.click(); expect(navigate).toHaveBeenCalledTimes(2)
+  })
+  it('keeps local return-to-settings actions on their surface callback', async () => {
+    const globalNavigate = vi.fn()
+    const localNavigate = vi.fn()
+    window.addEventListener('shortdrama:global-navigation', globalNavigate)
+    const { container } = render(<StaticPrototypeSurface screen="clip" onBack={vi.fn()} onNavigate={localNavigate} />)
+    const fixture = readyClipFixtureDocument()
+    const button = fixture.createElement('button')
+    button.dataset.open = 'settings'
+    fixture.querySelector('#screen-clip')!.append(button)
+    setFrameDocument(container.querySelector<HTMLIFrameElement>('iframe')!, fixture)
+    fireEvent.load(container.querySelector('iframe')!)
+    await act(async () => { await Promise.resolve() })
+    try {
+      button.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+      expect(localNavigate).toHaveBeenCalledWith('settings')
+      expect(globalNavigate).not.toHaveBeenCalled()
+    } finally { window.removeEventListener('shortdrama:global-navigation', globalNavigate) }
+  })
+
+  it('leaves static-fixture sidebar behavior inside the prototype', async () => {
+    const navigate = vi.fn()
+    window.addEventListener('shortdrama:global-navigation', navigate)
+    const { container } = render(<StaticPrototypeSurface screen="clip" mode="static-fixture" onBack={vi.fn()} />)
+    const fixture = readyClipFixtureDocument()
+    const button = fixture.createElement('button')
+    button.dataset.screen = 'library'
+    fixture.querySelector('.sidebar')!.append(button)
+    const prototypeNavigation = vi.fn()
+    button.addEventListener('click', prototypeNavigation)
+    setFrameDocument(container.querySelector<HTMLIFrameElement>('iframe')!, fixture)
+    fireEvent.load(container.querySelector('iframe')!)
+    await act(async () => { await Promise.resolve() })
+    try {
+      button.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+      expect(prototypeNavigation).toHaveBeenCalledOnce()
+      expect(navigate).not.toHaveBeenCalled()
+    } finally { window.removeEventListener('shortdrama:global-navigation', navigate) }
+  })
+
+  it.each(['library', 'tasks', 'tags', 'settings'])('routes runtime sidebar %s to the host without exposing prototype pages', async (target) => {
+    const navigate = vi.fn()
+    window.addEventListener('shortdrama:global-navigation', navigate)
+    const { container } = render(<StaticPrototypeSurface screen="clip" onBack={vi.fn()} />)
+    const frame = container.querySelector<HTMLIFrameElement>('iframe')!
+    const runtimeDocument = readyClipFixtureDocument()
+    const button = runtimeDocument.createElement('button')
+    button.className = 'nav-btn'
+    button.dataset.screen = target
+    button.innerHTML = '<span>全局导航</span>'
+    runtimeDocument.querySelector('.sidebar')!.append(button)
+    const prototypeNavigation = vi.fn(() => runtimeDocument.getElementById('screen-library')!.classList.add('active'))
+    button.addEventListener('click', prototypeNavigation)
+    setFrameDocument(frame, runtimeDocument)
+    fireEvent.load(frame)
+    await act(async () => { await Promise.resolve() })
+    try {
+      button.firstElementChild!.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+      expect(navigate).toHaveBeenCalledTimes(1)
+      expect((navigate.mock.calls[0][0] as CustomEvent).detail).toBe(target)
+      expect(prototypeNavigation).not.toHaveBeenCalled()
+      expect(runtimeDocument.getElementById('screen-library')!.classList.contains('active')).toBe(false)
+    } finally { window.removeEventListener('shortdrama:global-navigation', navigate) }
+  })
+
+  it('keeps the V49 clip fixture isolated from the runtime bridge', async () => {
+    const onReady = vi.fn()
+    const onPrepared = vi.fn()
+    const { container } = render(<StaticPrototypeSurface screen="clip" mode="static-fixture" onBack={vi.fn()} onReady={onReady} onPrepared={onPrepared} />)
+    const frame = container.querySelector<HTMLIFrameElement>('iframe.static-prototype-surface')!
+    const fixture = readyClipFixtureDocument()
+
+    setFrameDocument(frame, fixture)
+    fireEvent.load(frame)
+    await act(async () => { await Promise.resolve() })
+
+    expect(frame.dataset.prototypeReady).toBe('true')
+    expect(fixture.body.dataset.staticPrototypeFixture).toBe('v49-screen-clip')
+    expect(fixture.querySelector('.app .sidebar')?.textContent).toBe('V49 壳')
+    expect(fixture.getElementById('screen-clip')?.classList.contains('active')).toBe(true)
+    expect(fixture.getElementById('screen-library')?.classList.contains('active')).toBe(false)
+    expect(onReady).not.toHaveBeenCalled()
+    expect(onPrepared).toHaveBeenCalledWith('clip')
+  })
+
+  it('marks the V49 clip runtime as a full-shell surface and exposes it to the bridge', async () => {
+    const onReady = vi.fn()
+    const { container } = render(<StaticPrototypeSurface screen="clip" mode="runtime" onBack={vi.fn()} onReady={onReady} />)
+    const frame = container.querySelector<HTMLIFrameElement>('iframe.static-prototype-surface')!
+    const runtimeDocument = readyClipFixtureDocument()
+
+    setFrameDocument(frame, runtimeDocument)
+    fireEvent.load(frame)
+    await act(async () => { await Promise.resolve() })
+
+    expect(frame.dataset.v49RuntimeShell).toBe('true')
+    expect(runtimeDocument.body.dataset.staticPrototypeRuntime).toBe('v49-screen-clip')
+    expect(runtimeDocument.querySelector('.app .sidebar')?.textContent).toBe('V49 壳')
+    expect(onReady).toHaveBeenCalledWith(runtimeDocument)
+  })
+
+  it('keeps the iframe marked not-ready and provides a retry action when isolation times out', async () => {
+    vi.useFakeTimers()
+    const { container } = render(<StaticPrototypeSurface screen="clip" onBack={vi.fn()} />)
+    const frame = container.querySelector<HTMLIFrameElement>('iframe.static-prototype-surface')!
+
+    expect(frame.dataset.prototypeReady).toBe('false')
+    fireEvent.load(frame)
+    await act(async () => { await vi.advanceTimersByTimeAsync(1_000) })
+
+    expect(screen.getByRole('alert').textContent).toContain('原剧切片工作区加载失败')
+    fireEvent.click(screen.getByRole('button', { name: '重新加载页面' }))
+    expect(container.querySelector('iframe.static-prototype-surface')?.getAttribute('data-prototype-ready')).toBe('false')
+  })
+
+  it('does not let a timed-out former screen replace a ready current screen with an error panel', async () => {
+    vi.useFakeTimers()
+    const { container, rerender } = render(<StaticPrototypeSurface screen="clip" onBack={vi.fn()} />)
+    const formerFrame = container.querySelector<HTMLIFrameElement>('iframe.static-prototype-surface')!
+    fireEvent.load(formerFrame)
+
+    rerender(<StaticPrototypeSurface screen="subtitles" onBack={vi.fn()} />)
+    const currentFrame = container.querySelector<HTMLIFrameElement>('iframe.static-prototype-surface')!
+    setFrameDocument(currentFrame, readySubtitleDocument())
+    fireEvent.load(currentFrame)
+    await act(async () => { await vi.advanceTimersByTimeAsync(20) })
+    expect(currentFrame.dataset.prototypeReady).toBe('true')
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(1_000) })
+    expect(screen.queryByRole('alert')).toBeNull()
+    expect(container.querySelector('iframe.static-prototype-surface')?.getAttribute('data-prototype-ready')).toBe('true')
+  })
+})

@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "short-drama-material-studio.html",
+  "entry": "short-drama-material-studio.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-07-29T16:49:18.322Z",
+  "updatedAt": "2026-07-29T16:49:18.322Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

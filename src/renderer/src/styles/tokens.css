@@ -1,0 +1,39 @@
+:root {
+  --bg: oklch(17% 0.012 65);
+  --surface: oklch(21% 0.012 65);
+  --fg: oklch(93% 0.012 75);
+  --muted: oklch(68% 0.012 70);
+  --border: oklch(31% 0.012 65);
+  --accent: oklch(70% 0.105 55);
+  --success: oklch(72% 0.11 155);
+  --warning: oklch(78% 0.11 88);
+  --danger: oklch(68% 0.16 25);
+  --ai: oklch(72% 0.055 235);
+  --surface-2: color-mix(in oklch, var(--surface) 82%, var(--fg));
+  --surface-3: color-mix(in oklch, var(--surface) 88%, var(--fg));
+  --accent-soft: color-mix(in oklch, var(--accent) 16%, transparent);
+  --fg-soft: color-mix(in oklch, var(--fg) 6%, transparent);
+  /* Version 48 原剧切片板：源 HTML 的最终 r5Polish 值，集中保存，禁止页面局部硬编码。 */
+  --clip-panel: #191714;
+  --clip-panel-2: #12110f;
+  --clip-line: #453b32;
+  --clip-muted: #aaa095;
+  --clip-fg: #e7edf2;
+  --clip-monitor: #100f0d;
+  --clip-track: #2b261f;
+  --clip-control: #211d18;
+  --clip-control-line: #4d4338;
+  --font-display: 'Segoe UI Variable Display', 'Microsoft YaHei UI', system-ui, sans-serif;
+  --font-body: 'Segoe UI Variable Text', 'Microsoft YaHei UI', system-ui, sans-serif;
+  --font-mono: 'Cascadia Mono', 'JetBrains Mono', ui-monospace, monospace;
+  --radius: 6px;
+  --radius-lg: 9px;
+  --gap-xs: 4px;
+  --gap-sm: 8px;
+  --gap-md: 16px;
+  --gap-lg: 24px;
+  --gap-xl: 32px;
+  --motion-fast: 150ms;
+  --motion-screen: 180ms;
+  --motion-easing: cubic-bezier(.2, 0, 0, 1);
+}

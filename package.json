@@ -1,0 +1,116 @@
+{
+  "name": "short-drama-ai-material-platform",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "短剧投流素材生成平台 Windows 桌面版",
+  "author": "ShortDramaAI",
+  "main": "./out/main/index.js",
+  "scripts": {
+    "dev": "pnpm run rebuild:electron && electron-vite dev",
+    "start": "pnpm run rebuild:electron && electron-vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "test": "pnpm run rebuild:node && vitest run",
+    "clean:build-metadata": "node -e \"for (const file of ['out/tsconfig.node.tsbuildinfo','out/tsconfig.web.tsbuildinfo']) require('node:fs').rmSync(file,{force:true})\"",
+    "check:version": "node tools/check-version-consistency.mjs",
+    "validate:baseline-registry": "node tools/validate-baseline-registry.mjs",
+    "validate:test-boundary": "node tools/validate-playwright-suite-boundary.mjs",
+    "validate:current-references": "node tools/validate-current-reference-boundary.mjs",
+    "validate:phase29-acceptance": "node tools/validate-phase29-acceptance.mjs",
+    "status:current": "node tools/current-workspace-status.mjs",
+    "validate:design-contract": "node tools/validate-design-contract.mjs",
+    "build": "pnpm run check:version && pnpm run validate:phase29-acceptance && pnpm run clean:build-metadata && electron-vite build && pnpm run verify:renderer-model-studio-boundary",
+    "rebuild:electron": "electron-rebuild -f -w better-sqlite3",
+    "rebuild:node": "pnpm rebuild better-sqlite3",
+    "pack:dir": "pnpm run pack:current",
+    "pack:current": "node tools/pack-current-candidate.mjs",
+    "pack:verification": "node tools/pack-current-candidate.mjs --verification",
+    "test:e2e": "pnpm run build && pnpm run rebuild:electron && playwright test",
+    "test:e2e:compatibility": "pnpm run build && pnpm run rebuild:electron && node tools/run-playwright-suite.mjs compatibility",
+    "test:e2e:legacy": "pnpm run build && pnpm run rebuild:electron && node tools/run-playwright-suite.mjs legacy",
+    "test:e2e:all": "pnpm run build && pnpm run rebuild:electron && node tools/run-playwright-suite.mjs all",
+    "release:verify": "pnpm run pack:current && node tools/run-current-packaged-e2e.mjs",
+    "audit:fidelity": "node tools/visual-fidelity-report.mjs",
+    "verify:renderer-model-studio-boundary": "node tools/verify-renderer-model-studio-boundary.mjs",
+    "verify:clip-evidence-baseline": "node tools/verify-clip-evidence-baseline.mjs",
+    "build:local-ocr": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/build-local-ocr-runner.ps1",
+    "build:real-asr-evidence": "node node_modules/.pnpm/esbuild@0.25.12/node_modules/esbuild/bin/esbuild tools/real-asr-evidence-baseline.ts --bundle --platform=node --format=esm --packages=external --outfile=tools/real-asr-evidence-baseline.bundle.mjs"
+  },
+  "build": {
+    "appId": "local.shortdrama.materialstudio",
+    "productName": "短剧投流素材生成平台",
+    "npmRebuild": false,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "out/**",
+      "!out/**/*.tsbuildinfo",
+      "package.json",
+      "!node_modules/better-sqlite3/build/**",
+      "!node_modules/better-sqlite3/bin/**",
+      "node_modules/better-sqlite3/build/Release/better_sqlite3.node"
+    ],
+    "asarUnpack": [
+      "node_modules/better-sqlite3/build/Release/*.node"
+    ],
+    "extraResources": [
+      {
+        "from": "node_modules/ffmpeg-static/ffmpeg.exe",
+        "to": "models/ffmpeg.exe"
+      },
+      {
+        "from": "node_modules/ffprobe-static/bin/win32/x64/ffprobe.exe",
+        "to": "models/ffprobe.exe"
+      },
+      {
+        "from": "tools/local-ocr/runtime",
+        "to": "tools/local-ocr/runtime",
+        "filter": [
+          "**/*",
+          "!**/__pycache__/**",
+          "!**/*.pyc",
+          "!**/.env*"
+        ]
+      }
+    ],
+    "win": {
+      "target": "dir",
+      "signAndEditExecutable": false
+    }
+  },
+  "dependencies": {
+    "better-sqlite3": "12.11.1",
+    "drizzle-orm": "0.45.2",
+    "fflate": "^0.8.3",
+    "pdf-parse": "^2.4.5",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "zod": "4.6.6"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "4.2.0",
+    "@napi-rs/canvas": "0.1.80",
+    "@playwright/test": "1.61.1",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/better-sqlite3": "7.6.13",
+    "@types/node": "26.1.1",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.3",
+    "electron": "43.1.1",
+    "electron-builder": "26.15.3",
+    "electron-vite": "5.0.0",
+    "ffmpeg-static": "^5.3.0",
+    "ffprobe-static": "^3.1.0",
+    "jsdom": "^29.1.1",
+    "typescript": "7.0.2",
+    "vite": "8.1.5",
+    "vitest": "4.1.10"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "packageManager": "pnpm@11.9.0"
+}

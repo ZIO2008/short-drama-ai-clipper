@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "registryVersion": 1,
+  "generatedAt": "2026-08-19T00:00:00+08:00",
+  "immutability": "Entries are append-only identities. A snapshot path must never be overwritten; a new content identity gets a new id.",
+  "baselines": [
+    {
+      "id": "design-v49-clip-monitor-review",
+      "snapshotId": "v2026-08-11-v49-clip-monitor-review",
+      "domain": "design",
+      "path": "design/open-design/v2026-08-11-v49-clip-monitor-review/short-drama-material-studio-v49-clip-review.html",
+      "sha256": "C95820F2FCE372E9BBA3A2A1062495D418951025C1A7C65A73429F5C0FFD563D",
+      "status": "current",
+      "supersedes": null,
+      "createdAt": "2026-08-11",
+      "allowedUse": [
+        "design-reference",
+        "visual-acceptance"
+      ]
+    }
+  ]
+}

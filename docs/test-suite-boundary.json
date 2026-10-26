@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "defaultSuite": "current",
+  "suites": {
+    "current": [
+      "p0-workflows.spec.ts",
+      "original-clip-pool-export-report.spec.ts",
+      "p1-remix-workflow.spec.ts",
+      "p2-freeze.spec.ts",
+      "packaged-real-dpi.spec.ts",
+      "packaged-business-smoke.spec.ts",
+      "long-asset-scroll.spec.ts",
+      "provider-connectivity.spec.ts",
+      "provider-prototype-bridge.spec.ts",
+      "subtitle-runtime-mapping.spec.ts",
+      "subtitle-recognition-recovery.spec.ts"
+    ],
+    "compatibility": [
+      "p2-narration-workflow.spec.ts",
+      "prototype-reference.spec.ts",
+      "real-original-clip-trial.spec.ts",
+      "real-p0-media-trial.spec.ts"
+    ],
+    "legacy": [
+      "phase8-original-clip-workflow.spec.ts",
+      "phase10-v48-fixture-mapping.spec.ts",
+      "phase14-original-clip-pool-report.spec.ts",
+      "subtitle-prototype-fixture.spec.ts"
+    ]
+  },
+  "policy": "Default execution is current only. Compatibility and legacy require explicit PLAYWRIGHT_SUITE selection."
+}

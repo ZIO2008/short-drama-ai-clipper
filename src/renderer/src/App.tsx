@@ -1,0 +1,247 @@
+import { useEffect, useState, type ReactElement } from 'react'
+import type { AppHealth, DesktopApi, DramaSummary, EpisodeImportSummary, EpisodeUpdate, NotificationSnapshot, TagSummary, TaskSummary } from '../../shared/contracts.js'
+import { AppErrorBoundary } from './components/AppErrorBoundary.js'
+import { AppShell } from './layout/AppShell.js'
+import { getInitialRoute, type RouteId } from './navigation.js'
+
+type LoadState =
+  | { kind: 'loading' }
+  | { kind: 'ready'; health: AppHealth }
+  | { kind: 'error'; message: string }
+
+type NotificationLoadState = 'idle' | 'loading' | 'ready' | 'error'
+
+export const App = (): ReactElement => (
+  <AppErrorBoundary>
+    <AppRuntime />
+  </AppErrorBoundary>
+)
+
+const AppRuntime = (): ReactElement => {
+  const [activeRoute, setActiveRoute] = useState<RouteId>(getInitialRoute)
+  const [loadState, setLoadState] = useState<LoadState>({ kind: 'loading' })
+  const [notificationSnapshot, setNotificationSnapshot] = useState<NotificationSnapshot | null>(null)
+  const [notificationLoadState, setNotificationLoadState] = useState<NotificationLoadState>('idle')
+  const [notificationError, setNotificationError] = useState<string | null>(null)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [dramas, setDramas] = useState<DramaSummary[] | null>(null)
+  const [dramasLoading, setDramasLoading] = useState(false)
+  const [dramasError, setDramasError] = useState<string | null>(null)
+  const [tags, setTags] = useState<TagSummary[]>([])
+  const [recoveryNotice, setRecoveryNotice] = useState<string | null>(null)
+  const [backgroundNotice, setBackgroundNotice] = useState<string | null>(null)
+  const [lastUnreadCount, setLastUnreadCount] = useState(0)
+  const [tasks, setTasks] = useState<TaskSummary[]>([])
+  const [tasksLoading, setTasksLoading] = useState(false)
+  const [tasksError, setTasksError] = useState<string | null>(null)
+  const [libraryInstanceKey, setLibraryInstanceKey] = useState(0)
+
+  const showImportSummary = (summary: EpisodeImportSummary): void => {
+    const examples = summary.conflicts.slice(0, 2).map((item) => `第 ${item.episodeNo ?? '待填写'} 集：${fileName(item.sourcePath)} 与 ${fileName(item.existingSourcePath)}`).join('；')
+    const conflict = summary.conflicts.length > 0 ? `，冲突 ${summary.conflicts.length}（未覆盖已有引用）${examples ? `：${examples}${summary.conflicts.length > 2 ? ' 等' : ''}` : ''}` : ''
+    setBackgroundNotice(`本次导入：新增 ${summary.imported}，跳过 ${summary.skipped}${conflict}`)
+    window.setTimeout(() => setBackgroundNotice(null), 8000)
+  }
+
+  const loadDramas = (): void => {
+    if (!window.desktopApi) return
+    setDramasLoading(true); setDramasError(null)
+    window.desktopApi.listDramas().then((items) => setDramas(items)).catch(() => setDramasError('剧目库读取失败，请重试。')).finally(() => setDramasLoading(false))
+  }
+  const loadTags = (): void => { if (window.desktopApi) window.desktopApi.listTags().then(setTags).catch(() => setTags([])) }
+  const loadTasks = (): void => {
+    if (!window.desktopApi) return
+    setTasksLoading(true)
+    setTasksError(null)
+    window.desktopApi.listTasks()
+      .then(setTasks)
+      .catch(() => setTasksError('任务中心读取失败，请重试。'))
+      .finally(() => setTasksLoading(false))
+  }
+
+  useEffect(() => {
+    let active = true
+    const desktopApi = window.desktopApi
+    if (!desktopApi) {
+      setLoadState({ kind: 'error', message: '桌面桥接不可用。请从短剧素材台应用窗口重新载入。' })
+      return () => {
+        active = false
+      }
+    }
+    desktopApi
+      .getAppHealth()
+      .then((health) => {
+        if (!active) return
+        if (health.initializationErrorCode === 'DATABASE_UNAVAILABLE') {
+          setLoadState({
+            kind: 'error',
+            message: `本地数据无法初始化：${health.initializationErrorMessage ?? '请检查应用数据目录权限后重试。'}`
+          })
+          return
+        }
+        setLoadState({ kind: 'ready', health })
+        setRecoveryNotice(health.recoveryNotice)
+        loadDramas()
+        loadTags()
+        loadTasks()
+      })
+      .catch(() => {
+        if (active) {
+          setLoadState({
+            kind: 'error',
+            message: '应用初始化失败。请检查本地数据目录后重试。'
+          })
+        }
+      })
+    return () => {
+      active = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (loadState.kind !== 'ready' || !window.desktopApi) return
+    let active = true
+    setNotificationLoadState('loading')
+    window.desktopApi.getNotifications().then((snapshot) => {
+      if (!active) return
+      setNotificationSnapshot(snapshot)
+      setNotificationLoadState('ready')
+      setNotificationError(null)
+    }).catch(() => {
+      if (!active) return
+      setNotificationLoadState('error')
+      setNotificationError('通知读取失败，当前页面仍可继续工作。')
+    })
+    return () => {
+      active = false
+    }
+  }, [loadState.kind])
+
+  useEffect(() => {
+    if (loadState.kind !== 'ready' || !tasks.some((task) => ['running', 'pending', 'paused'].includes(task.status))) return
+    const timer = window.setInterval(() => {
+      loadTasks()
+      if (window.desktopApi) void window.desktopApi.getNotifications().then((snapshot) => { if (snapshot.unreadCount > lastUnreadCount) { setBackgroundNotice('后台任务有新的状态更新，可打开通知中心查看。'); window.setTimeout(() => setBackgroundNotice(null), 3500) } setLastUnreadCount(snapshot.unreadCount); setNotificationSnapshot(snapshot) })
+    }, 1000)
+    return () => window.clearInterval(timer)
+  }, [loadState.kind, tasks, lastUnreadCount])
+
+  useEffect(() => {
+    const syncRoute = (): void => setActiveRoute(getInitialRoute())
+    window.addEventListener('hashchange', syncRoute)
+    return () => window.removeEventListener('hashchange', syncRoute)
+  }, [])
+
+  useEffect(() => {
+    if (activeRoute === 'tasks') loadTasks()
+  }, [activeRoute])
+
+  const navigate = (route: RouteId): void => {
+    if (route === 'library') {
+      setLibraryInstanceKey((value) => value + 1)
+      loadDramas()
+    }
+    if (window.location.hash !== `#/${route}`) {
+      window.location.hash = `/${route}`
+    }
+    setActiveRoute(route)
+  }
+
+  const updateNotifications = (operation: (api: DesktopApi) => Promise<NotificationSnapshot>): void => {
+    if (!window.desktopApi) return
+    setNotificationLoadState('loading')
+    operation(window.desktopApi).then((snapshot) => {
+      setNotificationSnapshot(snapshot)
+      setNotificationLoadState('ready')
+      setNotificationError(null)
+    }).catch(() => {
+      setNotificationLoadState('error')
+      setNotificationError('通知操作失败，请重试。')
+    })
+  }
+
+  const retryNotifications = (): void => {
+    if (!window.desktopApi) return
+    setNotificationLoadState('loading')
+    window.desktopApi.getNotifications().then((snapshot) => {
+      setNotificationSnapshot(snapshot)
+      setNotificationLoadState('ready')
+      setNotificationError(null)
+    }).catch(() => {
+      setNotificationLoadState('error')
+      setNotificationError('通知读取失败，当前页面仍可继续工作。')
+    })
+  }
+
+  return (
+    <AppShell
+      activeRoute={activeRoute}
+      libraryInstanceKey={libraryInstanceKey}
+      appVersion={loadState.kind === 'ready' ? loadState.health.appVersion : null}
+      releaseLabel={loadState.kind === 'ready' ? `${loadState.health.releaseScope} · ${loadState.health.releaseChannelLabel}` : null}
+      loadState={loadState.kind}
+      errorMessage={loadState.kind === 'error' ? loadState.message : null}
+      onNavigate={navigate}
+      notificationSnapshot={notificationSnapshot}
+      notificationLoadState={notificationLoadState}
+      notificationError={notificationError}
+      notificationsOpen={notificationsOpen}
+       onOpenNotifications={() => { setNotificationsOpen(true); retryNotifications() }}
+      onCloseNotifications={() => setNotificationsOpen(false)}
+      onRetryNotifications={retryNotifications}
+      onMarkNotificationRead={(id) => updateNotifications((api) => api.markNotificationRead(id))}
+      onMarkAllNotificationsRead={() => updateNotifications((api) => api.markAllNotificationsRead())}
+      onClearReadNotifications={() => updateNotifications((api) => api.clearReadNotifications())}
+      onResolveNotification={(id) => updateNotifications((api) => api.resolveNotification(id))}
+      recoveryNotice={recoveryNotice}
+      backgroundNotice={backgroundNotice}
+      dramas={dramas}
+      dramasLoading={dramasLoading}
+      dramasError={dramasError}
+      onRetryDramas={loadDramas}
+      onCreateDrama={async (name) => { const created = await window.desktopApi.createDrama(name); loadDramas(); return created }}
+      onChooseVideoFiles={() => window.desktopApi.chooseVideoFiles()}
+      onChooseVideoFolder={() => window.desktopApi.chooseVideoFolder()}
+      onImportEpisodePaths={async (id, paths) => { const result = await window.desktopApi.importEpisodes(id, paths); showImportSummary(result.summary); loadDramas() }}
+      tags={tags}
+      onRenameDrama={async (id, name) => { await window.desktopApi.updateDrama(id, name); loadDramas() }}
+      onLoadDrama={(id) => window.desktopApi.getDrama(id)}
+      onDeleteDrama={async (id, deleteTempFiles) => { await window.desktopApi.deleteDrama(id, deleteTempFiles); loadDramas() }}
+      onImportEpisodes={async (id) => { const paths = await window.desktopApi.chooseVideoFiles(id); if (paths.length > 0) { const result = await window.desktopApi.importEpisodes(id, paths); showImportSummary(result.summary) }; loadDramas() }}
+      onImportEpisodeFolder={async (id) => { const paths = await window.desktopApi.chooseVideoFolder(id); if (paths.length > 0) { const result = await window.desktopApi.importEpisodes(id, paths); showImportSummary(result.summary) }; loadDramas() }}
+      onAttachTag={async (dramaId, tagId) => { await window.desktopApi.attachTag(dramaId, tagId); loadDramas(); loadTags() }}
+      onUpdateEpisode={(dramaId, episodeId, update: EpisodeUpdate) => window.desktopApi.updateEpisode(dramaId, episodeId, update)}
+      onRemoveEpisode={(dramaId, episodeId) => window.desktopApi.removeEpisode(dramaId, episodeId)}
+      onImportScript={async (dramaId) => { const path = await window.desktopApi.chooseScriptFile(); if (!path) return []; const result = await window.desktopApi.importScript(dramaId, path); return result.episodes.length > 0 ? result.episodes.map((episode) => ({ ...episode, scriptAssetId: result.asset.id })) : [{ scriptAssetId: result.asset.id, episodeNo: null, title: '整部剧本（待手工关联）', text: result.asset.extractedText ?? '' }] }}
+      onLinkScript={(scriptId, episodeId) => window.desktopApi.linkScriptEpisode(scriptId, episodeId)}
+      onLinkSegment={(segmentId, episodeId) => window.desktopApi.linkScriptSegment(segmentId, episodeId)}
+      onRelink={async (dramaId) => { const paths = await window.desktopApi.chooseVideoFiles(dramaId); if (paths.length > 0) await window.desktopApi.relinkEpisodes(dramaId, paths) }}
+      tasks={tasks}
+      tasksLoading={tasksLoading}
+      tasksError={tasksError}
+      onRetryTasks={loadTasks}
+      onRetryTask={async (taskId) => {
+        setTasksError(null)
+        try {
+          setTasks(await window.desktopApi.retryFailedTaskItems(taskId))
+        } catch (error) {
+          throw error
+        }
+      }}
+      onListCandidates={(dramaId) => window.desktopApi.listClipCandidates(dramaId)}
+      onConfirmCandidate={(id) => window.desktopApi.confirmClipCandidate(id)}
+      onExportCandidate={(id, directory) => window.desktopApi.exportClipCandidate(id, directory)}
+      onChooseOutputDirectory={() => window.desktopApi.chooseOutputDirectory()}
+      onListMaterials={(dramaId) => window.desktopApi.listMaterials(dramaId)}
+      onPreflightMultiTask={(dramaId, config) => window.desktopApi.preflightMultiEpisode(dramaId, config)}
+      onCreateMultiTask={async (dramaId, config) => { const result = await window.desktopApi.createMultiEpisodeTask(dramaId, config); loadTasks(); return result }}
+      onRunTask={async (taskId) => { const result = await window.desktopApi.runProductionTask(taskId); loadTasks(); return result }}
+      onCreateTag={async (name) => { await window.desktopApi.createTag(name); loadTags() }}
+      onRenameTag={async (id, name) => { await window.desktopApi.renameTag(id, name); loadTags(); loadDramas() }}
+      onDeleteTag={async (tag) => { await window.desktopApi.deleteTag(tag.id); loadTags(); loadDramas() }}
+      onSaveSecret={async (credential, secretRef) => { await window.desktopApi.saveProviderCredential(credential, secretRef) }}
+    />
+  )
+}
+
+const fileName = (path: string): string => path.split(/[\\/]/).at(-1) ?? path
