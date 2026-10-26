@@ -176,9 +176,9 @@
       "id": "runtime-package-0.1.95-working-tree",
       "snapshotId": "package-json-0.1.95",
       "domain": "runtime",
-      "path": "package.json",
+      "path": "docs/runtime-baselines/package-0.1.95.json",
       "sha256": "F651784453A01EDF23C1972251312EAE65D7071E47F6093E5C7302FDB7BF1EC5",
-      "status": "current",
+      "status": "superseded",
       "supersedes": "runtime-package-0.1.94-working-tree",
       "createdAt": "2026-10-14",
       "allowedUse": [
@@ -215,6 +215,49 @@
         "package-smoke",
         "privacy-audit",
         "command-evidence"
+      ]
+    },
+    {
+      "id": "release-candidate-1.0.0-p1-stable",
+      "snapshotId": "v1.0.0-p1-stable",
+      "domain": "release",
+      "path": "docs/release-evidence/v1.0.0-p1-stable.json",
+      "sha256": "BA5A594B6D7CE0D1AFA6CECB666E2961EABCAA49979A10ADB34BA331BF39F11B",
+      "status": "candidate",
+      "supersedes": "release-candidate-0.1.95-p1-internal-trial",
+      "createdAt": "2026-10-26",
+      "allowedUse": [
+        "candidate-traceability",
+        "source-bound-verification",
+        "local-stable-distribution"
+      ]
+    },
+    {
+      "id": "evidence-candidate-1.0.0-verified",
+      "snapshotId": "v1.0.0-p1-stable",
+      "domain": "evidence",
+      "path": "docs/release-evidence/v1.0.0-p1-stable.json",
+      "sha256": "BA5A594B6D7CE0D1AFA6CECB666E2961EABCAA49979A10ADB34BA331BF39F11B",
+      "status": "current",
+      "supersedes": "evidence-candidate-0.1.95-verified",
+      "createdAt": "2026-10-26",
+      "allowedUse": [
+        "candidate-traceability",
+        "source-bound-verification",
+        "local-stable-distribution"
+      ]
+    },
+    {
+      "id": "runtime-package-1.0.0-working-tree",
+      "snapshotId": "package-json-1.0.0",
+      "domain": "runtime",
+      "path": "docs/runtime-baselines/package-1.0.0.json",
+      "sha256": "1B6562629C4F91AF9B9D33A2F8B33DADAC6AA148BDEC376AA4AC599A4B66DA19",
+      "status": "current",
+      "supersedes": "runtime-package-0.1.95-working-tree",
+      "createdAt": "2026-10-26",
+      "allowedUse": [
+        "tooling-context"
       ]
     }
   ]

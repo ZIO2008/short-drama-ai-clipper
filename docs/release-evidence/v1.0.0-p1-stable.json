@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 2,
+  "sourceCommit": "4610100e160ef098df9bb523605967ce4ef81ff3",
+  "sourceInputsSha256": "5d10758aa1c52cf30090982ec05c2367b3177508b53f1392ce8cb5e11cf450e6",
+  "sourceDirty": false,
+  "designContractSha256": "8fa027843b1100448c57cb7d16bc53640d1b1995f3f7b075204adef10ad20c0b",
+  "releaseId": "v1.0.0-p1-stable",
+  "appVersion": "1.0.0",
+  "scope": "P1",
+  "channel": "stable",
+  "packageKind": "formal-candidate",
+  "visualFidelity": "passed",
+  "notFormalCandidate": false,
+  "nativeBuildPathRedactions": 1,
+  "executableSha256": "37d45e5fae6bf0ae5a6dc3fb869aeb6e15c5c8d5070ea44d9b030b7a65ad523b",
+  "appAsarSha256": "fa3f971e81b46dc6ef54a6d3f0e8bbf9ed082ca89f231e7cd85995343d9f0ee4",
+  "createdAt": "2026-10-26T07:36:31.841Z",
+  "artifactAvailability": "local-only",
+  "originalManifestSha256": "50a9e9f8a66238c8630f03ccdbd5100f0bc8a6504c7e7a8dfe02048de76c7ec6",
+  "verification": {
+    "schemaVersion": 2,
+    "releaseId": "v1.0.0-p1-stable",
+    "sourceCommit": "4610100e160ef098df9bb523605967ce4ef81ff3",
+    "sourceInputsSha256": "5d10758aa1c52cf30090982ec05c2367b3177508b53f1392ce8cb5e11cf450e6",
+    "sourceDirty": false,
+    "designContractSha256": "8fa027843b1100448c57cb7d16bc53640d1b1995f3f7b075204adef10ad20c0b",
+    "candidateManifestSha256": "50a9e9f8a66238c8630f03ccdbd5100f0bc8a6504c7e7a8dfe02048de76c7ec6",
+    "closurePath": "docs/v1.0.0-p1-stable-closure.md",
+    "closureSha256": "8a0cef1623430385b885a264178f12244fae61dc23ed6205d71e2ef627ce9ae5",
+    "verifiedAt": "2026-10-26T07:39:29.085Z",
+    "checks": {
+      "tests": {
+        "evidencePath": "checks/tests.json",
+        "evidenceSha256": "c8f3f2c68e98055d8908e0a5fe3c4c183edf132a4cabf7adc43419dbc46f4666"
+      },
+      "typecheck": {
+        "evidencePath": "checks/typecheck.json",
+        "evidenceSha256": "a029362acc6611cbf57c6d8c55f53f947205b81926e9c7ed5be847d49839d438"
+      },
+      "build": {
+        "evidencePath": "checks/build.json",
+        "evidenceSha256": "7fd8a946de975b1fdf64e54f8f6867c442af87d1a4a88fa3b19e4804b520d840"
+      },
+      "currentE2E": {
+        "evidencePath": "checks/currentE2E.json",
+        "evidenceSha256": "bdeaeebdc08c4fb76e56bf758417224142a1a523e71e31eb42245b6821a65497"
+      },
+      "packagedE2E": {
+        "evidencePath": "checks/packagedE2E.json",
+        "evidenceSha256": "f7fcb980c83f0d49c4d2f6c01583130beccb6e67fac926f39b94c0c4dd21c622"
+      },
+      "fidelity": {
+        "evidencePath": "checks/fidelity.json",
+        "evidenceSha256": "50095548765f8399c261f9c9ce7c0477467859a2eba31004ddba07d4783d6ef8"
+      },
+      "review": {
+        "evidencePath": "checks/review.json",
+        "evidenceSha256": "a641d79e9bf39745cddc1bf9735ffbb6cd6857eacb164b42470ba6a6f6983a78"
+      }
+    }
+  },
+  "visualScope": "44 current scoped evidence slots only",
+  "limitations": [
+    "Host independent installation only; cross-machine acceptance deferred by user",
+    "No public upload or default installation replacement",
+    "Current E2E aggregate 49 passed via 48 full-run successes plus isolated retry; original failure retained",
+    "Provider fixtures do not prove paid live-provider acceptance"
+  ]
+}

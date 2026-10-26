@@ -1,0 +1,4 @@
+import { readFileSync } from 'node:fs'
+const report = readFileSync('.tmp/initial-release-review.md', 'utf8')
+if (!report.includes('Stage 1 PASS') || !report.includes('Stage 2 PASS') || !report.includes('HIGH 0、MEDIUM 0')) throw Error('Independent review is not passing')
+console.log(report)

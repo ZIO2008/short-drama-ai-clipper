@@ -1,0 +1,21 @@
+import hashlib, json, os, shutil, uuid
+from pathlib import Path
+
+root = Path.cwd()
+candidate = root / 'release/candidates/v1.0.0-p1-stable'
+manifest = json.loads((candidate / 'candidate-manifest.json').read_text(encoding='utf-8'))
+source = candidate / 'win-unpacked'
+target = Path(os.environ['LOCALAPPDATA']) / 'Programs' / ('ShortDramaMaterialStudio-1.0.0-check-' + uuid.uuid4().hex[:8])
+def sha(p):
+    with p.open('rb') as f:
+        return hashlib.file_digest(f, 'sha256').hexdigest()
+shutil.copytree(source, target)
+files = sorted(p for p in source.rglob('*') if p.is_file())
+for item in files:
+    if sha(item) != sha(target / item.relative_to(source)):
+        raise RuntimeError('Installed copy mismatch')
+if len(list(p for p in target.rglob('*') if p.is_file())) != len(files):
+    raise RuntimeError('Installed inventory mismatch')
+record = {'releaseId': manifest['releaseId'], 'executable': str(target / '短剧投流素材生成平台.exe'), 'fileCount': len(files), 'copyCheck': 'every-file-sha256', 'sourceCommit': manifest['sourceCommit']}
+(root / '.tmp/initial-installed.json').write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding='utf-8')
+print(json.dumps(record, ensure_ascii=False))

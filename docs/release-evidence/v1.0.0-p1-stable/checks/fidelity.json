@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 2,
+  "sourceCommit": "4610100e160ef098df9bb523605967ce4ef81ff3",
+  "sourceInputsSha256": "5d10758aa1c52cf30090982ec05c2367b3177508b53f1392ce8cb5e11cf450e6",
+  "sourceDirty": false,
+  "designContractSha256": "8fa027843b1100448c57cb7d16bc53640d1b1995f3f7b075204adef10ad20c0b",
+  "check": "fidelity",
+  "command": "pnpm run audit:fidelity",
+  "exitCode": 0,
+  "signal": null,
+  "startedAt": "2026-10-26T07:35:18.215Z",
+  "completedAt": "2026-10-26T07:35:20.487Z",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "outputPath": "checks/fidelity.log",
+  "outputSha256": "6c28d2090a67859b059a87d01690269c5db19cb8dd7e14796fc5c7d27ac10772"
+}
