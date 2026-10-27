@@ -46,6 +46,7 @@ import { disablePackagedE2eEnvironment, isE2eRuntimeEnabled } from './e2e-runtim
 import { resolvePackagedSmokeUserData } from './packaged-smoke-runtime.js'
 import type { AppHealth } from '../shared/contracts.js'
 import { RELEASE_METADATA } from '../shared/release-metadata.js'
+import { resolveUserDataProfile } from './user-data-profile.js'
 import type Database from 'better-sqlite3'
 const APP_ID = 'local.shortdrama.materialstudio'
 app.disableHardwareAcceleration()
@@ -61,7 +62,7 @@ const e2eRuntimeEnabled = isE2eRuntimeEnabled(app.isPackaged, CHANNEL)
 app.setAppUserModelId(APP_ID)
 const explicitTestDataPath = e2eRuntimeEnabled && process.env.SHORTDRAMA_MATERIAL_USER_DATA ? resolve(process.env.SHORTDRAMA_MATERIAL_USER_DATA) : null
 const packagedSmokeDataPath = resolvePackagedSmokeUserData(app.isPackaged, process.argv, tmpdir())
-const isolatedRuntimeDataPath = explicitTestDataPath ?? packagedSmokeDataPath
+const isolatedRuntimeDataPath = resolveUserDataProfile(app.getPath('appData'), process.argv, explicitTestDataPath ?? packagedSmokeDataPath)
 const sharedUserDataPath = join(app.getPath('appData'), 'ShortDramaMaterialStudio')
 app.setPath('userData', isolatedRuntimeDataPath ?? sharedUserDataPath)
 let mainWindow: BrowserWindow | null = null

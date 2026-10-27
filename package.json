@@ -1,6 +1,6 @@
 {
   "name": "short-drama-ai-material-platform",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "description": "短剧投流素材生成平台 Windows 桌面版",
