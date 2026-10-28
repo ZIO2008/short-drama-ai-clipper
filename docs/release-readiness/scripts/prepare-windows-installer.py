@@ -21,15 +21,13 @@ def main():
     parser.add_argument('--root', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--archive', type=Path)
+    parser.add_argument('--archive-sha256', default='4d43ca54168d32e6769ff58e580087ba11638658a3d223db8f1080905f0467d6')
     args = parser.parse_args()
     root = args.root.resolve()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    name = 'ShortDramaMaterialStudio-1.0.0-Setup-x64.exe'
-    if (output / name).exists():
-        raise RuntimeError('Completed installer is immutable; use a new revision directory')
     archive = args.archive.resolve() if args.archive else root.parents[1] / '03_发布包/素材平台-1.0.0-正式初版/素材平台-1.0.0-Windows-x64-正式初版.zip'
-    if sha(archive) != '4d43ca54168d32e6769ff58e580087ba11638658a3d223db8f1080905f0467d6':
+    if sha(archive) != args.archive_sha256:
         raise RuntimeError('Verified input ZIP identity mismatch')
     staging = root / ('.tmp/windows-installer-' + uuid.uuid4().hex)
     staging.mkdir(parents=True, exist_ok=False)
@@ -42,6 +40,10 @@ def main():
         zipped.extractall(staging)
     bundle = next(p for p in staging.iterdir() if p.is_dir())
     inventory = json.loads((bundle / '分发校验清单.json').read_text(encoding='utf-8-sig'))
+    version = inventory['appVersion']
+    name = f'ShortDramaMaterialStudio-{version}-Setup-x64.exe'
+    if (output / name).exists():
+        raise RuntimeError('Completed installer is immutable; use a new revision directory')
     for item in inventory['files']:
         if sha(bundle / item['path']) != item['sha256']:
             raise RuntimeError('Input ZIP file identity mismatch: ' + item['path'])
@@ -49,7 +51,7 @@ def main():
     shutil.copytree(bundle / '程序', payload)
     shutil.copytree(bundle / '第三方许可', payload / '第三方许可')
     origins = (bundle / '第三方组件与源码来源.txt').read_text(encoding='utf-8-sig')
-    origins = origins.replace('1.0.0正式初版发布包', '1.0.0 Windows安装包')
+    origins = origins.replace('1.0.0正式初版发布包', '1.0.0 Windows安装包').replace('0.1.108亲友试用包', f'{version} Windows安装包')
     origins = origins.replace('程序/LICENSE.electron.txt', 'LICENSE.electron.txt').replace('程序/LICENSES.chromium.html', 'LICENSES.chromium.html')
     origins = origins.replace('本ZIP', '本安装包').replace('首次启动入口由接收者', '安装阶段由接收者')
     origins = origins.replace('首次下载补全后的程序目录', '安装后补全的程序目录').replace('分享时使用原始ZIP', '分发时使用原始Setup安装文件')
@@ -64,7 +66,7 @@ def main():
     script = script.replace('从可信安装包重新解压到新文件夹。', '使用可信Setup安装文件重新安装。')
     script = script.replace('启动未完成：', '安装准备未完成：').replace('可再次双击启动入口重试。', '可重新运行安装程序重试。')
     (helper / 'InitializeComponents.ps1').write_text(script, encoding='utf-8-sig')
-    readme = '''短剧投流素材生成平台 1.0.0 安装版
+    readme = f'''短剧投流素材生成平台 {version} 安装版
 
 安装期间会联网下载并校验两个视频组件。安装成功后，双击桌面或开始菜单的“短剧投流素材生成平台”，直接打开软件EXE，不需要BAT或手动解压。
 首次使用配置自己的文本分析/ASR服务；本地OCR及模型随安装包提供。调用云端服务需自有账号、网络和相应费用。
@@ -74,9 +76,13 @@ def main():
 请只分发原始Setup安装文件，保留第三方许可，不要将安装后补全的视频工具重新打包分发。
 '''
     (payload / '先读我.txt').write_text(readme, encoding='utf-8-sig')
-    for tool in ['ffmpeg.exe', 'ffprobe.exe']:
-        if (payload / 'resources/models' / tool).exists():
-            raise RuntimeError('Downloaded video binary must not be redistributed')
+    for tool, expected in {
+        'ffmpeg.exe': '04e1307997530f9cf2fe35cba2ca7e8875ca91da02f89d6c7243df819c94ad00',
+        'ffprobe.exe': '4303ec85855340689b1f8aa5d9c1dc06ef3e3090682de3034edc3fca2b0798d5',
+    }.items():
+        actual = sha(payload / 'resources/models' / tool)
+        if actual != expected:
+            raise RuntimeError(f'Bundled video component mismatch: {tool}')
     for item in inventory['files']:
         if item['path'].startswith('程序/') and sha(payload / item['path'][3:]) != item['sha256']:
             raise RuntimeError('Application bytes changed')
@@ -95,6 +101,7 @@ auditPackagePrivacy(walk(process.argv[1]),developmentPathStrings(process.cwd()))
         'win': {'target': ['nsis'], 'signAndEditExecutable': False},
         'nsis': {'oneClick': False, 'perMachine': False, 'allowElevation': False,
                  'allowToChangeInstallationDirectory': True,
+                 'useZip': True,
                  'createDesktopShortcut': 'always', 'createStartMenuShortcut': True,
                  'shortcutName': '短剧投流素材生成平台', 'runAfterFinish': False,
                  'deleteAppDataOnUninstall': False, 'differentialPackage': False,
@@ -113,12 +120,12 @@ auditPackagePrivacy(walk(process.argv[1]),developmentPathStrings(process.cwd()))
     for item in inventory['files']:
         if item['path'].startswith('程序/') and sha(payload / item['path'][3:]) != item['sha256']:
             raise RuntimeError('Builder changed verified application bytes')
-    record = {'artifact': '1.0.0-setup-r1', 'appVersion': '1.0.0',
+    record = {'artifact': f'{version}-setup-r1', 'appVersion': version,
               'createdAt': datetime.now(timezone.utc).isoformat(),
               'inputZipSha256': sha(archive), 'installerSha256': sha(installer),
               'installerBytes': installer.stat().st_size,
               'applicationHashes': inventory['applicationHashes'],
-              'sourceAppUnchanged': True, 'videoBinariesIncluded': False,
+              'sourceAppUnchanged': True, 'videoBinariesIncluded': True,
               'payload': str(payload), 'config': config,
               'payloadFiles': [{'path': p.relative_to(payload).as_posix(), 'sha256': sha(p), 'bytes': p.stat().st_size} for p in sorted(payload.rglob('*')) if p.is_file()]}
     (output / 'installer-manifest.json').write_text(json.dumps(record, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')

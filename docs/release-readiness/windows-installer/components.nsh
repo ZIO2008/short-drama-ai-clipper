@@ -1,29 +1,16 @@
 !macro customInstall
   SetDetailsPrint both
-  DetailPrint "正在从固定上游获取并校验视频组件，请保持联网……"
-  nsExec::ExecToStack /TIMEOUT=180000 '"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$INSTDIR\resources\install\InitializeComponents.ps1" -PrepareOnly'
-  Pop $0
-  Pop $1
-  StrCmp $0 "0" components_ready
-    Delete "$newDesktopLink"
-    Delete "$newStartMenuLink"
-    Delete "$DESKTOP\短剧投流素材平台（新数据）.lnk"
-    Delete "$SMPROGRAMS\${PRODUCT_NAME}\短剧投流素材平台（新数据）.lnk"
-    RMDir "$SMPROGRAMS\${PRODUCT_NAME}"
-    DetailPrint "视频组件准备失败，安装未完成。请联网后重新运行安装程序。"
-    IfSilent +2
-      MessageBox MB_OK|MB_ICONSTOP "视频组件准备失败，安装未完成。请检查网络后重新运行安装程序；也可从Windows应用列表卸载未完成的安装。项目数据和原片未被修改。"
-    SetErrorLevel 2
-    Abort
-  components_ready:
+  DetailPrint "正在安装已校验的视频组件……"
   CreateDirectory "$SMPROGRAMS\${PRODUCT_NAME}"
   CreateShortCut "$DESKTOP\短剧投流素材平台（新数据）.lnk" "$appExe" "--new-profile"
   CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\短剧投流素材平台（新数据）.lnk" "$appExe" "--new-profile"
-  DetailPrint "视频组件校验完成，桌面快捷方式可直接启动软件EXE。"
+  DetailPrint "视频组件已安装，桌面快捷方式可直接启动软件EXE。"
 !macroend
 
 !macro customUnInstallSection
-  Delete "$DESKTOP\短剧投流素材平台（新数据）.lnk"
-  Delete "$SMPROGRAMS\${PRODUCT_NAME}\短剧投流素材平台（新数据）.lnk"
-  RMDir "$SMPROGRAMS\${PRODUCT_NAME}"
+  Section "Remove new-data shortcut"
+    Delete "$DESKTOP\短剧投流素材平台（新数据）.lnk"
+    Delete "$SMPROGRAMS\${PRODUCT_NAME}\短剧投流素材平台（新数据）.lnk"
+    RMDir "$SMPROGRAMS\${PRODUCT_NAME}"
+  SectionEnd
 !macroend
